@@ -36,23 +36,31 @@ const AppearanceContext = createContext<AppearanceContextValue | null>(null);
 
 interface AppearanceProviderProps {
   children: React.ReactNode;
+  initialThemeMode?: ThemeMode;
+  initialAccentId?: AccentColorId;
+  initialResolvedDark?: boolean;
 }
 
-export function AppearanceProvider({ children }: AppearanceProviderProps) {
+export function AppearanceProvider({
+  children,
+  initialThemeMode = DEFAULT_THEME_MODE,
+  initialAccentId = DEFAULT_ACCENT_ID,
+  initialResolvedDark = false,
+}: AppearanceProviderProps) {
   const [themeMode, setThemeModeState] =
-    useState<ThemeMode>(DEFAULT_THEME_MODE);
+    useState<ThemeMode>(initialThemeMode);
   const [accentId, setAccentIdState] =
-    useState<AccentColorId>(DEFAULT_ACCENT_ID);
-  const [resolvedDark, setResolvedDark] = useState(false);
+    useState<AccentColorId>(initialAccentId);
+  const [resolvedDark, setResolvedDark] = useState(initialResolvedDark);
 
   useLayoutEffect(() => {
     const storedThemeMode = readStoredThemeMode();
     const storedAccentId = readStoredAccentId();
 
-    writeStoredThemeMode(storedThemeMode);
-    writeStoredAccentId(storedAccentId);
     setThemeModeState(storedThemeMode);
     setAccentIdState(storedAccentId);
+    writeStoredThemeMode(storedThemeMode);
+    writeStoredAccentId(storedAccentId);
     applyAppearance({
       themeMode: storedThemeMode,
       accentId: storedAccentId,

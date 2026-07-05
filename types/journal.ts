@@ -27,7 +27,6 @@ export interface JournalListResult {
 
 export interface JournalCondition {
   label: string;
-  emoji: string;
 }
 
 export interface JournalDaySummary {

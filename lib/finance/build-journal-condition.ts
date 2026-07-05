@@ -12,24 +12,24 @@ export function buildFallbackJournalCondition(
   cumulativeBalance: number,
 ): JournalCondition {
   if (transactions.length === 0) {
-    return { label: "Tenang", emoji: "😌" };
+    return { label: "Tenang" };
   }
 
   if (cumulativeBalance < 0) {
-    return { label: "Kritis", emoji: "😰" };
+    return { label: "Kritis" };
   }
 
   if (totalIncome === 0 && totalExpense > 0) {
-    return { label: "Waspada", emoji: "😐" };
+    return { label: "Waspada" };
   }
 
   if (totalIncome > 0 && totalExpense / totalIncome >= 1) {
-    return { label: "Boros", emoji: "😬" };
+    return { label: "Boros" };
   }
 
   if (totalIncome > 0 && totalExpense / totalIncome >= 0.7) {
-    return { label: "Waspada", emoji: "😐" };
+    return { label: "Waspada" };
   }
 
-  return { label: "Aman", emoji: "😊" };
+  return { label: "Aman" };
 }

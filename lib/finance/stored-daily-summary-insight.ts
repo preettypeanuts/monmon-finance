@@ -35,12 +35,11 @@ export function parseStoredDailySummaryInsight(
     const payload = JSON.parse(raw) as Partial<StoredDailySummaryInsight>;
     const insight = payload.insight?.trim();
     const label = payload.condition?.label?.trim();
-    const emoji = payload.condition?.emoji?.trim();
 
-    if (insight && label && emoji) {
+    if (insight && label) {
       return {
         insight,
-        condition: { label, emoji },
+        condition: { label },
       };
     }
   } catch {

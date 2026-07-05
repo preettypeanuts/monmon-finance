@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import {
+  markPlanDoneFromInboxAction,
   payPayPlanFromInboxAction,
   retryInboxMessageAction,
   submitInboxMessage,
@@ -13,11 +14,16 @@ import { ChatHeader } from "@/components/chat/chat-header";
 import { ChatInput } from "@/components/chat/chat-input";
 import { MessageList } from "@/components/chat/message-list";
 import { CHAT_INPUT_DOCK } from "@/config/chat-layout";
-import type { ChatMessage, UnpaidPayPlanChatItem } from "@/types/chat";
+import type {
+  ActivePlanChatItem,
+  ChatMessage,
+  UnpaidPayPlanChatItem,
+} from "@/types/chat";
 
 interface InboxViewProps {
   initialMessages: ChatMessage[];
   unpaidPayPlanItems: UnpaidPayPlanChatItem[];
+  activePlanItems: ActivePlanChatItem[];
 }
 
 function createPendingId(): string {
@@ -27,6 +33,7 @@ function createPendingId(): string {
 export function InboxView({
   initialMessages,
   unpaidPayPlanItems,
+  activePlanItems,
 }: InboxViewProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -206,6 +213,54 @@ export function InboxView({
     }
   }
 
+  async function handleMarkPlanDone(item: ActivePlanChatItem) {
+    const pendingUserId = createPendingId();
+    const pendingAssistantId = createPendingId();
+    const optimisticUser: ChatMessage = {
+      id: pendingUserId,
+      role: "user",
+      content: `Beli ${item.name}`,
+      createdAt: new Date().toISOString(),
+    };
+    const optimisticAssistant: ChatMessage = {
+      id: pendingAssistantId,
+      role: "assistant",
+      content: "Menandai plan selesai...",
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((current) => [
+      ...current,
+      optimisticUser,
+      optimisticAssistant,
+    ]);
+    setIsProcessing(true);
+
+    try {
+      const result = await markPlanDoneFromInboxAction(item.id);
+
+      setMessages((current) => [
+        ...current.filter(
+          (message) =>
+            message.id !== pendingUserId && message.id !== pendingAssistantId,
+        ),
+        result.userMessage,
+        result.assistantMessage,
+      ]);
+
+      router.refresh();
+    } catch {
+      setMessages((current) =>
+        current.filter(
+          (message) =>
+            message.id !== pendingUserId && message.id !== pendingAssistantId,
+        ),
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
   return (
     <div className="relative h-full min-h-0 w-full flex-1 overflow-hidden">
       <MessageList
@@ -220,7 +275,9 @@ export function InboxView({
         <ChatInput
           onSubmit={handleSubmit}
           onPayPlan={handlePayPlan}
+          onMarkPlanDone={handleMarkPlanDone}
           unpaidPayPlanItems={unpaidPayPlanItems}
+          activePlanItems={activePlanItems}
           disabled={isProcessing}
           draftText={draftText}
           onDraftTextApplied={handleDraftTextApplied}

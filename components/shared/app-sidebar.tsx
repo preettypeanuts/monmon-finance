@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { SidebarAppIcon } from "@/components/shared/sidebar-app-icon";
 import { SidebarBrandButton } from "@/components/shared/sidebar-brand-button";
+import { SidebarCollapsedDock } from "@/components/shared/sidebar-collapsed-dock";
 import { SidebarCollapseTrigger } from "@/components/shared/sidebar-collapse-trigger";
 import { SidebarSettingsButton } from "@/components/shared/sidebar-settings-button";
 import {
@@ -23,12 +25,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   return (
     <Sidebar
@@ -36,48 +40,55 @@ export function AppSidebar() {
       collapsible="icon"
       className={cn(SEPARATED_SIDEBAR_CLASS, "group/sidebar", SEPARATED_SIDEBAR_GUTTER)}
     >
-      <SidebarHeader className="gap-2 p-2 group-data-[collapsible=icon]:items-center">
-        <div className="flex w-full items-center gap-1.5 group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:justify-center">
-          <SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
-            <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-              <SidebarBrandButton />
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <SidebarCollapseTrigger className="group-data-[collapsible=icon]:hidden" />
+      {isCollapsed ? (
+        <div className="flex w-full justify-center">
+          <SidebarCollapsedDock />
         </div>
-        <SidebarCollapseTrigger className="hidden group-data-[collapsible=icon]:flex" />
-      </SidebarHeader>
-      <SidebarContent className="group-data-[collapsible=icon]:items-center">
-        <SidebarGroup className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-1">
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center">
-            <SidebarMenu className="group-data-[collapsible=icon]:items-center">
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem
-                  key={item.href}
-                  className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
-                >
-                  <SidebarMenuButton
-                    render={<Link href={item.href} />}
-                    isActive={pathname === item.href}
-                    tooltip={item.title}
-                    className={SEPARATED_MENU_ITEM}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
+      ) : (
+        <>
+          <SidebarHeader className="gap-2 p-0">
+            <div className="flex w-full items-center gap-1.5">
+              <SidebarMenu className="min-w-0 flex-1">
+                <SidebarMenuItem>
+                  <SidebarBrandButton />
                 </SidebarMenuItem>
-              ))}
+              </SidebarMenu>
+              <SidebarCollapseTrigger />
+            </div>
+          </SidebarHeader>
+          <SidebarContent className="gap-0 p-0">
+            <SidebarGroup className="p-0">
+              <SidebarGroupLabel>Menu</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-1">
+                  {mainNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        render={<Link href={item.href} />}
+                        isActive={pathname === item.href}
+                        tooltip={item.title}
+                        className={SEPARATED_MENU_ITEM}
+                      >
+                        <SidebarAppIcon
+                          icon={item.icon}
+                          gradient={item.gradient}
+                          isActive={pathname === item.href}
+                        />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter className="gap-0 p-0">
+            <SidebarMenu>
+              <SidebarSettingsButton />
             </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter className="p-2 group-data-[collapsible=icon]:items-center">
-        <SidebarMenu className="group-data-[collapsible=icon]:items-center">
-          <SidebarSettingsButton />
-        </SidebarMenu>
-      </SidebarFooter>
-      <SidebarRail />
+          </SidebarFooter>
+        </>
+      )}
     </Sidebar>
   );
 }

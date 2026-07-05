@@ -11,7 +11,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -43,6 +42,13 @@ import {
 import { cn } from "@/lib/utils";
 import type { PlannedItemsFilters, PlannerTab } from "@/types/planner";
 
+type PlannedItemsFilterDraft = Omit<PlannedItemsFilters, "q">;
+
+function toFilterDraft(filters: PlannedItemsFilters): PlannedItemsFilterDraft {
+  const { q: _, ...draft } = filters;
+  return draft;
+}
+
 interface PlannedItemsFilterMenuProps {
   filters: PlannedItemsFilters;
   tab: Extract<PlannerTab, "cards" | "table">;
@@ -56,17 +62,19 @@ export function PlannedItemsFilterMenu({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState(filters);
+  const [draft, setDraft] = useState<PlannedItemsFilterDraft>(() =>
+    toFilterDraft(filters),
+  );
   const activeCount = countActivePlannedItemFilters(filters);
 
   useEffect(() => {
     if (open) {
-      setDraft(filters);
+      setDraft(toFilterDraft(filters));
     }
   }, [filters, open]);
 
-  function applyFilters(next?: Partial<PlannedItemsFilters>) {
-    const merged: PlannedItemsFilters = { ...draft, ...next };
+  function applyFilters(next?: Partial<PlannedItemsFilterDraft>) {
+    const merged: PlannedItemsFilters = { ...draft, ...next, q: filters.q };
     const params = buildPlannedItemsManageParams(
       merged,
       tab,
@@ -78,9 +86,10 @@ export function PlannedItemsFilterMenu({
   }
 
   function resetFilters() {
-    setDraft(PLANNED_ITEMS_DEFAULT_FILTERS);
+    const resetDraft = toFilterDraft(PLANNED_ITEMS_DEFAULT_FILTERS);
+    setDraft(resetDraft);
     const params = buildPlannedItemsManageParams(
-      PLANNED_ITEMS_DEFAULT_FILTERS,
+      { ...PLANNED_ITEMS_DEFAULT_FILTERS, q: filters.q },
       tab,
       new URLSearchParams(searchParams.toString()),
     );
@@ -133,19 +142,6 @@ export function PlannedItemsFilterMenu({
             <p className="mt-0.5 text-xs text-muted-foreground">
               Saring tagihan, langganan, dan cicilan.
             </p>
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="planned-filter-q">Cari</Label>
-            <Input
-              id="planned-filter-q"
-              value={draft.q}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, q: event.target.value }))
-              }
-              placeholder="Nama atau catatan..."
-              className={cn(SEPARATED_CONTROL, "h-9")}
-            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">

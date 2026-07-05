@@ -82,10 +82,6 @@ export function countActivePlannedItemFilters(
 ): number {
   let count = 0;
 
-  if (filters.q.trim()) {
-    count += 1;
-  }
-
   if (filters.kind !== "all") {
     count += 1;
   }

@@ -35,7 +35,7 @@ export const PLANNER_MANAGE_META =
   "text-[10px] text-muted-foreground";
 
 export const PLANNER_MANAGE_STATUS =
-  "text-xs font-semibold sm:text-sm";
+  "text-xs font-semibold sm:text-xs";
 
 export const PLANNER_MANAGE_META_BETWEEN =
   "flex items-center justify-between gap-2";

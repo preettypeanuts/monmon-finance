@@ -138,7 +138,7 @@ export function PlannerCalendar({
   }
 
   return (
-    <div className={cn("flex flex-col", STACK_GAP)}>
+    <div className={cn("flex flex-col pb-3", STACK_GAP)}>
       <PlannerCalendarHeader
         monthKey={monthKey}
         onPrevious={() => navigateMonth(shiftMonthKey(monthKey, -1))}

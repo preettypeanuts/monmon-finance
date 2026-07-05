@@ -14,6 +14,8 @@ import {
   sfCartFill,
   sfCheckmark,
   sfCheckmarkCircleFill,
+  sfCloudBoltFill,
+  sfCloudRainFill,
   sfChevronDown,
   sfChevronLeft,
   sfChevronRight,
@@ -22,15 +24,18 @@ import {
   sfDesktopcomputer,
   sfDollarsignCircleFill,
   sfEllipsis,
+  sfExclamationmarkTriangleFill,
   sfCupAndSaucerFill,
   sfGearshapeFill,
   sfInfinity,
   sfLine3HorizontalDecrease,
+  sfListStar,
   sfMoonFill,
   sfPencil,
   sfPlus,
   sfReceiptFill,
   sfSidebarLeft,
+  sfShieldFill,
   sfSparkles,
   sfSquareAndArrowUpFill,
   sfSquareGrid2x2Fill,
@@ -41,6 +46,7 @@ import {
   sfTrayFill,
   sfWalletBifoldFill,
   sfXmark,
+  sfXmarkCircleFill,
 } from "@bradleyhodges/sfsymbols";
 import { SFIcon } from "@bradleyhodges/sfsymbols-react";
 import type { IconDefinition } from "@bradleyhodges/sfsymbols-types";
@@ -102,6 +108,8 @@ export const CheckCircleIcon = createSFIcon(
   sfCheckmarkCircleFill,
   "CheckCircleIcon",
 );
+export const CloudBoltIcon = createSFIcon(sfCloudBoltFill, "CloudBoltIcon");
+export const CloudRainIcon = createSFIcon(sfCloudRainFill, "CloudRainIcon");
 export const CoinsIcon = createSFIcon(sfDollarsignCircleFill, "CoinsIcon");
 export const CreditCardIcon = createSFIcon(sfCreditcardFill, "CreditCardIcon");
 export const CurrencyCircleDollarIcon = createSFIcon(
@@ -114,6 +122,10 @@ export const DotsThreeVerticalIcon = createSFIcon(
   sfEllipsis,
   "DotsThreeVerticalIcon",
 );
+export const ExclamationTriangleIcon = createSFIcon(
+  sfExclamationmarkTriangleFill,
+  "ExclamationTriangleIcon",
+);
 export const ForkKnifeIcon = createSFIcon(
   sfCupAndSaucerFill,
   "ForkKnifeIcon",
@@ -124,11 +136,13 @@ export const FunnelIcon = createSFIcon(
 );
 export const GearSixIcon = createSFIcon(sfGearshapeFill, "GearSixIcon");
 export const InfinityIcon = createSFIcon(sfInfinity, "InfinityIcon");
+export const ListStarIcon = createSFIcon(sfListStar, "ListStarIcon");
 export const MoonIcon = createSFIcon(sfMoonFill, "MoonIcon");
 export const NotebookIcon = createSFIcon(sfBookFill, "NotebookIcon");
 export const PencilSimpleIcon = createSFIcon(sfPencil, "PencilSimpleIcon");
 export const PlusIcon = createSFIcon(sfPlus, "PlusIcon");
 export const ReceiptIcon = createSFIcon(sfReceiptFill, "ReceiptIcon");
+export const ShieldIcon = createSFIcon(sfShieldFill, "ShieldIcon");
 export const ShoppingBagIcon = createSFIcon(sfBagFill, "ShoppingBagIcon");
 export const SidebarIcon = createSFIcon(sfSidebarLeft, "SidebarIcon");
 export const SparkleIcon = createSFIcon(sfSparkles, "SparkleIcon");
@@ -145,4 +159,5 @@ export const UploadSimpleIcon = createSFIcon(
   "UploadSimpleIcon",
 );
 export const WalletIcon = createSFIcon(sfWalletBifoldFill, "WalletIcon");
+export const XCircleIcon = createSFIcon(sfXmarkCircleFill, "XCircleIcon");
 export const XIcon = createSFIcon(sfXmark, "XIcon");

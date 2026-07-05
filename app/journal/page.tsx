@@ -26,9 +26,14 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
   ]);
 
   return (
-    <div className={cn("flex h-full min-h-0 flex-1 flex-col", APP_GUTTER)}>
-      <JournalShell>
-        <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP)}>
+    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER)}>
+      <JournalShell className="min-h-0 flex-1">
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col overflow-hidden",
+            STACK_GAP,
+          )}
+        >
           <header className="shrink-0">
             <div className="flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-start gap-2">
@@ -50,7 +55,9 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
 
           <JournalSummaryWidget summary={daySummary} className="shrink-0" />
 
-          <JournalFiltersBar filters={filters} />
+          <div className="shrink-0">
+            <JournalFiltersBar filters={filters} />
+          </div>
 
           <JournalTable items={result.items} />
 

@@ -29,7 +29,9 @@ Sebut apakah pola pengeluaran/pemasukan terlihat wajar, boros, atau hemat RELATI
 Berikan satu saran praktis spesifik jika relevan.
 Jangan mengarang transaksi atau nominal di luar data.
 
-Berikan juga penilaian kondisi keuangan (label + emoji cuaca/mood) yang mencerminkan kesehatan keuangan hari itu.
+Jangan gunakan emoji dalam teks insight.
+
+Berikan juga penilaian kondisi keuangan (label saja) yang mencerminkan kesehatan keuangan hari itu.
 Label harus salah satu: Aman, Stabil, Waspada, Boros, atau Kritis.`;
 
 function buildPrompt(
@@ -93,9 +95,8 @@ export async function generateDailySummaryInsightWithGemini(
         properties: {
           insight: { type: Type.STRING },
           label: { type: Type.STRING, enum: [...CONDITION_LABELS] },
-          emoji: { type: Type.STRING },
         },
-        required: ["insight", "label", "emoji"],
+        required: ["insight", "label"],
       },
     },
   });
@@ -109,18 +110,16 @@ export async function generateDailySummaryInsightWithGemini(
   const payload = JSON.parse(raw) as {
     insight?: string;
     label?: string;
-    emoji?: string;
   };
   const insight = payload.insight?.trim();
   const label = payload.label?.trim();
-  const emoji = payload.emoji?.trim();
 
-  if (!insight || !label || !emoji) {
+  if (!insight || !label) {
     throw new Error("Gemini insight kosong.");
   }
 
   return {
     insight,
-    condition: { label, emoji },
+    condition: { label },
   };
 }

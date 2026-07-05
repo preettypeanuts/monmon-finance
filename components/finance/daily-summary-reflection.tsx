@@ -2,6 +2,7 @@ import {
   FINANCE_REFLECTION_SHELL,
   getFinanceConditionWeatherStyle,
 } from "@/config/finance-condition-weather";
+import { FinanceConditionBadgeIcon } from "@/components/shared/ai-summary-badge-icon";
 import { cn } from "@/lib/utils";
 import type { FinanceCondition } from "@/types/summary";
 
@@ -51,7 +52,7 @@ export function DailySummaryReflection({
               style.subtitleColor,
             )}
           >
-            <span aria-hidden="true">{condition.emoji}</span>
+            <FinanceConditionBadgeIcon label={condition.label} />
             {condition.label}
           </span>
         </div>

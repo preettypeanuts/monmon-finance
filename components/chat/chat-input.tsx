@@ -8,7 +8,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { ChatCalculatorSheet } from "@/components/chat/chat-calculator-sheet";
-import { ChatPayPlanSlashMenu } from "@/components/chat/chat-payplan-slash-menu";
+import { ChatSlashMenu } from "@/components/chat/chat-slash-menu";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,9 +19,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { GLASS_SURFACE } from "@/config/glass";
 import { CONTROL_GAP } from "@/config/spacing";
+import { filterActivePlanChatItems } from "@/lib/plans/active-plan-chat";
 import { filterUnpaidPayPlanChatItems } from "@/lib/planner/unpaid-payplan-chat";
 import { cn } from "@/lib/utils";
-import type { UnpaidPayPlanChatItem } from "@/types/chat";
+import type {
+  ActivePlanChatItem,
+  ChatSlashEntry,
+  UnpaidPayPlanChatItem,
+} from "@/types/chat";
 
 /** Min height shared by menu btn & input — keep in sync. */
 const CONTROL_MIN_HEIGHT = "min-h-9";
@@ -29,7 +34,9 @@ const CONTROL_MIN_HEIGHT = "min-h-9";
 interface ChatInputProps {
   onSubmit: (text: string) => Promise<void>;
   onPayPlan?: (item: UnpaidPayPlanChatItem) => Promise<void>;
+  onMarkPlanDone?: (item: ActivePlanChatItem) => Promise<void>;
   unpaidPayPlanItems?: UnpaidPayPlanChatItem[];
+  activePlanItems?: ActivePlanChatItem[];
   disabled?: boolean;
   draftText?: string | null;
   onDraftTextApplied?: () => void;
@@ -38,7 +45,9 @@ interface ChatInputProps {
 export function ChatInput({
   onSubmit,
   onPayPlan,
+  onMarkPlanDone,
   unpaidPayPlanItems = [],
+  activePlanItems = [],
   disabled = false,
   draftText = null,
   onDraftTextApplied,
@@ -50,16 +59,30 @@ export function ChatInput({
   const hasText = value.trim().length > 0;
   const isInputDisabled = disabled || isSubmitting;
   const slashMatch = value.match(/^\/(.*)$/);
-  const isSlashOpen = slashMatch !== null && Boolean(onPayPlan);
+  const hasSlashActions = Boolean(onPayPlan || onMarkPlanDone);
+  const isSlashOpen = slashMatch !== null && hasSlashActions;
   const slashQuery = slashMatch?.[1]?.trim() ?? "";
-  const filteredItems = useMemo(
+  const filteredPayPlanItems = useMemo(
     () => filterUnpaidPayPlanChatItems(unpaidPayPlanItems, slashQuery),
     [slashQuery, unpaidPayPlanItems],
+  );
+  const filteredPlanItems = useMemo(
+    () => filterActivePlanChatItems(activePlanItems, slashQuery),
+    [activePlanItems, slashQuery],
+  );
+  const slashEntries = useMemo<ChatSlashEntry[]>(
+    () => [
+      ...filteredPayPlanItems.map(
+        (item): ChatSlashEntry => ({ kind: "payplan", item }),
+      ),
+      ...filteredPlanItems.map((item): ChatSlashEntry => ({ kind: "plan", item })),
+    ],
+    [filteredPayPlanItems, filteredPlanItems],
   );
 
   useEffect(() => {
     setHighlightedIndex(0);
-  }, [slashQuery, filteredItems.length]);
+  }, [slashQuery, slashEntries.length]);
 
   useEffect(() => {
     if (draftText === null) {
@@ -88,8 +111,8 @@ export function ChatInput({
     }
   }
 
-  async function handleSelectPayPlan(item: UnpaidPayPlanChatItem) {
-    if (!onPayPlan || isSubmitting || disabled) {
+  async function handleSelectSlashEntry(entry: ChatSlashEntry) {
+    if (isSubmitting || disabled) {
       return;
     }
 
@@ -97,7 +120,20 @@ export function ChatInput({
     setValue("");
 
     try {
-      await onPayPlan(item);
+      if (entry.kind === "payplan") {
+        if (!onPayPlan) {
+          return;
+        }
+
+        await onPayPlan(entry.item);
+        return;
+      }
+
+      if (!onMarkPlanDone) {
+        return;
+      }
+
+      await onMarkPlanDone(entry.item);
     } finally {
       setIsSubmitting(false);
     }
@@ -116,9 +152,9 @@ export function ChatInput({
       if (event.key === "ArrowDown") {
         event.preventDefault();
         setHighlightedIndex((current) =>
-          filteredItems.length === 0
+          slashEntries.length === 0
             ? 0
-            : (current + 1) % filteredItems.length,
+            : (current + 1) % slashEntries.length,
         );
         return;
       }
@@ -126,9 +162,9 @@ export function ChatInput({
       if (event.key === "ArrowUp") {
         event.preventDefault();
         setHighlightedIndex((current) =>
-          filteredItems.length === 0
+          slashEntries.length === 0
             ? 0
-            : (current - 1 + filteredItems.length) % filteredItems.length,
+            : (current - 1 + slashEntries.length) % slashEntries.length,
         );
         return;
       }
@@ -141,10 +177,10 @@ export function ChatInput({
 
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
-        const selected = filteredItems[highlightedIndex];
+        const selected = slashEntries[highlightedIndex];
 
         if (selected) {
-          void handleSelectPayPlan(selected);
+          void handleSelectSlashEntry(selected);
         }
 
         return;
@@ -160,11 +196,13 @@ export function ChatInput({
   return (
     <div className="relative shrink-0">
       {isSlashOpen ? (
-        <ChatPayPlanSlashMenu
-          items={filteredItems}
+        <ChatSlashMenu
+          payPlanItems={filteredPayPlanItems}
+          planItems={filteredPlanItems}
+          entries={slashEntries}
           highlightedIndex={highlightedIndex}
           onHighlight={setHighlightedIndex}
-          onSelect={(item) => void handleSelectPayPlan(item)}
+          onSelect={(entry) => void handleSelectSlashEntry(entry)}
         />
       ) : null}
 
@@ -215,7 +253,7 @@ export function ChatInput({
             value={value}
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ketik transaksi... atau / untuk PayPlan"
+            placeholder="Ketik transaksi... atau / untuk PayPlan & Plans"
             disabled={isInputDisabled}
             rows={1}
             className={cn(

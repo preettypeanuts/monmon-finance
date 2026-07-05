@@ -20,7 +20,7 @@ export function PlannedItemEndBadge({ item }: PlannedItemEndBadgeProps) {
         aria-label="Berulang tanpa akhir"
         title="Berulang tanpa akhir"
       >
-        <InfinityIcon className="size-4" />
+        <InfinityIcon className="size-3" />
       </span>
     );
   }

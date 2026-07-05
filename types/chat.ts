@@ -18,3 +18,14 @@ export interface UnpaidPayPlanChatItem {
   statusLabel: string;
   installmentIndex: number;
 }
+
+export interface ActivePlanChatItem {
+  id: string;
+  name: string;
+  amount: number;
+  category: string;
+}
+
+export type ChatSlashEntry =
+  | { kind: "payplan"; item: UnpaidPayPlanChatItem }
+  | { kind: "plan"; item: ActivePlanChatItem };

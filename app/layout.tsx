@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppShell } from "@/components/shared/app-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { readServerAppearance } from "@/lib/appearance/cookies";
+import { readServerSidebarOpen } from "@/lib/sidebar/cookies";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const appearance = readServerAppearance(await cookies());
+  const cookieStore = await cookies();
+  const appearance = readServerAppearance(cookieStore);
+  const sidebarOpen = readServerSidebarOpen(cookieStore);
 
   return (
     <html
@@ -30,7 +33,12 @@ export default async function RootLayout({
     >
       <body className="h-svh overflow-hidden bg-transparent">
         <TooltipProvider>
-          <AppShell>{children}</AppShell>
+          <AppShell
+            initialAppearance={appearance}
+            initialSidebarOpen={sidebarOpen}
+          >
+            {children}
+          </AppShell>
         </TooltipProvider>
       </body>
     </html>

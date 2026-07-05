@@ -3,11 +3,16 @@
 import { GearSixIcon } from "@/lib/icons";
 
 import { SettingsSheet } from "@/components/shared/settings-sheet";
+import { SidebarAppIcon } from "@/components/shared/sidebar-app-icon";
 import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { SEPARATED_MENU_ITEM } from "@/config/sidebar";
+import {
+  SEPARATED_MENU_ITEM,
+  SIDEBAR_APP_ICON_GRADIENTS,
+} from "@/config/sidebar";
+import { cn } from "@/lib/utils";
 
 export function SidebarSettingsButton() {
   return (
@@ -16,9 +21,15 @@ export function SidebarSettingsButton() {
         trigger={
           <SidebarMenuButton
             tooltip="Pengaturan"
-            className={SEPARATED_MENU_ITEM}
+            className={cn(
+              SEPARATED_MENU_ITEM,
+              "group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:rounded-[0.7rem]! group-data-[collapsible=icon]:bg-transparent! group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:hover:bg-transparent!",
+            )}
           >
-            <GearSixIcon />
+            <SidebarAppIcon
+              icon={GearSixIcon}
+              gradient={SIDEBAR_APP_ICON_GRADIENTS.settings}
+            />
             <span>Pengaturan</span>
           </SidebarMenuButton>
         }

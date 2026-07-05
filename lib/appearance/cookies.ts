@@ -7,6 +7,7 @@ import type { AccentColorId, ThemeMode } from "@/types/appearance";
 
 export const THEME_COOKIE_KEY = "monmon-theme";
 export const ACCENT_COOKIE_KEY = "monmon-accent";
+export const RESOLVED_DARK_COOKIE_KEY = "monmon-theme-dark";
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
@@ -44,10 +45,22 @@ export function readServerAppearance(cookieStore: CookieStore): ServerAppearance
     themeRaw && isThemeMode(themeRaw) ? themeRaw : DEFAULT_THEME_MODE;
   const accentId = accentRaw ? normalizeAccentId(accentRaw) : DEFAULT_ACCENT_ID;
 
+  let resolvedDark = resolveServerDarkClass(themeMode);
+
+  if (themeMode === "system") {
+    const darkRaw = cookieStore.get(RESOLVED_DARK_COOKIE_KEY)?.value;
+
+    if (darkRaw === "true") {
+      resolvedDark = true;
+    } else if (darkRaw === "false") {
+      resolvedDark = false;
+    }
+  }
+
   return {
     themeMode,
     accentId,
-    resolvedDark: resolveServerDarkClass(themeMode),
+    resolvedDark,
   };
 }
 
@@ -57,4 +70,8 @@ export function writeClientThemeCookie(mode: ThemeMode): void {
 
 export function writeClientAccentCookie(id: AccentColorId): void {
   document.cookie = `${ACCENT_COOKIE_KEY}=${encodeURIComponent(id)};path=/;max-age=${COOKIE_MAX_AGE_SECONDS};samesite=lax`;
+}
+
+export function writeClientResolvedDarkCookie(isDark: boolean): void {
+  document.cookie = `${RESOLVED_DARK_COOKIE_KEY}=${isDark};path=/;max-age=${COOKIE_MAX_AGE_SECONDS};samesite=lax`;
 }

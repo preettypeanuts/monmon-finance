@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/planner";
 import { PlannedItemFormSheet } from "@/components/planner/planned-item-form-sheet";
 import { PlannedItemsFilterMenu } from "@/components/planner/planned-items-filter-menu";
+import { PlannedItemsSearchInput } from "@/components/planner/planned-items-search-input";
 import { PlannedItemsList } from "@/components/planner/planned-items-list";
 import { PlannedItemsTable } from "@/components/planner/planned-items-table";
 import { Button } from "@/components/ui/button";
@@ -131,6 +132,7 @@ export function PlannedItemsManage({
         </div>
 
         <div className={cn("flex shrink-0 flex-wrap items-center", CONTROL_GAP)}>
+          <PlannedItemsSearchInput filters={filters} tab={tab} />
           <PlannedItemsFilterMenu filters={filters} tab={tab} />
           <Button size="sm" onClick={openCreateSheet}>
             <PlusIcon />

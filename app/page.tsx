@@ -3,22 +3,26 @@ import { TodaySummaryPanel } from "@/components/finance/today-summary-panel";
 import { APP_GAP, APP_GUTTER } from "@/config/spacing";
 import { getYesterdayDailySummary } from "@/lib/db/daily-summary";
 import { getInboxMessages } from "@/lib/db/inbox-messages";
+import { listPlans } from "@/lib/db/plans";
 import { listPlannedItems } from "@/lib/db/planned-items";
 import { getTodaySummary } from "@/lib/db/transactions";
+import { listActivePlanChatItems } from "@/lib/plans/active-plan-chat";
 import { listUnpaidPayPlanChatItems } from "@/lib/planner/unpaid-payplan-chat";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function InboxPage() {
-  const [summary, dailySummary, initialMessages, plannedItems] =
+  const [summary, dailySummary, initialMessages, plannedItems, plans] =
     await Promise.all([
       getTodaySummary(),
       getYesterdayDailySummary(),
       getInboxMessages(),
       listPlannedItems(),
+      listPlans(),
     ]);
   const unpaidPayPlanItems = listUnpaidPayPlanChatItems(plannedItems);
+  const activePlanItems = listActivePlanChatItems(plans);
 
   return (
     <div
@@ -28,6 +32,7 @@ export default async function InboxPage() {
         <InboxView
           initialMessages={initialMessages}
           unpaidPayPlanItems={unpaidPayPlanItems}
+          activePlanItems={activePlanItems}
         />
       </section>
       <aside

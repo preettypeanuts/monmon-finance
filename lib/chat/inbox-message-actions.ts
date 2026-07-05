@@ -14,7 +14,7 @@ export function canManageSentUserMessage(message: ChatMessage): boolean {
     return false;
   }
 
-  if (message.content.startsWith("Bayar ")) {
+  if (message.content.startsWith("Bayar ") || message.content.startsWith("Beli ")) {
     return false;
   }
 

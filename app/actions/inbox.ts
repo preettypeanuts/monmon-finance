@@ -13,6 +13,7 @@ import {
   type DeleteInboxMessagePairResult,
 } from "@/lib/db/inbox-messages";
 import { listPlannedItems, markInstallmentPaid } from "@/lib/db/planned-items";
+import { listPlans, markPlanDone } from "@/lib/db/plans";
 import { prisma } from "@/lib/db/prisma";
 import { createTransaction } from "@/lib/db/transactions";
 import { formatIdr } from "@/lib/finance/format-currency";
@@ -264,6 +265,82 @@ export async function payPayPlanFromInboxAction(
     const assistantMessage = await createInboxMessage({
       role: "assistant",
       content: `Gagal menandai ${item.name} sudah dibayar. Coba lagi.`,
+    });
+
+    return {
+      ok: false,
+      userMessage,
+      assistantMessage,
+    };
+  }
+}
+
+interface MarkPlanDoneFromInboxSuccess {
+  ok: true;
+  userMessage: ChatMessage;
+  assistantMessage: ChatMessage;
+}
+
+interface MarkPlanDoneFromInboxFailure {
+  ok: false;
+  userMessage: ChatMessage;
+  assistantMessage: ChatMessage;
+}
+
+export type MarkPlanDoneFromInboxResult =
+  | MarkPlanDoneFromInboxSuccess
+  | MarkPlanDoneFromInboxFailure;
+
+export async function markPlanDoneFromInboxAction(
+  planId: string,
+): Promise<MarkPlanDoneFromInboxResult> {
+  const trimmedId = planId.trim();
+  const plans = await listPlans();
+  const plan = plans.find((entry) => entry.id === trimmedId);
+
+  if (!plan) {
+    throw new Error("Plan tidak ditemukan.");
+  }
+
+  const userContent = `Beli ${plan.name}`;
+  const userMessage = await createInboxMessage({
+    role: "user",
+    content: userContent,
+  });
+
+  if (plan.status !== "active") {
+    const assistantMessage = await createInboxMessage({
+      role: "assistant",
+      content: `${plan.name} sudah ditandai selesai atau tidak bisa diupdate dari chat.`,
+    });
+
+    return {
+      ok: false,
+      userMessage,
+      assistantMessage,
+    };
+  }
+
+  try {
+    await markPlanDone(trimmedId);
+
+    const assistantMessage = await createInboxMessage({
+      role: "assistant",
+      content: `${plan.name} (${formatIdr(plan.amount)}) ditandai sudah dibeli.`,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/plans");
+
+    return {
+      ok: true,
+      userMessage,
+      assistantMessage,
+    };
+  } catch {
+    const assistantMessage = await createInboxMessage({
+      role: "assistant",
+      content: `Gagal menandai ${plan.name} sudah dibeli. Coba lagi.`,
     });
 
     return {

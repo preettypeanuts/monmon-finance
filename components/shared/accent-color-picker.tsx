@@ -12,13 +12,14 @@ import { SEPARATED_PILL } from "@/config/shape";
 import { cn } from "@/lib/utils";
 
 export function AccentColorPicker() {
-  const { accentId, setAccentId } = useAppearance();
+  const { accentId, setAccentId, resolvedDark } = useAppearance();
 
   return (
     <>
       {ACCENT_COLORS.map((accent, index) => {
         const selected = accentId === accent.id;
         const isLast = index === ACCENT_COLORS.length - 1;
+        const swatch = resolvedDark ? accent.dark : accent.light;
 
         return (
           <button
@@ -27,17 +28,14 @@ export function AccentColorPicker() {
             aria-pressed={selected}
             aria-label={`Accent ${accent.label}`}
             onClick={() => setAccentId(accent.id)}
-            className={cn(
-              SETTINGS_ROW,
-              !isLast && SETTINGS_ROW_DIVIDER,
-            )}
+            className={cn(SETTINGS_ROW, !isLast && SETTINGS_ROW_DIVIDER)}
           >
             <span
               className={cn(
                 "size-6 shrink-0 ring-1 ring-black/10 dark:ring-white/15",
                 SEPARATED_PILL,
               )}
-              style={{ backgroundColor: accent.swatch }}
+              style={{ backgroundColor: swatch }}
             />
             <span className="flex-1 font-medium">{accent.label}</span>
             {selected ? (

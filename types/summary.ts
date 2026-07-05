@@ -14,7 +14,6 @@ export interface TodaySummary {
 
 export interface FinanceCondition {
   label: string;
-  emoji: string;
 }
 
 export interface DailySummarySnapshot {

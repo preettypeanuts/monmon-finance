@@ -3,6 +3,7 @@ import type {
   AppearanceSettings,
   ThemeMode,
 } from "@/types/appearance";
+import { writeClientResolvedDarkCookie } from "@/lib/appearance/cookies";
 
 export function resolveDarkMode(themeMode: ThemeMode): boolean {
   if (themeMode === "dark") {
@@ -25,6 +26,9 @@ export function applyAppearance({
   accentId,
 }: AppearanceSettings): void {
   const root = document.documentElement;
+  const resolvedDark = resolveDarkMode(themeMode);
+
   root.dataset.accent = accentId;
-  root.classList.toggle("dark", resolveDarkMode(themeMode));
+  root.classList.toggle("dark", resolvedDark);
+  writeClientResolvedDarkCookie(resolvedDark);
 }

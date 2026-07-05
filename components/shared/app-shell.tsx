@@ -2,21 +2,34 @@
 
 import { AppearanceProvider } from "@/components/shared/appearance-provider";
 import { AppSidebar } from "@/components/shared/app-sidebar";
+import { PersistentSidebarProvider } from "@/components/shared/persistent-sidebar-provider";
 import { WallpaperBackground } from "@/components/shared/wallpaper-background";
 import { WallpaperProvider } from "@/components/shared/wallpaper-provider";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { SEPARATED_SIDEBAR_ICON_WIDTH } from "@/config/sidebar";
+import type { ServerAppearance } from "@/lib/appearance/cookies";
 
 interface AppShellProps {
   children: React.ReactNode;
+  initialAppearance: ServerAppearance;
+  initialSidebarOpen: boolean;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({
+  children,
+  initialAppearance,
+  initialSidebarOpen,
+}: AppShellProps) {
   return (
-    <AppearanceProvider>
+    <AppearanceProvider
+      initialThemeMode={initialAppearance.themeMode}
+      initialAccentId={initialAppearance.accentId}
+      initialResolvedDark={initialAppearance.resolvedDark}
+    >
       <WallpaperProvider>
         <WallpaperBackground />
-        <SidebarProvider
+        <PersistentSidebarProvider
+          initialOpen={initialSidebarOpen}
           className="relative z-10 h-svh max-h-svh overflow-hidden bg-transparent"
           style={
             {
@@ -30,7 +43,7 @@ export function AppShell({ children }: AppShellProps) {
               {children}
             </div>
           </SidebarInset>
-        </SidebarProvider>
+        </PersistentSidebarProvider>
       </WallpaperProvider>
     </AppearanceProvider>
   );

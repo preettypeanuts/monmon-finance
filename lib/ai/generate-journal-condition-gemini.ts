@@ -21,7 +21,7 @@ interface JournalSummaryTransaction {
 }
 
 const SYSTEM_INSTRUCTION = `Kamu analis keuangan Monmon. Beri penilaian singkat kondisi keuangan user untuk hari tersebut.
-Bahasa Indonesia. Jawab label kondisi (1 kata) dan emoji yang cocok.
+Bahasa Indonesia. Jawab label kondisi (1 kata) saja.
 Label harus salah satu nuansa: Aman, Stabil, Waspada, Boros, atau Kritis — sesuai data, jangan mengarang.`;
 
 function buildPrompt(
@@ -82,9 +82,8 @@ export async function generateJournalConditionWithGemini(
         type: Type.OBJECT,
         properties: {
           label: { type: Type.STRING, enum: [...CONDITION_LABELS] },
-          emoji: { type: Type.STRING },
         },
-        required: ["label", "emoji"],
+        required: ["label"],
       },
     },
   });
@@ -95,13 +94,12 @@ export async function generateJournalConditionWithGemini(
     throw new Error("Gemini tidak memberi respons kondisi.");
   }
 
-  const payload = JSON.parse(raw) as { label?: string; emoji?: string };
+  const payload = JSON.parse(raw) as { label?: string };
   const label = payload.label?.trim();
-  const emoji = payload.emoji?.trim();
 
-  if (!label || !emoji) {
+  if (!label) {
     throw new Error("Gemini kondisi kosong.");
   }
 
-  return { label, emoji };
+  return { label };
 }

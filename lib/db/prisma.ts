@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /** Bump when Prisma schema changes to invalidate dev hot-reload cache. */
-const PRISMA_CLIENT_VERSION = 7;
+const PRISMA_CLIENT_VERSION = 8;
 
 const REQUIRED_PLANNED_ITEM_FIELDS = ["paidInstallmentCount"] as const;
 
@@ -32,6 +32,7 @@ function hasExpectedDelegates(client: PrismaClient): boolean {
     typeof client.transaction?.findMany === "function" &&
     typeof client.inboxMessage?.findMany === "function" &&
     typeof client.plannedItem?.findMany === "function" &&
+    typeof client.plan?.findMany === "function" &&
     REQUIRED_PLANNED_ITEM_FIELDS.every((field) => plannedItemFields.has(field))
   );
 }
