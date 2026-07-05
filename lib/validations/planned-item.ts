@@ -1,4 +1,5 @@
 import { parseAmount } from "@/lib/finance/parse-amount";
+import { computeInstallmentScheduleFromAmounts } from "@/lib/planner/installment-progress";
 import type {
   PlannedEndMode,
   PlannedItemFormInput,
@@ -31,6 +32,19 @@ function readString(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function parseNonNegativeInteger(value: string): number | null {
+  if (!value.trim()) {
+    return 0;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
 function parsePositiveInteger(value: string): number | null {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -51,6 +65,10 @@ function parseDateInput(value: string): string | null {
   }
 
   return value;
+}
+
+export function isValidDateInput(value: string): boolean {
+  return parseDateInput(value) !== null;
 }
 
 export function parsePlannedItemFormData(
@@ -99,6 +117,75 @@ export function parsePlannedItemFormData(
     note: note || undefined,
   };
 
+  if (kind === "installment") {
+    const installmentTotal = parseAmount(
+      readString(formData, "installmentTotal"),
+    );
+
+    if (!installmentTotal) {
+      return { ok: false, error: "Total cicilan wajib diisi." };
+    }
+
+    const schedule = computeInstallmentScheduleFromAmounts(
+      new Date(`${startAt}T00:00:00`),
+      repeat,
+      installmentTotal,
+      amount,
+    );
+
+    if (!schedule) {
+      return {
+        ok: false,
+        error:
+          "Nominal cicilan tidak valid. Pastikan total dan bayar per bulan terisi.",
+      };
+    }
+
+    input.endMode = "installments";
+    input.installmentCount = schedule.installmentCount;
+
+    const isNewInstallment = readString(formData, "installmentIsNew") !== "off";
+    if (isNewInstallment) {
+      input.paidInstallmentCount = 0;
+    } else {
+      const paidPrior = parseNonNegativeInteger(
+        readString(formData, "paidInstallmentCount"),
+      );
+
+      if (paidPrior === null) {
+        return {
+          ok: false,
+          error: "Jumlah cicilan yang sudah dibayar tidak valid.",
+        };
+      }
+
+      if (paidPrior >= schedule.installmentCount) {
+        return {
+          ok: false,
+          error: "Sudah dibayar harus kurang dari total jumlah cicilan.",
+        };
+      }
+
+      input.paidInstallmentCount = paidPrior;
+    }
+
+    const endAtManual = parseDateInput(readString(formData, "endAt"));
+    if (endAtManual) {
+      if (endAtManual < startAt) {
+        return {
+          ok: false,
+          error: "Tanggal selesai harus setelah tanggal mulai.",
+        };
+      }
+
+      input.endAt = endAtManual;
+    } else {
+      input.endAt = toDateInputValue(schedule.endAt);
+    }
+
+    return { ok: true, data: input };
+  }
+
   if (endMode === "installments") {
     const installmentCount = parsePositiveInteger(
       readString(formData, "installmentCount"),
@@ -123,13 +210,6 @@ export function parsePlannedItemFormData(
     }
 
     input.endAt = endAt;
-  }
-
-  if (kind === "installment" && endMode === "never") {
-    return {
-      ok: false,
-      error: "Cicilan membutuhkan jumlah periode (mis. 12x).",
-    };
   }
 
   return { ok: true, data: input };

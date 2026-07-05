@@ -1,13 +1,16 @@
-export type PlannerTab = "calendar" | "cards" | "table";
+export type PlannerTab = "calendar" | "budget";
 
-export type PlannerManageLayout = "cards" | "table";
+export type PlannerCalendarLayout = "month" | "cards" | "table";
 
-export function isPayPlanManageTab(tab: PlannerTab): tab is "cards" | "table" {
-  return tab === "cards" || tab === "table";
-}
+export type PlannerManageLayout = Extract<
+  PlannerCalendarLayout,
+  "cards" | "table"
+>;
 
-export function plannerTabToLayout(tab: PlannerTab): PlannerManageLayout {
-  return tab === "table" ? "table" : "cards";
+export function isPlannerManageLayout(
+  layout: PlannerCalendarLayout,
+): layout is PlannerManageLayout {
+  return layout === "cards" || layout === "table";
 }
 
 export type PlannedItemKind =
@@ -72,6 +75,7 @@ export interface PlannedItemFormInput {
   startAt: string;
   endMode: PlannedEndMode;
   installmentCount?: number;
+  paidInstallmentCount?: number;
   endAt?: string;
   note?: string;
 }

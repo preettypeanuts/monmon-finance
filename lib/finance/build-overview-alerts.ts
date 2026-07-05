@@ -49,15 +49,15 @@ export function buildOverviewAlerts({
     alerts.push({
       id: "plans-unsafe",
       tone: "danger",
-      title: "Plan melebihi saldo",
+      title: "Wish melebihi saldo",
       message: `Estimasi ${formatIdr(plansOverview.estimatedCost)} vs saldo ${formatIdr(plansOverview.availableBalance)}.`,
     });
   } else if (plansOverview.insightMeta.tone === "tight") {
     alerts.push({
       id: "plans-tight",
       tone: "warning",
-      title: "Sisa plan tipis",
-      message: `Sisa setelah plan ${formatIdr(plansOverview.remainingBalance)}.`,
+      title: "Sisa wish tipis",
+      message: `Sisa setelah wish ${formatIdr(plansOverview.remainingBalance)}.`,
     });
   }
 

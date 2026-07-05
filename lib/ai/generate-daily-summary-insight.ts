@@ -1,8 +1,6 @@
-import { generateDailySummaryInsightWithGemini } from "@/lib/ai/generate-daily-summary-insight-gemini";
 import { isGeminiConfigured } from "@/lib/ai/gemini-client";
-import {
-  buildFallbackDailySummaryInsightBundle,
-} from "@/lib/finance/build-daily-summary-insight";
+import { generateDailySummaryInsightWithGemini } from "@/lib/ai/generate-daily-summary-insight-gemini";
+import { buildFallbackDailySummaryInsightBundle } from "@/lib/finance/build-daily-summary-insight";
 import type { FinanceCondition } from "@/types/summary";
 
 interface DailySummaryTransaction {

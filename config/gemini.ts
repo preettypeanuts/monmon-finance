@@ -9,5 +9,8 @@ export const GEMINI_API_KEY_ENV_KEYS = [
 
 export const GEMINI_MAX_OUTPUT_TOKENS = 512;
 
+/** Token budget for inbox transaction assistant replies. */
+export const GEMINI_INBOX_REPLY_MAX_OUTPUT_TOKENS = 256;
+
 /** Token budget for daily summary insight generation. */
 export const GEMINI_DAILY_INSIGHT_MAX_OUTPUT_TOKENS = 256;

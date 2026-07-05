@@ -1,10 +1,12 @@
 import { DEFAULT_WALLPAPER_ID, WALLPAPER_IDS } from "@/config/wallpapers";
+import { normalizeStoredWallpaperId } from "@/lib/wallpaper/custom-wallpaper";
 import type { WallpaperId } from "@/types/wallpaper";
 
 const STORAGE_KEY = "monmon:wallpaper";
 
 export function isWallpaperId(value: string): value is WallpaperId {
-  return WALLPAPER_IDS.has(value as WallpaperId);
+  const normalized = normalizeStoredWallpaperId(value);
+  return WALLPAPER_IDS.has(normalized as WallpaperId);
 }
 
 export function readStoredWallpaperId(): WallpaperId {
@@ -17,7 +19,7 @@ export function readStoredWallpaperId(): WallpaperId {
     return DEFAULT_WALLPAPER_ID;
   }
 
-  return stored;
+  return normalizeStoredWallpaperId(stored) as WallpaperId;
 }
 
 export function writeStoredWallpaperId(id: WallpaperId): void {

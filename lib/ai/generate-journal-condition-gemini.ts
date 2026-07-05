@@ -7,11 +7,17 @@ import {
 } from "@/config/gemini";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
-import { formatJournalDate } from "@/lib/finance/format-datetime";
 import { formatIdr } from "@/lib/finance/format-currency";
+import { formatJournalDate } from "@/lib/finance/format-datetime";
 import type { JournalCondition } from "@/types/journal";
 
-const CONDITION_LABELS = ["Aman", "Stabil", "Waspada", "Boros", "Kritis"] as const;
+const CONDITION_LABELS = [
+  "Aman",
+  "Stabil",
+  "Waspada",
+  "Boros",
+  "Kritis",
+] as const;
 
 interface JournalSummaryTransaction {
   type: "income" | "expense";
@@ -20,7 +26,7 @@ interface JournalSummaryTransaction {
   description: string;
 }
 
-const SYSTEM_INSTRUCTION = `Kamu analis keuangan Monmon. Beri penilaian singkat kondisi keuangan user untuk hari tersebut.
+const SYSTEM_INSTRUCTION = `Kamu analis keuangan Wang. Beri penilaian singkat kondisi keuangan user untuk hari tersebut.
 Bahasa Indonesia. Jawab label kondisi (1 kata) saja.
 Label harus salah satu nuansa: Aman, Stabil, Waspada, Boros, atau Kritis — sesuai data, jangan mengarang.`;
 

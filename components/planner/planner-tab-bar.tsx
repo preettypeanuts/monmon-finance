@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  CalendarBlankIcon,
-  SquaresFourIcon,
-  TableIcon,
-} from "@/lib/icons";
+import { CalendarBlankIcon, ChartBarIcon } from "@/lib/icons";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +13,11 @@ interface PlannerTabBarProps {
   className?: string;
 }
 
-export function PlannerTabBar({ tab, monthKey, className }: PlannerTabBarProps) {
+export function PlannerTabBar({
+  tab,
+  monthKey,
+  className,
+}: PlannerTabBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -25,10 +25,10 @@ export function PlannerTabBar({ tab, monthKey, className }: PlannerTabBarProps) 
   function navigate(nextTab: PlannerTab) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", nextTab);
-    params.delete("layout");
+    params.set("month", monthKey);
 
-    if (nextTab === "calendar") {
-      params.set("month", monthKey);
+    if (nextTab === "budget") {
+      params.delete("layout");
     }
 
     router.push(`${pathname}?${params.toString()}`);
@@ -50,20 +50,12 @@ export function PlannerTabBar({ tab, monthKey, className }: PlannerTabBarProps) 
           <span className="hidden sm:inline">Kalender</span>
         </TabsTrigger>
         <TabsTrigger
-          value="cards"
+          value="budget"
           className="gap-1.5 px-2.5 text-xs"
-          aria-label="Card"
+          aria-label="Budget"
         >
-          <SquaresFourIcon className="size-3.5" />
-          <span className="hidden sm:inline">Card</span>
-        </TabsTrigger>
-        <TabsTrigger
-          value="table"
-          className="gap-1.5 px-2.5 text-xs"
-          aria-label="Table"
-        >
-          <TableIcon className="size-3.5" />
-          <span className="hidden sm:inline">Table</span>
+          <ChartBarIcon className="size-3.5" />
+          <span className="hidden sm:inline">Budget</span>
         </TabsTrigger>
       </TabsList>
     </Tabs>

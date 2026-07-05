@@ -1,4 +1,4 @@
-import { GLASS_TILE_BASE } from "@/config/glass";
+import { GLASS_FILL, GLASS_TILE_BASE } from "@/config/glass";
 import type { MessageRole } from "@/types/chat";
 
 export interface ChatBubbleStyle {
@@ -12,7 +12,7 @@ export const CHAT_BUBBLE_STYLES: Record<MessageRole, ChatBubbleStyle> = {
     text: "text-white font-semibold",
   },
   assistant: {
-    surface: `${GLASS_TILE_BASE} border border-black/10 bg-white/78 dark:border-white/10 dark:bg-black/48`,
+    surface: `${GLASS_TILE_BASE} border border-black/10 ${GLASS_FILL} dark:border-white/10`,
     text: "text-foreground",
   },
 };

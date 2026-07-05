@@ -13,7 +13,9 @@ export const PLANNER_MANAGE_HAIRLINE =
 export const PLANNER_MANAGE_CARD_SHADE =
   "bg-[linear-gradient(180deg,rgba(255,255,255,0.58)_0%,rgba(255,255,255,0.52)_42%,rgba(255,255,255,0.46)_78%,rgba(0,0,0,0.08)_100%)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.04)_42%,rgba(255,255,255,0.02)_78%,rgba(0,0,0,0.50)_100%)]";
 
-export const PLANNER_MANAGE_CARD = `${SEPARATED_SURFACE} ${GLASS_BACKDROP} ${GLASS_BORDER} ${PLANNER_MANAGE_CARD_SHADE} ${GLASS_HIGHLIGHT} flex max-h-60 min-h-56 flex-col overflow-hidden`;
+export const PLANNER_MANAGE_CARD_SURFACE = `${SEPARATED_SURFACE} ${GLASS_BACKDROP} ${GLASS_BORDER} ${PLANNER_MANAGE_CARD_SHADE} ${GLASS_HIGHLIGHT}`;
+
+export const PLANNER_MANAGE_CARD = `${PLANNER_MANAGE_CARD_SURFACE} flex max-h-60 min-h-56 flex-col overflow-hidden`;
 
 export const PLANNER_MANAGE_CARD_BODY =
   "flex min-h-0 flex-1 flex-col gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5";

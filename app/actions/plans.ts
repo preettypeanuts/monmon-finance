@@ -52,7 +52,7 @@ export async function deletePlanAction(
   const trimmed = id.trim();
 
   if (!trimmed) {
-    return { ok: false, error: "Plan tidak ditemukan." };
+    return { ok: false, error: "Wish tidak ditemukan." };
   }
 
   try {
@@ -60,6 +60,6 @@ export async function deletePlanAction(
     revalidatePlans();
     return { ok: true };
   } catch {
-    return { ok: false, error: "Gagal menghapus plan." };
+    return { ok: false, error: "Gagal menghapus wish." };
   }
 }

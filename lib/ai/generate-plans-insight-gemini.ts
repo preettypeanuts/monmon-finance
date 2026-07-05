@@ -2,7 +2,7 @@ import {
   GEMINI_DAILY_INSIGHT_MAX_OUTPUT_TOKENS,
   GEMINI_MODEL,
 } from "@/config/gemini";
-import { GEMINI_MONMON_APP_CONTEXT } from "@/config/gemini-locale";
+import { GEMINI_WANG_APP_CONTEXT } from "@/config/gemini-locale";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
 import { formatIdr } from "@/lib/finance/format-currency";
 
@@ -24,11 +24,11 @@ export async function generatePlansInsightWithGemini(
       : "(kosong)";
 
   const prompt = [
-    `Active plans: ${input.activeCount}`,
+    `Wish aktif: ${input.activeCount}`,
     `Wishlist: ${names}`,
-    `Estimated cost: ${formatIdr(input.estimatedCost)}`,
-    `Available balance: ${formatIdr(input.availableBalance)}`,
-    `Remaining after plans: ${formatIdr(remaining)}`,
+    `Estimasi wish: ${formatIdr(input.estimatedCost)}`,
+    `Saldo tersedia: ${formatIdr(input.availableBalance)}`,
+    `Sisa setelah wish: ${formatIdr(remaining)}`,
     "",
     "Tulis 1-2 kalimat Bahasa Indonesia: apakah oke spend estimasi ini dengan saldo tersedia, plus saran singkat.",
   ].join("\n");
@@ -38,8 +38,8 @@ export async function generatePlansInsightWithGemini(
     contents: prompt,
     config: {
       systemInstruction: [
-        GEMINI_MONMON_APP_CONTEXT,
-        "Kamu asisten keuangan Monmon untuk wishlist/plans belanja.",
+        GEMINI_WANG_APP_CONTEXT,
+        "Kamu asisten keuangan Wang untuk halaman Wish (wishlist belanja).",
         "Jawab singkat, ramah, objektif, tanpa mengarang angka di luar data.",
         "Jangan gunakan emoji.",
       ].join("\n"),

@@ -1,19 +1,26 @@
-import {
-  CUSTOM_WALLPAPER_ID,
-  DEFAULT_WALLPAPER_ID,
-  WALLPAPERS,
-} from "@/config/wallpapers";
 import type { CSSProperties } from "react";
+import { DEFAULT_WALLPAPER_ID, WALLPAPERS } from "@/config/wallpapers";
+import {
+  type CustomWallpaperSlots,
+  customWallpaperIdForSlot,
+  isCustomWallpaperId,
+  LEGACY_CUSTOM_WALLPAPER_ID,
+  normalizeStoredWallpaperId,
+  slotForCustomWallpaperId,
+} from "@/lib/wallpaper/custom-wallpaper";
 import type { Wallpaper, WallpaperId } from "@/types/wallpaper";
 
 export function resolveWallpaper(id: WallpaperId): Wallpaper {
   return WALLPAPERS.find((wallpaper) => wallpaper.id === id) ?? WALLPAPERS[0];
 }
 
-export function resolveCustomWallpaper(imageUrl: string): Wallpaper {
+export function resolveCustomWallpaper(
+  imageUrl: string,
+  slot: number,
+): Wallpaper {
   return {
-    id: CUSTOM_WALLPAPER_ID,
-    label: "Kustom",
+    id: customWallpaperIdForSlot(slot),
+    label: `Kustom ${slot + 1}`,
     preview: imageUrl,
     background: imageUrl,
     kind: "image",
@@ -22,17 +29,29 @@ export function resolveCustomWallpaper(imageUrl: string): Wallpaper {
 
 export function resolveActiveWallpaper(
   id: WallpaperId,
-  customWallpaperUrl: string | null,
+  customWallpaperSlots: CustomWallpaperSlots,
 ): Wallpaper {
-  if (id === CUSTOM_WALLPAPER_ID && customWallpaperUrl) {
-    return resolveCustomWallpaper(customWallpaperUrl);
-  }
+  const normalizedId = normalizeStoredWallpaperId(id) as WallpaperId;
+  const slot = slotForCustomWallpaperId(normalizedId);
 
-  if (id === CUSTOM_WALLPAPER_ID) {
+  if (slot !== null) {
+    const imageUrl = customWallpaperSlots[slot];
+    if (imageUrl) {
+      return resolveCustomWallpaper(imageUrl, slot);
+    }
+
     return resolveWallpaper(DEFAULT_WALLPAPER_ID);
   }
 
-  return resolveWallpaper(id);
+  return resolveWallpaper(normalizedId);
+}
+
+export function isActiveCustomWallpaper(
+  id: WallpaperId,
+  customWallpaperSlots: CustomWallpaperSlots,
+): boolean {
+  const slot = slotForCustomWallpaperId(normalizeStoredWallpaperId(id));
+  return slot !== null && customWallpaperSlots[slot] !== null;
 }
 
 export function getDefaultWallpaperId(): WallpaperId {
@@ -69,3 +88,5 @@ export function getWallpaperPreviewStyle(
 
   return { background: wallpaper.preview };
 }
+
+export { isCustomWallpaperId, LEGACY_CUSTOM_WALLPAPER_ID };

@@ -1,51 +1,54 @@
 "use client";
 
-import { CheckIcon } from "@/lib/icons";
-
 import { useAppearance } from "@/components/shared/appearance-provider";
 import { ACCENT_COLORS } from "@/config/accent-colors";
-import {
-  SETTINGS_ROW,
-  SETTINGS_ROW_DIVIDER,
-} from "@/config/settings-layout";
-import { SEPARATED_PILL } from "@/config/shape";
+import { SETTINGS_INSET_BLOCK } from "@/config/settings-layout";
 import { cn } from "@/lib/utils";
 
 export function AccentColorPicker() {
   const { accentId, setAccentId, resolvedDark } = useAppearance();
 
   return (
-    <>
-      {ACCENT_COLORS.map((accent, index) => {
-        const selected = accentId === accent.id;
-        const isLast = index === ACCENT_COLORS.length - 1;
-        const swatch = resolvedDark ? accent.dark : accent.light;
+    <div className={SETTINGS_INSET_BLOCK}>
+      <fieldset className="grid grid-cols-4 gap-x-1 gap-y-3 border-0 p-0">
+        <legend className="sr-only">Warna aksen</legend>
+        {ACCENT_COLORS.map((accent) => {
+          const selected = accentId === accent.id;
+          const swatch = resolvedDark ? accent.dark : accent.light;
 
-        return (
-          <button
-            key={accent.id}
-            type="button"
-            aria-pressed={selected}
-            aria-label={`Accent ${accent.label}`}
-            onClick={() => setAccentId(accent.id)}
-            className={cn(SETTINGS_ROW, !isLast && SETTINGS_ROW_DIVIDER)}
-          >
-            <span
-              className={cn(
-                "size-6 shrink-0 ring-1 ring-black/10 dark:ring-white/15",
-                SEPARATED_PILL,
-              )}
-              style={{ backgroundColor: swatch }}
-            />
-            <span className="flex-1 font-medium">{accent.label}</span>
-            {selected ? (
-              <CheckIcon className="size-4 text-primary" />
-            ) : (
-              <span className="size-4 shrink-0" aria-hidden />
-            )}
-          </button>
-        );
-      })}
-    </>
+          return (
+            <button
+              key={accent.id}
+              type="button"
+              aria-pressed={selected}
+              aria-label={accent.label}
+              onClick={() => setAccentId(accent.id)}
+              className="flex flex-col items-center gap-1.5 rounded-lg px-0.5 py-0.5 transition-opacity active:opacity-80"
+            >
+              <span
+                aria-hidden
+                className={cn(
+                  "size-[22px] shrink-0 rounded-full",
+                  selected
+                    ? "ring-2 ring-foreground/90 ring-offset-2 ring-offset-background"
+                    : "ring-1 ring-black/12 dark:ring-white/20",
+                )}
+                style={{ backgroundColor: swatch }}
+              />
+              <span
+                className={cn(
+                  "max-w-full truncate text-center text-[10px] leading-none",
+                  selected
+                    ? "font-semibold text-foreground"
+                    : "font-medium text-muted-foreground",
+                )}
+              >
+                {accent.label}
+              </span>
+            </button>
+          );
+        })}
+      </fieldset>
+    </div>
   );
 }

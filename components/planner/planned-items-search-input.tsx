@@ -7,16 +7,16 @@ import { Input } from "@/components/ui/input";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { buildPlannedItemsManageParams } from "@/lib/validations/planned-items-manage";
 import { cn } from "@/lib/utils";
-import type { PlannedItemsFilters, PlannerTab } from "@/types/planner";
+import type { PlannedItemsFilters, PlannerManageLayout } from "@/types/planner";
 
 interface PlannedItemsSearchInputProps {
   filters: PlannedItemsFilters;
-  tab: Extract<PlannerTab, "cards" | "table">;
+  layout: PlannerManageLayout;
 }
 
 export function PlannedItemsSearchInput({
   filters,
-  tab,
+  layout,
 }: PlannedItemsSearchInputProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,7 +35,7 @@ export function PlannedItemsSearchInput({
     const handle = window.setTimeout(() => {
       const params = buildPlannedItemsManageParams(
         { ...filters, q },
-        tab,
+        layout,
         new URLSearchParams(searchParams.toString()),
       );
 
@@ -43,7 +43,7 @@ export function PlannedItemsSearchInput({
     }, 300);
 
     return () => window.clearTimeout(handle);
-  }, [q, filters, tab, pathname, router, searchParams]);
+  }, [q, filters, layout, pathname, router, searchParams]);
 
   return (
     <Input

@@ -51,7 +51,7 @@ export function buildFallbackPlansInsight(
   availableBalance: number,
 ): string {
   if (estimatedCost <= 0) {
-    return "Belum ada plan aktif. Tambahkan wishlist untuk melihat estimasi belanja.";
+    return "Belum ada wish aktif. Tambahkan wishlist untuk melihat estimasi belanja.";
   }
 
   const remaining = availableBalance - estimatedCost;
@@ -63,7 +63,7 @@ export function buildFallbackPlansInsight(
   }
 
   if (remaining >= 0) {
-    return `Cukup untuk ${spendLabel} dari saldo ${balanceLabel}, tapi sisa tipis (${formatIdr(remaining)}). Prioritaskan plan penting dulu.`;
+    return `Cukup untuk ${spendLabel} dari saldo ${balanceLabel}, tapi sisa tipis (${formatIdr(remaining)}). Prioritaskan wish penting dulu.`;
   }
 
   return `Belum aman. Estimasi ${spendLabel} melebihi saldo ${balanceLabel} sebesar ${formatIdr(Math.abs(remaining))}. Tunda atau kurangi wishlist.`;

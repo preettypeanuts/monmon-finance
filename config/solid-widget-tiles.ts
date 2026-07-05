@@ -32,6 +32,13 @@ export const SOLID_WIDGET_TILE_STYLES = {
     valueColor: "text-white",
     subtitleColor: "text-white/70",
   },
+  primary: {
+    surface: `bg-linear-to-br from-[#5AC8FA] to-[#007AFF] dark:from-[#4AB0E0] dark:to-[#0066D6] ${TILE_HIGHLIGHT}`,
+    iconColor: "text-white/95",
+    labelColor: "text-white/85",
+    valueColor: "text-white",
+    subtitleColor: "text-white/70",
+  },
   condition: {
     surface: `bg-linear-to-br from-[#FFE066] to-[#FFD60A] dark:from-[#E6C84A] dark:to-[#C9A800] ${TILE_HIGHLIGHT}`,
     iconColor: "text-[#5C4A00] dark:text-[#FFF4CC]",

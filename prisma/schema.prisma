@@ -62,6 +62,31 @@ enum PlannedItemKind {
   @@schema("monmon_whethertie")
 }
 
+enum BudgetLimitMode {
+  daily
+  fixed
+
+  @@schema("monmon_whethertie")
+}
+
+model CategoryBudget {
+  id          String          @id @default(cuid())
+  category    String
+  periodMonth String
+  limitMode   BudgetLimitMode @default(daily)
+  dailyAmount Int?
+  fixedLimit  Int?
+  dayCount    Int?
+  note        String?
+  repeatNextMonth Boolean @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([category, periodMonth])
+  @@index([periodMonth])
+  @@schema("monmon_whethertie")
+}
+
 model PlannedItem {
   id               String                 @id @default(cuid())
   name             String
@@ -75,6 +100,7 @@ model PlannedItem {
   installmentCount Int?
   paidInstallmentCount Int @default(0)
   note             String?
+  repeatNextMonth  Boolean                @default(false)
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
 

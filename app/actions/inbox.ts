@@ -2,22 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 
-import {
-  buildTransactionReply,
-  parseTransaction,
-} from "@/lib/ai/parse-transaction";
+import { buildInboxTransactionReplyForParsed } from "@/lib/ai/build-inbox-transaction-reply";
+import { parseTransaction } from "@/lib/ai/parse-transaction";
+import { formatInboxProcessingError } from "@/lib/chat/inbox-error";
 import {
   createInboxMessage,
+  type DeleteInboxMessagePairResult,
   deleteInboxMessagePair,
   updateInboxMessage,
-  type DeleteInboxMessagePairResult,
 } from "@/lib/db/inbox-messages";
 import { listPlannedItems, markInstallmentPaid } from "@/lib/db/planned-items";
 import { listPlans, markPlanDone } from "@/lib/db/plans";
 import { prisma } from "@/lib/db/prisma";
 import { createTransaction } from "@/lib/db/transactions";
 import { formatIdr } from "@/lib/finance/format-currency";
-import { formatInboxProcessingError } from "@/lib/chat/inbox-error";
 import {
   canMarkPlannedItemPaid,
   getPlannedItemPaymentIndex,
@@ -66,7 +64,10 @@ export async function submitInboxMessage(
       transaction,
     });
 
-    const content = buildTransactionReply(transaction);
+    const content = await buildInboxTransactionReplyForParsed(
+      trimmed,
+      transaction,
+    );
 
     const assistantMessage = await createInboxMessage({
       role: "assistant",
@@ -76,6 +77,7 @@ export async function submitInboxMessage(
 
     revalidatePath("/");
     revalidatePath("/journal");
+    revalidatePath("/payplan");
 
     return {
       ok: true,
@@ -150,7 +152,10 @@ export async function retryInboxMessageAction(
       transaction,
     });
 
-    const content = buildTransactionReply(transaction);
+    const content = await buildInboxTransactionReplyForParsed(
+      trimmed,
+      transaction,
+    );
 
     const assistantMessage = await updateInboxMessage(assistantMessageId, {
       content,
@@ -159,6 +164,7 @@ export async function retryInboxMessageAction(
 
     revalidatePath("/");
     revalidatePath("/journal");
+    revalidatePath("/payplan");
 
     return {
       ok: true,
@@ -242,8 +248,7 @@ export async function payPayPlanFromInboxAction(
     };
   }
 
-  const paymentIndex =
-    installmentIndex ?? getPlannedItemPaymentIndex(item);
+  const paymentIndex = installmentIndex ?? getPlannedItemPaymentIndex(item);
 
   try {
     await markInstallmentPaid(trimmedId, paymentIndex);
@@ -299,7 +304,7 @@ export async function markPlanDoneFromInboxAction(
   const plan = plans.find((entry) => entry.id === trimmedId);
 
   if (!plan) {
-    throw new Error("Plan tidak ditemukan.");
+    throw new Error("Wish tidak ditemukan.");
   }
 
   const userContent = `Beli ${plan.name}`;

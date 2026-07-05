@@ -1,0 +1,157 @@
+import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
+import { BudgetCardMenu } from "@/components/planner/budget-card-menu";
+import {
+  BUDGET_PROGRESS_TRACK,
+  BUDGET_SUBTEXT,
+  getBudgetProgressColor,
+  getBudgetStatusBadge,
+} from "@/config/budget";
+import {
+  PLANNER_MANAGE_AMOUNT,
+  PLANNER_MANAGE_CARD,
+  PLANNER_MANAGE_CARD_BODY,
+  PLANNER_MANAGE_CARD_DIVIDER_LINE,
+  PLANNER_MANAGE_CARD_FOOTER,
+  PLANNER_MANAGE_CARD_FOOTER_CONTENT,
+  PLANNER_MANAGE_META_BETWEEN,
+} from "@/config/planner-manage";
+import { getPlanCategoryAccent } from "@/config/plans";
+import { formatIdr } from "@/lib/finance/format-currency";
+import { cn } from "@/lib/utils";
+import type { BudgetStatus } from "@/types/budget";
+
+interface BudgetCardProps {
+  status: BudgetStatus;
+  disabled?: boolean;
+  onEdit: (status: BudgetStatus) => void;
+  onDelete: (status: BudgetStatus) => void;
+}
+
+const MODE_BADGE =
+  "inline-flex shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-semibold bg-black/6 text-muted-foreground dark:bg-white/10";
+
+function formatLimitModeLabel(status: BudgetStatus): string {
+  if (status.budget.limitMode === "daily") {
+    return `${formatIdr(status.budget.dailyAmount ?? 0)}/hari · ${status.dayCount} hari`;
+  }
+
+  return "Total manual";
+}
+
+export function BudgetCard({
+  status,
+  disabled = false,
+  onEdit,
+  onDelete,
+}: BudgetCardProps) {
+  const progressWidth = Math.min(100, status.usedPercent);
+  const categoryAccent = getPlanCategoryAccent(status.budget.category);
+  const statusBadge = getBudgetStatusBadge(status.remainingPercent);
+  const isOver = status.remaining < 0;
+
+  return (
+    <article className={cn(PLANNER_MANAGE_CARD, disabled && "opacity-60")}>
+      <div className={PLANNER_MANAGE_CARD_BODY}>
+        <div className="flex items-center gap-2.5">
+          <div
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-xl",
+              categoryAccent.iconSurface,
+            )}
+          >
+            <JournalCategoryIcon
+              category={status.budget.category}
+              type="expense"
+              className={cn("size-5", categoryAccent.iconColor)}
+            />
+          </div>
+
+          <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground/90">
+            {status.categoryLabel}
+          </h3>
+
+          <BudgetCardMenu
+            status={status}
+            disabled={disabled}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        </div>
+
+        <div className={PLANNER_MANAGE_META_BETWEEN}>
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <span className={MODE_BADGE}>
+              {status.budget.limitMode === "daily"
+                ? "Per hari"
+                : "Total manual"}
+            </span>
+            {status.budget.repeatNextMonth ? (
+              <span className={MODE_BADGE}>Ulangi bulan depan</span>
+            ) : null}
+          </div>
+          <span
+            className={cn(
+              "inline-flex shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-semibold",
+              statusBadge.className,
+            )}
+          >
+            {statusBadge.label}
+          </span>
+        </div>
+
+        <div className="mt-auto space-y-2">
+          <div>
+            <p className={BUDGET_SUBTEXT}>Sisa budget</p>
+            <p
+              className={cn(
+                PLANNER_MANAGE_AMOUNT,
+                isOver
+                  ? "text-[#FF3B30]"
+                  : status.remainingPercent <= 20
+                    ? "text-[#FF9500]"
+                    : "text-foreground",
+              )}
+            >
+              {formatIdr(status.remaining)}
+            </p>
+            <p className={cn("mt-0.5", BUDGET_SUBTEXT)}>
+              {formatLimitModeLabel(status)} · limit{" "}
+              {formatIdr(status.totalLimit)}
+            </p>
+          </div>
+
+          <div>
+            <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
+              <span className="text-muted-foreground">
+                Terpakai {formatIdr(status.spent)}
+              </span>
+              <span className="font-medium tabular-nums text-muted-foreground">
+                {status.usedPercent}%
+              </span>
+            </div>
+            <div className={BUDGET_PROGRESS_TRACK}>
+              <div
+                className={cn(
+                  "h-full rounded-full transition-[width]",
+                  getBudgetProgressColor(status.remainingPercent),
+                )}
+                style={{ width: `${progressWidth}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {status.budget.note?.trim() ? (
+        <div className={PLANNER_MANAGE_CARD_FOOTER}>
+          <div className={PLANNER_MANAGE_CARD_DIVIDER_LINE} />
+          <div className={PLANNER_MANAGE_CARD_FOOTER_CONTENT}>
+            <p className="truncate text-[11px] text-muted-foreground">
+              {status.budget.note}
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </article>
+  );
+}

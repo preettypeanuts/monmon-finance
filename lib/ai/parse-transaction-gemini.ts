@@ -3,13 +3,14 @@ import { Type } from "@google/genai";
 import {
   buildGeminiCategoryInstruction,
   isTransactionCategory,
+  type TransactionCategoryId,
 } from "@/config/categories";
-import {
-  buildGeminiInboxParseSystemInstruction,
-} from "@/config/gemini-locale";
 import { GEMINI_MAX_OUTPUT_TOKENS, GEMINI_MODEL } from "@/config/gemini";
+import { buildGeminiInboxParseSystemInstruction } from "@/config/gemini-locale";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
 import { TransactionParseError } from "@/lib/ai/transaction-parse-error";
+import { resolveExplicitCategoryForType } from "@/lib/chat/category-mentions";
+import { detectTransactionType } from "@/lib/finance/categories";
 import { resolveTransactionCategoryAsync } from "@/lib/finance/resolve-transaction-category";
 import type { ParsedTransaction, TransactionType } from "@/types/transaction";
 
@@ -50,6 +51,7 @@ function parseGeminiPayload(raw: string): GeminiTransactionPayload {
 async function toParsedTransaction(
   payload: GeminiTransactionPayload,
   fallbackDescription: string,
+  explicitCategory: TransactionCategoryId | null,
 ): Promise<ParsedTransaction> {
   const type = payload.type;
   const amount = payload.amount;
@@ -70,11 +72,13 @@ async function toParsedTransaction(
     );
   }
 
-  const category = await resolveTransactionCategoryAsync(
-    payload.category,
-    type,
-    description,
-  );
+  const category = explicitCategory
+    ? explicitCategory
+    : await resolveTransactionCategoryAsync(
+        payload.category,
+        type,
+        description,
+      );
 
   if (!isTransactionCategory(category)) {
     throw new TransactionParseError("Kategori transaksi tidak dikenali.");
@@ -93,11 +97,15 @@ export async function parseTransactionWithGemini(
   text: string,
 ): Promise<ParsedTransaction> {
   const description = text.trim();
+  const typeHint = detectTransactionType(description);
+  const { category: explicitCategory, cleanedText } =
+    resolveExplicitCategoryForType(description, typeHint);
+  const parseText = cleanedText || description;
   const ai = getGeminiClient();
 
   const response = await ai.models.generateContent({
     model: GEMINI_MODEL,
-    contents: buildUserPrompt(description),
+    contents: buildUserPrompt(parseText),
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
@@ -133,5 +141,5 @@ export async function parseTransactionWithGemini(
     );
   }
 
-  return toParsedTransaction(payload, description);
+  return toParsedTransaction(payload, parseText, explicitCategory);
 }

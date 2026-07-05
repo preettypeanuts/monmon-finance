@@ -60,7 +60,7 @@ function buildEndFields(input: PlannedItemFormInput) {
   switch (input.endMode) {
     case "installments":
       return {
-        endAt: null,
+        endAt: input.endAt ? startOfDay(new Date(input.endAt)) : null,
         installmentCount: input.installmentCount ?? null,
       };
     case "date":
@@ -88,6 +88,8 @@ function buildCreateData(input: PlannedItemFormInput) {
     category: getDefaultCategoryForKind(input.kind),
     startAt: startOfDay(new Date(input.startAt)),
     note: input.note?.trim() || null,
+    paidInstallmentCount:
+      input.kind === "installment" ? (input.paidInstallmentCount ?? 0) : 0,
     ...endFields,
   };
 }

@@ -1,8 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-import {
-  GEMINI_API_KEY_ENV_KEYS,
-} from "@/config/gemini";
+import { GEMINI_API_KEY_ENV_KEYS } from "@/config/gemini";
 
 function readGeminiApiKey(): string | undefined {
   for (const key of GEMINI_API_KEY_ENV_KEYS) {

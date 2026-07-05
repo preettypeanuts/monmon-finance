@@ -1,13 +1,17 @@
-import { formatDayMonth } from "@/lib/finance/format-datetime";
 import { endOfDay, startOfDay } from "@/lib/finance/day-range";
-import type { PlannedItemRecord } from "@/types/planner";
+import { formatDayMonth } from "@/lib/finance/format-datetime";
+import type { PlannedItemRecord, PlannedRepeatInterval } from "@/types/planner";
 
 function clampDayOfMonth(year: number, month: number, day: number): Date {
   const lastDay = new Date(year, month + 1, 0).getDate();
   return startOfDay(new Date(year, month, Math.min(day, lastDay)));
 }
 
-function addMonthsPreserveDay(value: Date, months: number, anchorDay: number): Date {
+function addMonthsPreserveDay(
+  value: Date,
+  months: number,
+  anchorDay: number,
+): Date {
   const next = new Date(value.getFullYear(), value.getMonth() + months, 1);
   return clampDayOfMonth(next.getFullYear(), next.getMonth(), anchorDay);
 }
@@ -18,7 +22,11 @@ function addWeeks(value: Date, weeks: number): Date {
   return startOfDay(next);
 }
 
-function addYearsPreserveDay(value: Date, years: number, anchorDay: number): Date {
+function addYearsPreserveDay(
+  value: Date,
+  years: number,
+  anchorDay: number,
+): Date {
   const next = new Date(value.getFullYear() + years, value.getMonth(), 1);
   return clampDayOfMonth(next.getFullYear(), next.getMonth(), anchorDay);
 }
@@ -146,7 +154,10 @@ function countElapsedPeriods(
       break;
     }
 
-    if (cursor.getTime() >= start.getTime() && isOccurrenceBeforeEnd(item, cursor)) {
+    if (
+      cursor.getTime() >= start.getTime() &&
+      isOccurrenceBeforeEnd(item, cursor)
+    ) {
       completed += 1;
     }
 
@@ -257,6 +268,15 @@ export function getInstallmentProgress(
     return null;
   }
 
+  const total = item.installmentCount;
+
+  if (item.kind === "installment") {
+    const completed = Math.min(item.paidInstallmentCount, total);
+    const ratio = total > 0 ? completed / total : 0;
+
+    return { completed, total, ratio };
+  }
+
   const today = startOfDay(referenceDate);
   let cursor = getFirstDueDate(item);
   let completed = 0;
@@ -273,15 +293,12 @@ export function getInstallmentProgress(
     }
   }
 
-  const total = item.installmentCount;
   const ratio = total > 0 ? Math.min(completed / total, 1) : 0;
 
   return { completed, total, ratio };
 }
 
-export function getInstallmentEndDate(
-  item: PlannedItemRecord,
-): Date | null {
+export function getInstallmentEndDate(item: PlannedItemRecord): Date | null {
   if (!item.installmentCount) {
     return null;
   }
@@ -293,6 +310,49 @@ export function getInstallmentEndDate(
   }
 
   return cursor;
+}
+
+export function computeInstallmentScheduleFromAmounts(
+  startAt: Date,
+  repeat: PlannedRepeatInterval,
+  totalAmount: number,
+  paymentAmount: number,
+): { installmentCount: number; endAt: Date } | null {
+  if (totalAmount <= 0 || paymentAmount <= 0) {
+    return null;
+  }
+
+  if (Number.isNaN(startAt.getTime())) {
+    return null;
+  }
+
+  const installmentCount = Math.ceil(totalAmount / paymentAmount);
+
+  if (installmentCount > 600) {
+    return null;
+  }
+
+  const scheduleItem: PlannedItemRecord = {
+    id: "",
+    name: "",
+    kind: "installment",
+    repeat,
+    amount: paymentAmount,
+    flowType: "expense",
+    category: "shopping",
+    startAt: startOfDay(startAt),
+    endAt: null,
+    installmentCount,
+    paidInstallmentCount: 0,
+    note: null,
+  };
+
+  const endAt = getInstallmentEndDate(scheduleItem);
+  if (!endAt || Number.isNaN(endAt.getTime())) {
+    return null;
+  }
+
+  return { installmentCount, endAt };
 }
 
 export function isPlannedItemInfinite(item: PlannedItemRecord): boolean {

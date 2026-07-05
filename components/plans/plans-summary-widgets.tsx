@@ -2,9 +2,11 @@ import { PlanIcon } from "@/components/plans/plan-icon";
 import {
   PLAN_WIDGET_STYLES,
   PLANS_WIDGET_GRID,
-  PLANS_WIDGET_TILE,
+  PLANS_WIDGET_SURFACE,
+  PLANS_WIDGET_TILE_LAYOUT,
   type PlanWidgetId,
 } from "@/config/plans";
+import { SEPARATED_SURFACE } from "@/config/shape";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
 import type { PlansOverview } from "@/types/plan";
@@ -20,7 +22,7 @@ const WIDGETS: Array<{
 }> = [
   {
     id: "active",
-    label: "Active plans",
+    label: "Wish aktif",
     getValue: (overview) => String(overview.activeCount),
   },
   {
@@ -39,30 +41,36 @@ export function PlansSummaryWidgets({ overview }: PlansSummaryWidgetsProps) {
   return (
     <div className={PLANS_WIDGET_GRID}>
       {WIDGETS.map((widget) => {
-        const style = PLAN_WIDGET_STYLES[widget.id];
+        const accent = PLAN_WIDGET_STYLES[widget.id];
+        const surface = PLANS_WIDGET_SURFACE[widget.id];
 
         return (
-          <div key={widget.id} className={PLANS_WIDGET_TILE}>
+          <div
+            key={widget.id}
+            className={cn(
+              SEPARATED_SURFACE,
+              PLANS_WIDGET_TILE_LAYOUT,
+              surface.surface,
+            )}
+          >
             <div className="flex items-start justify-between gap-3">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                {widget.label}
-              </p>
-              <div
+              <p
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-xl",
-                  style.iconSurface,
+                  "text-[11px] font-semibold uppercase tracking-wide sm:text-xs",
+                  surface.labelColor,
                 )}
               >
-                <PlanIcon
-                  name={style.icon}
-                  className={cn("size-4", style.iconColor)}
-                />
-              </div>
+                {widget.label}
+              </p>
+              <PlanIcon
+                name={accent.icon}
+                className={cn("size-5 shrink-0 sm:size-6", surface.iconColor)}
+              />
             </div>
             <p
               className={cn(
-                "mt-2 text-lg font-bold tabular-nums tracking-tight sm:text-xl",
-                style.valueColor,
+                "text-lg font-bold tabular-nums tracking-tight sm:text-xl",
+                surface.valueColor,
               )}
             >
               {widget.getValue(overview)}

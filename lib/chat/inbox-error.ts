@@ -1,7 +1,8 @@
 import { isTransactionParseError } from "@/lib/ai/transaction-parse-error";
 import type { ChatMessage } from "@/types/chat";
 
-const GENERIC_INBOX_ERROR = "Gagal memproses pesan. Coba lagi.";
+const GENERIC_INBOX_ERROR =
+  "Ups, ada yang error nih. Coba kirim ulang pesannya ya~";
 
 export function formatInboxProcessingError(error: unknown): string {
   if (isTransactionParseError(error)) {
@@ -26,11 +27,11 @@ export function formatInboxProcessingError(error: unknown): string {
 }
 
 export function isRetryableInboxFailure(content: string): boolean {
-  if (content.includes("tercatat ·")) {
+  if (content.includes("ditandai sudah dibayar")) {
     return false;
   }
 
-  if (content.includes("ditandai sudah dibayar")) {
+  if (content.includes("ditandai sudah dibeli")) {
     return false;
   }
 

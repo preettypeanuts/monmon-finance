@@ -225,7 +225,7 @@ export function InboxView({
     const optimisticAssistant: ChatMessage = {
       id: pendingAssistantId,
       role: "assistant",
-      content: "Menandai plan selesai...",
+      content: "Menandai wish selesai...",
       createdAt: new Date().toISOString(),
     };
 

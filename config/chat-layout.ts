@@ -13,7 +13,7 @@ export const CHAT_INPUT_DOCK =
 
 /** Slash command menu above chat input. */
 export const CHAT_SLASH_MENU =
-  "absolute inset-x-0 bottom-full z-20 mb-2 max-h-56 overflow-y-auto rounded-2xl border border-black/8 bg-popover/95 p-1 shadow-2xl ring-1 ring-foreground/5 backdrop-blur-md dark:border-white/10 dark:ring-foreground/10";
+  "absolute inset-x-0 bottom-full z-20 mb-2 max-h-56 overflow-y-auto rounded-2xl border border-black/8 bg-popover/95 p-1 shadow-2xl ring-1 ring-foreground/5 glass-backdrop dark:border-white/10 dark:ring-foreground/10";
 
 export const CHAT_SLASH_MENU_ITEM =
   "flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none";

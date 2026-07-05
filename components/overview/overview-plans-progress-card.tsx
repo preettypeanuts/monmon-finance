@@ -1,4 +1,4 @@
-import { ListStarIcon } from "@/lib/icons";
+import { HeartIcon } from "@/lib/icons";
 
 import { PlansInsightBadgeIcon } from "@/components/shared/ai-summary-badge-icon";
 import { OverviewActionLink } from "@/components/overview/overview-action-link";
@@ -10,7 +10,7 @@ import {
   OVERVIEW_SECTION_LABEL,
   OVERVIEW_SECTION_TITLE,
 } from "@/config/overview";
-import { PLANS_ROUTE } from "@/config/navigation";
+import { PLANS_ROUTE, WISH_PAGE_TITLE } from "@/config/navigation";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
 import type { PlansOverview } from "@/types/plan";
@@ -41,10 +41,10 @@ export function OverviewPlansProgressCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2.5">
           <OverviewIconShell variant="pink">
-            <ListStarIcon />
+            <HeartIcon />
           </OverviewIconShell>
           <div className="min-w-0">
-            <p className={OVERVIEW_SECTION_LABEL}>Plans Progress</p>
+            <p className={OVERVIEW_SECTION_LABEL}>{WISH_PAGE_TITLE} Progress</p>
             <h2 className={cn("mt-0.5", OVERVIEW_SECTION_TITLE)}>
               Wishlist aktif
             </h2>
@@ -61,7 +61,7 @@ export function OverviewPlansProgressCard({
           <p className="text-2xl font-semibold tabular-nums tracking-tight">
             {overview.activeCount}
           </p>
-          <p className="text-[11px] text-muted-foreground">plan aktif</p>
+          <p className="text-[11px] text-muted-foreground">wish aktif</p>
         </div>
 
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/8 dark:bg-white/10">
@@ -86,7 +86,7 @@ export function OverviewPlansProgressCard({
             </p>
           </div>
           <div className="text-right">
-            <p className="text-muted-foreground">Sisa setelah plan</p>
+            <p className="text-muted-foreground">Sisa setelah wish</p>
             <p
               className={cn(
                 "mt-0.5 font-semibold tabular-nums",
@@ -102,7 +102,7 @@ export function OverviewPlansProgressCard({
       </div>
 
       <OverviewActionLink href={PLANS_ROUTE} className="mt-4">
-        Lihat Plans →
+        Lihat {WISH_PAGE_TITLE} →
       </OverviewActionLink>
     </section>
   );

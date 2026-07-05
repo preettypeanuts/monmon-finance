@@ -7,9 +7,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /** Bump when Prisma schema changes to invalidate dev hot-reload cache. */
-const PRISMA_CLIENT_VERSION = 8;
+const PRISMA_CLIENT_VERSION = 10;
 
 const REQUIRED_PLANNED_ITEM_FIELDS = ["paidInstallmentCount"] as const;
+const REQUIRED_CATEGORY_BUDGET_FIELDS = ["repeatNextMonth"] as const;
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -27,13 +28,20 @@ function hasExpectedDelegates(client: PrismaClient): boolean {
   const plannedItemFields = new Set(
     Object.values(Prisma.PlannedItemScalarFieldEnum),
   );
+  const categoryBudgetFields = new Set(
+    Object.values(Prisma.CategoryBudgetScalarFieldEnum),
+  );
 
   return (
     typeof client.transaction?.findMany === "function" &&
     typeof client.inboxMessage?.findMany === "function" &&
     typeof client.plannedItem?.findMany === "function" &&
     typeof client.plan?.findMany === "function" &&
-    REQUIRED_PLANNED_ITEM_FIELDS.every((field) => plannedItemFields.has(field))
+    typeof client.categoryBudget?.findMany === "function" &&
+    REQUIRED_PLANNED_ITEM_FIELDS.every((field) => plannedItemFields.has(field)) &&
+    REQUIRED_CATEGORY_BUDGET_FIELDS.every((field) =>
+      categoryBudgetFields.has(field),
+    )
   );
 }
 

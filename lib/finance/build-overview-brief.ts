@@ -16,7 +16,7 @@ export function buildOverviewBrief(
   if (!hasActivity) {
     const planNote =
       plansOverview.activeCount > 0
-        ? ` ${plansOverview.activeCount} plan aktif menunggu keputusan.`
+        ? ` ${plansOverview.activeCount} wish aktif menunggu keputusan.`
         : "";
 
     return {

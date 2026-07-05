@@ -14,7 +14,9 @@ function readThemeAwareMaskColor(): WallpaperMaskColor {
     return "black";
   }
 
-  return document.documentElement.classList.contains("dark") ? "black" : "white";
+  return document.documentElement.classList.contains("dark")
+    ? "black"
+    : "white";
 }
 
 export function clampWallpaperMask(value: number): number {

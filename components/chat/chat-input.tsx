@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  ArrowUpIcon,
-  CalculatorIcon,
-  PlusIcon,
-} from "@/lib/icons";
-import { useEffect, useMemo, useState } from "react";
-
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatCalculatorSheet } from "@/components/chat/chat-calculator-sheet";
+import { ChatCategoryMentionMenu } from "@/components/chat/chat-category-mention-menu";
 import { ChatSlashMenu } from "@/components/chat/chat-slash-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,10 +12,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
+import type { CategoryMentionOption } from "@/config/category-mentions";
 import { GLASS_SURFACE } from "@/config/glass";
 import { CONTROL_GAP } from "@/config/spacing";
-import { filterActivePlanChatItems } from "@/lib/plans/active-plan-chat";
+import {
+  detectCategoryMentionRange,
+  filterCategoryMentionOptions,
+  insertCategoryMention,
+} from "@/lib/chat/category-mentions";
+import { ArrowUpIcon, CalculatorIcon, PlusIcon } from "@/lib/icons";
 import { filterUnpaidPayPlanChatItems } from "@/lib/planner/unpaid-payplan-chat";
+import { filterActivePlanChatItems } from "@/lib/plans/active-plan-chat";
 import { cn } from "@/lib/utils";
 import type {
   ActivePlanChatItem,
@@ -52,7 +54,9 @@ export function ChatInput({
   draftText = null,
   onDraftTextApplied,
 }: ChatInputProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = useState("");
+  const [cursor, setCursor] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
@@ -62,6 +66,15 @@ export function ChatInput({
   const hasSlashActions = Boolean(onPayPlan || onMarkPlanDone);
   const isSlashOpen = slashMatch !== null && hasSlashActions;
   const slashQuery = slashMatch?.[1]?.trim() ?? "";
+  const mentionRange = useMemo(() => {
+    if (isSlashOpen) {
+      return null;
+    }
+
+    return detectCategoryMentionRange(value, cursor);
+  }, [cursor, isSlashOpen, value]);
+  const isMentionOpen = mentionRange !== null;
+  const mentionQuery = mentionRange?.query ?? "";
   const filteredPayPlanItems = useMemo(
     () => filterUnpaidPayPlanChatItems(unpaidPayPlanItems, slashQuery),
     [slashQuery, unpaidPayPlanItems],
@@ -75,14 +88,17 @@ export function ChatInput({
       ...filteredPayPlanItems.map(
         (item): ChatSlashEntry => ({ kind: "payplan", item }),
       ),
-      ...filteredPlanItems.map((item): ChatSlashEntry => ({ kind: "plan", item })),
+      ...filteredPlanItems.map(
+        (item): ChatSlashEntry => ({ kind: "plan", item }),
+      ),
     ],
     [filteredPayPlanItems, filteredPlanItems],
   );
-
-  useEffect(() => {
-    setHighlightedIndex(0);
-  }, [slashQuery, slashEntries.length]);
+  const mentionOptions = useMemo(
+    () => filterCategoryMentionOptions(mentionQuery),
+    [mentionQuery],
+  );
+  const isPickerOpen = isSlashOpen || isMentionOpen;
 
   useEffect(() => {
     if (draftText === null) {
@@ -90,11 +106,17 @@ export function ChatInput({
     }
 
     setValue(draftText);
+    setCursor(draftText.length);
     onDraftTextApplied?.();
   }, [draftText, onDraftTextApplied]);
 
+  function syncCursor() {
+    const nextCursor = textareaRef.current?.selectionStart ?? 0;
+    setCursor(nextCursor);
+  }
+
   async function handleSubmit() {
-    if (isSlashOpen) {
+    if (isPickerOpen) {
       return;
     }
 
@@ -103,6 +125,7 @@ export function ChatInput({
 
     setIsSubmitting(true);
     setValue("");
+    setCursor(0);
 
     try {
       await onSubmit(text);
@@ -118,6 +141,7 @@ export function ChatInput({
 
     setIsSubmitting(true);
     setValue("");
+    setCursor(0);
 
     try {
       if (entry.kind === "payplan") {
@@ -139,50 +163,97 @@ export function ChatInput({
     }
   }
 
+  function handleSelectCategoryMention(option: CategoryMentionOption) {
+    if (!mentionRange) {
+      return;
+    }
+
+    const { nextText, nextCursor } = insertCategoryMention(
+      value,
+      mentionRange,
+      option.token,
+    );
+
+    setValue(nextText);
+    setCursor(nextCursor);
+
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(nextCursor, nextCursor);
+    });
+  }
+
   function handleUseCalculatorAmount(amount: number) {
     const amountText = String(amount);
     setValue((current) => {
       const trimmed = current.trimEnd();
       return trimmed.length === 0 ? amountText : `${trimmed} ${amountText}`;
     });
+    syncCursor();
+  }
+
+  function handlePickerEnter() {
+    if (isSlashOpen) {
+      const selected = slashEntries[highlightedIndex];
+      if (selected) {
+        void handleSelectSlashEntry(selected);
+      }
+      return;
+    }
+
+    if (isMentionOpen) {
+      const selected = mentionOptions[highlightedIndex];
+      if (selected) {
+        handleSelectCategoryMention(selected);
+      }
+    }
+  }
+
+  function handlePickerArrowDown(event: React.KeyboardEvent) {
+    event.preventDefault();
+    const length = isSlashOpen ? slashEntries.length : mentionOptions.length;
+    setHighlightedIndex((current) =>
+      length === 0 ? 0 : (current + 1) % length,
+    );
+  }
+
+  function handlePickerArrowUp(event: React.KeyboardEvent) {
+    event.preventDefault();
+    const length = isSlashOpen ? slashEntries.length : mentionOptions.length;
+    setHighlightedIndex((current) =>
+      length === 0 ? 0 : (current - 1 + length) % length,
+    );
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (isSlashOpen) {
+    if (isPickerOpen) {
       if (event.key === "ArrowDown") {
-        event.preventDefault();
-        setHighlightedIndex((current) =>
-          slashEntries.length === 0
-            ? 0
-            : (current + 1) % slashEntries.length,
-        );
+        handlePickerArrowDown(event);
         return;
       }
 
       if (event.key === "ArrowUp") {
-        event.preventDefault();
-        setHighlightedIndex((current) =>
-          slashEntries.length === 0
-            ? 0
-            : (current - 1 + slashEntries.length) % slashEntries.length,
-        );
+        handlePickerArrowUp(event);
         return;
       }
 
       if (event.key === "Escape") {
         event.preventDefault();
-        setValue("");
+        if (isSlashOpen) {
+          setValue("");
+          setCursor(0);
+        }
         return;
       }
 
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
-        const selected = slashEntries[highlightedIndex];
-
-        if (selected) {
-          void handleSelectSlashEntry(selected);
-        }
-
+        handlePickerEnter();
         return;
       }
     }
@@ -203,6 +274,15 @@ export function ChatInput({
           highlightedIndex={highlightedIndex}
           onHighlight={setHighlightedIndex}
           onSelect={(entry) => void handleSelectSlashEntry(entry)}
+        />
+      ) : null}
+
+      {isMentionOpen ? (
+        <ChatCategoryMentionMenu
+          options={mentionOptions}
+          highlightedIndex={highlightedIndex}
+          onHighlight={setHighlightedIndex}
+          onSelect={handleSelectCategoryMention}
         />
       ) : null}
 
@@ -250,10 +330,18 @@ export function ChatInput({
           )}
         >
           <Textarea
+            ref={textareaRef}
             value={value}
-            onChange={(event) => setValue(event.target.value)}
+            onChange={(event) => {
+              setValue(event.target.value);
+              setCursor(event.target.selectionStart ?? 0);
+              setHighlightedIndex(0);
+            }}
+            onSelect={syncCursor}
+            onClick={syncCursor}
+            onKeyUp={syncCursor}
             onKeyDown={handleKeyDown}
-            placeholder="Ketik transaksi... atau / untuk PayPlan & Plans"
+            placeholder="Ketik transaksi... / PayPlan · @ kategori"
             disabled={isInputDisabled}
             rows={1}
             className={cn(
@@ -262,7 +350,7 @@ export function ChatInput({
             )}
           />
 
-          {hasText && !isSlashOpen ? (
+          {hasText && !isPickerOpen ? (
             <Button
               type="button"
               size="icon-xs"

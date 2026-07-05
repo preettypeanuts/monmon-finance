@@ -1,7 +1,22 @@
 import type { Wallpaper, WallpaperId } from "@/types/wallpaper";
 
 export const DEFAULT_WALLPAPER_ID: WallpaperId = "default";
-export const CUSTOM_WALLPAPER_ID: WallpaperId = "custom";
+
+export const MAX_CUSTOM_WALLPAPERS = 3;
+
+export const CUSTOM_WALLPAPER_SLOT_IDS = [
+  "custom-1",
+  "custom-2",
+  "custom-3",
+] as const satisfies readonly WallpaperId[];
+
+/** @deprecated Legacy id — use custom-1 */
+export const LEGACY_CUSTOM_WALLPAPER_ID = "custom" as const;
+
+/** @deprecated Use custom-1 */
+export const CUSTOM_WALLPAPER_ID: WallpaperId = "custom-1";
+
+export type CustomWallpaperSlotId = (typeof CUSTOM_WALLPAPER_SLOT_IDS)[number];
 
 export const WALLPAPERS: Wallpaper[] = [
   {
@@ -73,5 +88,6 @@ export const PRESET_WALLPAPER_IDS = new Set<WallpaperId>(
 
 export const WALLPAPER_IDS = new Set<WallpaperId>([
   ...PRESET_WALLPAPER_IDS,
-  CUSTOM_WALLPAPER_ID,
+  ...CUSTOM_WALLPAPER_SLOT_IDS,
+  LEGACY_CUSTOM_WALLPAPER_ID,
 ]);

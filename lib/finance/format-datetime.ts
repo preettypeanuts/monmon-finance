@@ -52,12 +52,38 @@ export function formatDayMonth(value: Date | string = new Date()): string {
   return DAY_MONTH_FORMAT.format(toDate(value));
 }
 
+const FULL_PAYOFF_DATE_FORMAT = new Intl.DateTimeFormat("id-ID", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+/** Full payoff date e.g. "Sabtu, 5 Juli 2026" — returns null if invalid. */
+export function formatFullPayoffDate(
+  value: Date | string | null | undefined,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date =
+    typeof value === "string" ? new Date(`${value}T00:00:00`) : toDate(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return FULL_PAYOFF_DATE_FORMAT.format(date);
+}
+
 const COMPACT_DAY_MONTH_FORMAT = new Intl.DateTimeFormat("id-ID", {
   day: "numeric",
   month: "short",
 });
 
-export function formatCompactDayMonth(value: Date | string = new Date()): string {
+export function formatCompactDayMonth(
+  value: Date | string = new Date(),
+): string {
   return COMPACT_DAY_MONTH_FORMAT.format(toDate(value));
 }
 
@@ -73,9 +99,7 @@ export function formatJournalSectionDate(
 ): string {
   const date = startOfDay(toDate(value));
   const today = startOfDay(referenceDate);
-  const dayDiff = Math.round(
-    (today.getTime() - date.getTime()) / 86_400_000,
-  );
+  const dayDiff = Math.round((today.getTime() - date.getTime()) / 86_400_000);
 
   if (dayDiff === 0) {
     return "Hari ini";

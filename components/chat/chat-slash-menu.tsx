@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { ListStarIcon, ReceiptIcon } from "@/lib/icons";
+import { HeartIcon, ReceiptIcon } from "@/lib/icons";
 
 import {
   CHAT_SLASH_MENU,
@@ -108,7 +108,7 @@ export function ChatSlashMenu({
 
       {planItems.length > 0 ? (
         <SlashMenuSection
-          title="Plans wishlist aktif"
+          title="Wish aktif"
           description="Tandai wishlist sudah dibeli."
         >
           {planItems.map((item) => {
@@ -133,8 +133,8 @@ export function ChatSlashMenu({
                 onMouseEnter={() => onHighlight(entryIndex)}
                 onClick={() => onSelect({ kind: "plan", item })}
               >
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#007AFF]/15 text-[#007AFF] dark:bg-[#007AFF]/20">
-                  <ListStarIcon className="size-4" />
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#FF2D55]/15 text-[#FF2D55] dark:bg-[#FF2D55]/20">
+                  <HeartIcon className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
@@ -157,7 +157,7 @@ export function ChatSlashMenu({
 
       {!hasItems ? (
         <p className="px-3 py-4 text-center text-xs text-muted-foreground">
-          Tidak ada PayPlan atau Plans yang bisa dieksekusi.
+          Tidak ada PayPlan atau Wish yang bisa dieksekusi.
         </p>
       ) : null}
     </div>

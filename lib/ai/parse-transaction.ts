@@ -1,19 +1,23 @@
-import { getCategoryLabel } from "@/config/categories";
 import { isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { parseTransactionWithGemini } from "@/lib/ai/parse-transaction-gemini";
 import { TransactionParseError } from "@/lib/ai/transaction-parse-error";
+import { resolveExplicitCategoryForType } from "@/lib/chat/category-mentions";
 import { detectTransactionType } from "@/lib/finance/categories";
-import { formatIdr } from "@/lib/finance/format-currency";
 import { parseAmount } from "@/lib/finance/parse-amount";
 import { resolveTransactionCategory } from "@/lib/finance/resolve-transaction-category";
 import type { ParsedTransaction } from "@/types/transaction";
 
+export { buildTransactionReply } from "@/lib/ai/build-inbox-transaction-reply";
 export { TransactionParseError };
 
 /** Rule-based fallback when Gemini API key is not configured. */
 export function parseTransactionLocally(text: string): ParsedTransaction {
   const description = text.trim();
-  const amount = parseAmount(description);
+  const type = detectTransactionType(description);
+  const { category: explicitCategory, cleanedText } =
+    resolveExplicitCategoryForType(description, type);
+  const parseText = cleanedText || description;
+  const amount = parseAmount(parseText);
 
   if (amount === null) {
     throw new TransactionParseError(
@@ -21,14 +25,15 @@ export function parseTransactionLocally(text: string): ParsedTransaction {
     );
   }
 
-  const type = detectTransactionType(description);
-  const category = resolveTransactionCategory(undefined, type, description);
+  const category = explicitCategory
+    ? explicitCategory
+    : resolveTransactionCategory(undefined, type, parseText);
 
   return {
     type,
     amount,
     category,
-    description,
+    description: parseText,
     occurredAt: new Date().toISOString(),
   };
 }
@@ -45,11 +50,4 @@ export async function parseTransaction(
   }
 
   return parseTransactionLocally(text);
-}
-
-export function buildTransactionReply(transaction: ParsedTransaction): string {
-  const typeLabel = transaction.type === "income" ? "Pemasukan" : "Pengeluaran";
-  const categoryLabel = getCategoryLabel(transaction.category);
-
-  return `${typeLabel} ${formatIdr(transaction.amount)} tercatat · ${categoryLabel}`;
 }

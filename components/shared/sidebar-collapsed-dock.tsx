@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { SidebarDock, SidebarDockItem } from "@/components/shared/sidebar-dock";
 import { SettingsSheet } from "@/components/shared/settings-sheet";
+import {
+  SidebarDock,
+  SidebarDockItem,
+  useSidebarDockTooltipVisible,
+} from "@/components/shared/sidebar-dock";
 import { useSidebar } from "@/components/ui/sidebar";
+import { APP_NAME, APP_NAME_INITIAL } from "@/config/app";
 import { mainNavItems } from "@/config/navigation";
 import {
-  SIDEBAR_APP_ICON_GRADIENTS,
   SIDEBAR_APP_ICON_GLYPH,
+  SIDEBAR_APP_ICON_GRADIENTS,
   SIDEBAR_APP_ICON_SHELL,
 } from "@/config/sidebar";
 import { GearSixIcon, SidebarIcon } from "@/lib/icons";
@@ -18,8 +22,21 @@ import { cn } from "@/lib/utils";
 const DOCK_TRIGGER_CLASS =
   "flex size-9 items-center justify-center rounded-[0.7rem] outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-white/70";
 
-const DOCK_LABEL_CLASS =
-  "pointer-events-none absolute top-1/2 left-[calc(100%+0.625rem)] z-50 -translate-y-1/2 whitespace-nowrap rounded-lg bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-md transition-opacity duration-150 group-hover/dock-item:opacity-100 group-focus-within/dock-item:opacity-100";
+const DOCK_LABEL_BASE =
+  "pointer-events-none absolute top-1/2 left-[calc(100%+0.625rem)] z-50 -translate-y-1/2 whitespace-nowrap rounded-lg bg-foreground px-2.5 py-1 text-xs font-medium text-background shadow-md transition-opacity duration-100";
+
+function DockLabel({ label }: { label: string }) {
+  const visible = useSidebarDockTooltipVisible();
+
+  return (
+    <span
+      className={cn(DOCK_LABEL_BASE, visible ? "opacity-100" : "opacity-0")}
+      aria-hidden={!visible}
+    >
+      {label}
+    </span>
+  );
+}
 
 interface DockAppButtonProps {
   href?: string;
@@ -58,7 +75,7 @@ function DockAppButton({
   );
 
   return (
-    <div className="group/dock-item relative flex items-center justify-center">
+    <div className="relative flex items-center justify-center">
       {href ? (
         <Link
           href={href}
@@ -78,7 +95,7 @@ function DockAppButton({
           {icon}
         </button>
       )}
-      <span className={DOCK_LABEL_CLASS}>{label}</span>
+      <DockLabel label={label} />
       <DockActiveDot active={isActive} />
     </div>
   );
@@ -95,11 +112,11 @@ export function SidebarCollapsedDock() {
       <SidebarDockItem index={index++}>
         <DockAppButton
           href="/"
-          label="Monmon"
+          label={APP_NAME}
           gradient={SIDEBAR_APP_ICON_GRADIENTS.brand}
         >
           <span className="text-sm font-semibold text-white drop-shadow-sm">
-            M
+            {APP_NAME_INITIAL}
           </span>
         </DockAppButton>
       </SidebarDockItem>
@@ -133,7 +150,7 @@ export function SidebarCollapsedDock() {
       })}
 
       <SidebarDockItem index={index++}>
-        <div className="group/dock-item relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center">
           <SettingsSheet
             trigger={
               <button
@@ -153,7 +170,7 @@ export function SidebarCollapsedDock() {
               </button>
             }
           />
-          <span className={DOCK_LABEL_CLASS}>Pengaturan</span>
+          <DockLabel label="Pengaturan" />
         </div>
       </SidebarDockItem>
     </SidebarDock>

@@ -2,17 +2,17 @@
 
 import { useEffect, useState, useTransition } from "react";
 
+import { AmountTextInput } from "@/components/shared/amount-text-input";
+import { FormDialogField } from "@/components/shared/form-dialog-field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,11 +21,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { TRANSACTION_CATEGORIES, getCategoryLabel } from "@/config/categories";
 import {
-  TRANSACTION_CATEGORIES,
-  getCategoryLabel,
-} from "@/config/categories";
-import { PLAN_STATUS_LABEL, PLANS_WIDGET_TILE } from "@/config/plans";
+  FORM_DIALOG_BODY_SCROLL,
+  FORM_DIALOG_CONTENT_WIDE,
+  FORM_DIALOG_FOOTER,
+  FORM_DIALOG_HEADER,
+  FORM_FIELD_INPUT,
+  FORM_FIELD_SELECT,
+  FORM_GROUP,
+  FORM_NOTE,
+  FORM_PREVIEW_COMPACT,
+  FORM_PREVIEW_COMPACT_AMOUNT,
+} from "@/config/form-dialog";
+import { PLAN_STATUS_LABEL } from "@/config/plans";
 import {
   PLANNER_SELECT_CONTENT,
   PLANNER_SELECT_ITEM,
@@ -70,10 +79,10 @@ export function PlanDetailDialog({
   const isForm = mode === "edit" || mode === "create";
   const title =
     mode === "create"
-      ? "Plan baru"
+      ? "Wish baru"
       : mode === "edit"
-        ? "Edit plan"
-        : (plan?.name ?? "Detail plan");
+        ? "Edit wish"
+        : (plan?.name ?? "Detail wish");
 
   useEffect(() => {
     if (!open) {
@@ -117,109 +126,139 @@ export function PlanDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className={FORM_DIALOG_CONTENT_WIDE}>
+        <DialogHeader className={FORM_DIALOG_HEADER}>
+          <DialogTitle className="text-lg font-semibold tracking-tight">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="text-[13px] leading-snug">
             {isForm
               ? "Wishlist belanja untuk menghitung estimasi sisa saldo."
-              : "Detail plan dan opsi kelola."}
+              : "Detail wish dan opsi kelola."}
           </DialogDescription>
         </DialogHeader>
 
         {isForm ? (
-          <form className="grid gap-4" onSubmit={handleSubmit}>
-            {plan && mode === "edit" ? (
-              <input type="hidden" name="id" value={plan.id} />
-            ) : null}
+          <form
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            onSubmit={handleSubmit}
+          >
+            <div className={FORM_DIALOG_BODY_SCROLL}>
+              {plan && mode === "edit" ? (
+                <input type="hidden" name="id" value={plan.id} />
+              ) : null}
 
-            <div className="grid gap-2">
-              <Label htmlFor="plan-name">Nama</Label>
-              <Input
-                id="plan-name"
-                name="name"
-                required
-                defaultValue={mode === "edit" ? (plan?.name ?? "") : ""}
-                placeholder="Contoh: iPhone 16"
-                className={SEPARATED_CONTROL}
-              />
-            </div>
+              <div className={FORM_GROUP}>
+                <FormDialogField label="Nama" htmlFor="plan-name">
+                  <Input
+                    id="plan-name"
+                    name="name"
+                    required
+                    defaultValue={mode === "edit" ? (plan?.name ?? "") : ""}
+                    placeholder="Contoh: iPhone 16"
+                    className={FORM_FIELD_INPUT}
+                  />
+                </FormDialogField>
 
-            <div className="grid gap-2">
-              <Label htmlFor="plan-amount">Estimasi harga</Label>
-              <Input
-                id="plan-amount"
-                name="amount"
-                required
-                defaultValue={
-                  mode === "edit" && plan ? String(plan.amount) : ""
-                }
-                placeholder="15jt atau 15000000"
-                className={SEPARATED_CONTROL}
-              />
-            </div>
+                <FormDialogField label="Estimasi harga" htmlFor="plan-amount">
+                  <AmountTextInput
+                    id="plan-amount"
+                    name="amount"
+                    required
+                    defaultValue={
+                      mode === "edit" && plan ? String(plan.amount) : ""
+                    }
+                    placeholder="15jt"
+                  />
+                </FormDialogField>
 
-            <div className="grid gap-2">
-              <Label>Kategori</Label>
-              <Select
-                value={category}
-                onValueChange={(value) => setCategory(value as string)}
-              >
-                <SelectTrigger className={cn(PLANNER_SELECT_TRIGGER, SEPARATED_CONTROL)}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={PLANNER_SELECT_CONTENT}>
-                  {EXPENSE_CATEGORIES.map((entry) => (
-                    <SelectItem
-                      key={entry.id}
-                      value={entry.id}
-                      className={PLANNER_SELECT_ITEM}
+                <FormDialogField label="Kategori" htmlFor="plan-category">
+                  <Select
+                    value={category}
+                    onValueChange={(value) => {
+                      if (value) {
+                        setCategory(value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger
+                      id="plan-category"
+                      className={cn(
+                        PLANNER_SELECT_TRIGGER,
+                        FORM_FIELD_SELECT,
+                        "text-left",
+                      )}
                     >
-                      {entry.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className={PLANNER_SELECT_CONTENT}>
+                      {EXPENSE_CATEGORIES.map((entry) => (
+                        <SelectItem
+                          key={entry.id}
+                          value={entry.id}
+                          className={PLANNER_SELECT_ITEM}
+                        >
+                          {entry.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormDialogField>
+
+                <FormDialogField label="Status" htmlFor="plan-status">
+                  <Select
+                    value={status}
+                    onValueChange={(value) => {
+                      if (value) {
+                        setStatus(value as PlanStatus);
+                      }
+                    }}
+                  >
+                    <SelectTrigger
+                      id="plan-status"
+                      className={cn(
+                        PLANNER_SELECT_TRIGGER,
+                        FORM_FIELD_SELECT,
+                        "text-left",
+                      )}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className={PLANNER_SELECT_CONTENT}>
+                      <SelectItem
+                        value="active"
+                        className={PLANNER_SELECT_ITEM}
+                      >
+                        {PLAN_STATUS_LABEL.active}
+                      </SelectItem>
+                      <SelectItem value="done" className={PLANNER_SELECT_ITEM}>
+                        {PLAN_STATUS_LABEL.done}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormDialogField>
+              </div>
+
+              <div className={FORM_GROUP}>
+                <FormDialogField label="Catatan" htmlFor="plan-note">
+                  <Textarea
+                    id="plan-note"
+                    name="note"
+                    rows={3}
+                    defaultValue={mode === "edit" ? (plan?.note ?? "") : ""}
+                    placeholder="Opsional"
+                    className={FORM_NOTE}
+                  />
+                </FormDialogField>
+              </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label>Status</Label>
-              <Select
-                value={status}
-                onValueChange={(value) => setStatus(value as PlanStatus)}
-              >
-                <SelectTrigger className={cn(PLANNER_SELECT_TRIGGER, SEPARATED_CONTROL)}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={PLANNER_SELECT_CONTENT}>
-                  <SelectItem value="active" className={PLANNER_SELECT_ITEM}>
-                    {PLAN_STATUS_LABEL.active}
-                  </SelectItem>
-                  <SelectItem value="done" className={PLANNER_SELECT_ITEM}>
-                    {PLAN_STATUS_LABEL.done}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="plan-note">Catatan</Label>
-              <Textarea
-                id="plan-note"
-                name="note"
-                rows={3}
-                defaultValue={mode === "edit" ? (plan?.note ?? "") : ""}
-                placeholder="Opsional"
-                className={SEPARATED_CONTROL}
-              />
-            </div>
-
-            <DialogFooter>
+            <div className={FORM_DIALOG_FOOTER}>
               <Button
                 type="button"
                 variant="outline"
                 disabled={isPending}
-                className={SEPARATED_CONTROL}
+                className={cn(SEPARATED_CONTROL, "flex-1")}
                 onClick={() => {
                   if (mode === "edit" && plan) {
                     onModeChange("view");
@@ -234,57 +273,62 @@ export function PlanDetailDialog({
               <Button
                 type="submit"
                 disabled={isPending}
-                className={SEPARATED_CONTROL}
+                className={cn(SEPARATED_CONTROL, "flex-1")}
               >
                 {mode === "create" ? "Tambah" : "Simpan"}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         ) : plan ? (
-          <div className="grid gap-4">
-            <div className={cn(PLANS_WIDGET_TILE, "grid gap-2")}>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-muted-foreground">Estimasi</span>
-                <span className="text-base font-semibold tabular-nums">
-                  {formatIdr(plan.amount)}
-                </span>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className={FORM_DIALOG_BODY_SCROLL}>
+              <div className={FORM_PREVIEW_COMPACT}>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Estimasi
+                  </p>
+                  <p className={cn("mt-0.5", FORM_PREVIEW_COMPACT_AMOUNT)}>
+                    {formatIdr(plan.amount)}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right text-[11px] leading-snug text-muted-foreground">
+                  <p>{getCategoryLabel(plan.category)}</p>
+                  <p className="font-medium text-foreground">
+                    {PLAN_STATUS_LABEL[plan.status]}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-muted-foreground">Kategori</span>
-                <span className="text-sm font-medium">
-                  {getCategoryLabel(plan.category)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-muted-foreground">Status</span>
-                <span className="text-sm font-medium">
-                  {PLAN_STATUS_LABEL[plan.status]}
-                </span>
-              </div>
+
               {plan.note ? (
-                <div className="border-t border-border/60 pt-2">
-                  <p className="text-xs text-muted-foreground">Catatan</p>
-                  <p className="mt-1 text-sm text-foreground/90">{plan.note}</p>
+                <div className={FORM_GROUP}>
+                  <div className="px-4 py-3">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Catatan
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-foreground/90">
+                      {plan.note}
+                    </p>
+                  </div>
                 </div>
               ) : null}
             </div>
 
-            <DialogFooter className="gap-2 sm:justify-between">
+            <div className={FORM_DIALOG_FOOTER}>
               <Button
                 type="button"
                 variant="destructive"
                 disabled={isPending}
-                className={SEPARATED_CONTROL}
+                className={cn(SEPARATED_CONTROL, "shrink-0")}
                 onClick={handleDelete}
               >
                 Hapus
               </Button>
-              <div className="flex gap-2">
+              <div className="flex min-w-0 flex-1 gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   disabled={isPending}
-                  className={SEPARATED_CONTROL}
+                  className={cn(SEPARATED_CONTROL, "flex-1")}
                   onClick={() => onModeChange("edit")}
                 >
                   Edit
@@ -292,13 +336,13 @@ export function PlanDetailDialog({
                 <Button
                   type="button"
                   disabled={isPending}
-                  className={SEPARATED_CONTROL}
+                  className={cn(SEPARATED_CONTROL, "flex-1")}
                   onClick={() => onOpenChange(false)}
                 >
                   Tutup
                 </Button>
               </div>
-            </DialogFooter>
+            </div>
           </div>
         ) : null}
       </DialogContent>

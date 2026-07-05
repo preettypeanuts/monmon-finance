@@ -3,7 +3,7 @@ import {
   CoinsIcon,
   DotsThreeIcon,
   ForkKnifeIcon,
-  ListStarIcon,
+  HeartIcon,
   ReceiptIcon,
   ShoppingBagIcon,
   SparkleIcon,
@@ -24,7 +24,7 @@ const PLAN_ICONS: Record<PlanIconName, Icon> = {
   receipt: ReceiptIcon,
   "dots-three": DotsThreeIcon,
   coins: CoinsIcon,
-  "list-star": ListStarIcon,
+  heart: HeartIcon,
   sparkle: SparkleIcon,
 };
 

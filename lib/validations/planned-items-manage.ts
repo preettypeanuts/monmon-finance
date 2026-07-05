@@ -5,7 +5,7 @@ import type {
   PlannedItemsFilters,
   PlannedPaymentStatusFilter,
   PlannedRepeatInterval,
-  PlannerTab,
+  PlannerManageLayout,
 } from "@/types/planner";
 
 const VALID_KINDS = new Set<PlannedItemKind>([
@@ -89,13 +89,13 @@ export function parsePlannedItemsFilters(
 
 export function buildPlannedItemsManageParams(
   filters: PlannedItemsFilters,
-  tab: Extract<PlannerTab, "cards" | "table">,
+  layout: PlannerManageLayout,
   baseParams: URLSearchParams,
 ): URLSearchParams {
   const params = new URLSearchParams(baseParams.toString());
 
-  params.set("tab", tab);
-  params.delete("layout");
+  params.set("tab", "calendar");
+  params.set("layout", layout);
 
   if (filters.q.trim()) {
     params.set("q", filters.q.trim());

@@ -7,7 +7,7 @@ import {
   deletePlannedItemAction,
   savePlannedItemAction,
 } from "@/app/actions/planner";
-import { PlannedItemFormSheet } from "@/components/planner/planned-item-form-sheet";
+import { PlannedItemFormDialog } from "@/components/planner/planned-item-form-dialog";
 import { PlannedItemsFilterMenu } from "@/components/planner/planned-items-filter-menu";
 import { PlannedItemsSearchInput } from "@/components/planner/planned-items-search-input";
 import { PlannedItemsList } from "@/components/planner/planned-items-list";
@@ -20,12 +20,11 @@ import type {
   PlannedItemRecord,
   PlannedItemsFilters,
   PlannedOccurrence,
-  PlannerTab,
+  PlannerManageLayout,
 } from "@/types/planner";
-import { plannerTabToLayout } from "@/types/planner";
 
 interface PlannedItemsManageProps {
-  tab: Extract<PlannerTab, "cards" | "table">;
+  layout: PlannerManageLayout;
   items: Array<
     Omit<PlannedItemRecord, "startAt" | "endAt"> & {
       startAt: string;
@@ -47,12 +46,11 @@ function normalizeItems(
 }
 
 export function PlannedItemsManage({
-  tab,
+  layout,
   items,
   filters,
   monthOccurrences = [],
 }: PlannedItemsManageProps) {
-  const layout = plannerTabToLayout(tab);
   const normalizedItems = useMemo(() => normalizeItems(items), [items]);
   const normalizedMonthOccurrences = useMemo(
     () =>
@@ -108,17 +106,17 @@ export function PlannedItemsManage({
     });
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(formData: FormData): Promise<boolean> {
     const result = await savePlannedItemAction(formData);
 
     if (!result.ok) {
       setError(result.error);
-      return;
+      return false;
     }
 
     setError(null);
-    setSheetOpen(false);
     setEditingItem(null);
+    return true;
   }
 
   return (
@@ -132,11 +130,11 @@ export function PlannedItemsManage({
         </div>
 
         <div className={cn("flex shrink-0 flex-wrap items-center", CONTROL_GAP)}>
-          <PlannedItemsSearchInput filters={filters} tab={tab} />
-          <PlannedItemsFilterMenu filters={filters} tab={tab} />
+          <PlannedItemsSearchInput filters={filters} layout={layout} />
+          <PlannedItemsFilterMenu filters={filters} layout={layout} />
           <Button size="sm" onClick={openCreateSheet}>
             <PlusIcon />
-            Tambah
+            Tambah Pay Plan
           </Button>
         </div>
       </div>
@@ -165,7 +163,7 @@ export function PlannedItemsManage({
         />
       )}
 
-      <PlannedItemFormSheet
+      <PlannedItemFormDialog
         open={sheetOpen}
         item={editingItem}
         onOpenChange={setSheetOpen}

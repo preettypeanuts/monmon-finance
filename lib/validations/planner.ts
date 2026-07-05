@@ -1,28 +1,55 @@
 import { getCurrentMonthKey, parseMonthKey } from "@/lib/planner/calendar";
 import { parsePlannedItemsFilters } from "@/lib/validations/planned-items-manage";
-import type { PlannerTab } from "@/types/planner";
-import { plannerTabToLayout } from "@/types/planner";
+import type { PlannerCalendarLayout, PlannerTab } from "@/types/planner";
+
+function readParam(
+  searchParams: Record<string, string | string[] | undefined>,
+  key: string,
+): string {
+  const value = searchParams[key];
+  if (Array.isArray(value)) {
+    return value[0]?.trim() ?? "";
+  }
+
+  return value?.trim() ?? "";
+}
 
 function parsePlannerTab(
   searchParams: Record<string, string | string[] | undefined>,
 ): PlannerTab {
-  const rawTab = searchParams.tab;
-  const tabValue = Array.isArray(rawTab) ? rawTab[0]?.trim() : rawTab?.trim();
+  const tabValue = readParam(searchParams, "tab");
 
-  if (tabValue === "cards" || tabValue === "table" || tabValue === "calendar") {
-    return tabValue;
-  }
-
-  if (tabValue === "manage") {
-    const rawLayout = searchParams.layout;
-    const layoutValue = Array.isArray(rawLayout)
-      ? rawLayout[0]?.trim()
-      : rawLayout?.trim();
-
-    return layoutValue === "table" ? "table" : "cards";
+  if (tabValue === "budget") {
+    return "budget";
   }
 
   return "calendar";
+}
+
+function parseCalendarLayout(
+  searchParams: Record<string, string | string[] | undefined>,
+): PlannerCalendarLayout {
+  const tabValue = readParam(searchParams, "tab");
+
+  if (tabValue === "cards") {
+    return "cards";
+  }
+
+  if (tabValue === "table") {
+    return "table";
+  }
+
+  if (tabValue === "manage") {
+    return readParam(searchParams, "layout") === "table" ? "table" : "cards";
+  }
+
+  const layoutValue = readParam(searchParams, "layout");
+
+  if (layoutValue === "cards" || layoutValue === "table") {
+    return layoutValue;
+  }
+
+  return "month";
 }
 
 export function parsePlannerSearchParams(
@@ -30,21 +57,20 @@ export function parsePlannerSearchParams(
 ): {
   monthKey: string;
   tab: PlannerTab;
-  layout: ReturnType<typeof plannerTabToLayout>;
+  calendarLayout: PlannerCalendarLayout;
   filters: ReturnType<typeof parsePlannedItemsFilters>;
 } {
-  const rawMonth = searchParams.month;
-  const monthValue = Array.isArray(rawMonth)
-    ? rawMonth[0]?.trim()
-    : rawMonth?.trim();
+  const monthValue = readParam(searchParams, "month");
   const tab = parsePlannerTab(searchParams);
+  const calendarLayout =
+    tab === "calendar" ? parseCalendarLayout(searchParams) : "month";
   const filters = parsePlannedItemsFilters(searchParams);
 
   if (monthValue && parseMonthKey(monthValue)) {
     return {
       monthKey: monthValue,
       tab,
-      layout: plannerTabToLayout(tab),
+      calendarLayout,
       filters,
     };
   }
@@ -52,7 +78,7 @@ export function parsePlannerSearchParams(
   return {
     monthKey: getCurrentMonthKey(),
     tab,
-    layout: plannerTabToLayout(tab),
+    calendarLayout,
     filters,
   };
 }

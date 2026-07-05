@@ -1,12 +1,14 @@
-/** Backdrop filters — light lifts slightly; dark dims wallpaper for contrast. */
-export const GLASS_BACKDROP =
-  "backdrop-blur-md backdrop-brightness-105 backdrop-saturate-125 dark:backdrop-brightness-[0.88] dark:backdrop-saturate-120";
+/** Solid glass on default (plain) wallpaper — see GLASS_FILL_* in globals.css. */
+export const GLASS_FILL_LIGHT_DEFAULT = "#F8F8F8C5";
+export const GLASS_FILL_DARK_DEFAULT = "#33333182";
 
-/** Frosted fill — light: white frost; dark: black frost. */
-export const GLASS_FILL = "bg-white/60 dark:bg-black/50";
+/** Backdrop filters — blur via CSS var (--glass-backdrop-blur); brightness/saturate in globals.css. */
+export const GLASS_BACKDROP = "glass-backdrop";
 
-export const GLASS_BORDER =
-  "border border-black/12 dark:border-white/12";
+/** Frosted fill — uses CSS var; solid gray on default wallpaper, frosted on others. */
+export const GLASS_FILL = "bg-[var(--glass-fill)]";
+
+export const GLASS_BORDER = "border border-black/12 dark:border-white/12";
 
 export const GLASS_HIGHLIGHT =
   "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.55),0_1px_2px_rgba(0,0,0,0.06)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07),0_1px_3px_rgba(0,0,0,0.4)]";

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { APP_NAME } from "@/config/app";
 import "./globals.css";
 import { AppShell } from "@/components/shared/app-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +9,7 @@ import { readServerSidebarOpen } from "@/lib/sidebar/cookies";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Monmon",
+  title: APP_NAME,
   description: "AI-powered finance tracking with chat input",
 };
 
@@ -26,6 +27,7 @@ export default async function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-accent={appearance.accentId}
+      data-wallpaper="default"
       className={cn(
         "h-full font-sans antialiased",
         appearance.resolvedDark && "dark",

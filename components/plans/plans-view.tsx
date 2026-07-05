@@ -14,6 +14,7 @@ import { PlansAiSummary } from "@/components/plans/plans-ai-summary";
 import { PlansSummaryWidgets } from "@/components/plans/plans-summary-widgets";
 import { Button } from "@/components/ui/button";
 import { PLANS_CARD_LIST, PLANS_WIDGET_TILE } from "@/config/plans";
+import { WISH_PAGE_TITLE } from "@/config/navigation";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { STACK_GAP } from "@/config/spacing";
 import {
@@ -131,7 +132,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
 
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold">Plans</h2>
+          <h2 className="text-sm font-semibold">{WISH_PAGE_TITLE}</h2>
           <p className="text-xs text-muted-foreground">
             Wishlist belanja dan estimasi biaya.
           </p>
@@ -154,7 +155,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
             "flex flex-col items-center justify-center px-4 py-12 text-center",
           )}
         >
-          <p className="text-sm font-medium">Belum ada plan</p>
+          <p className="text-sm font-medium">Belum ada wish</p>
           <p className="mt-1 max-w-sm text-xs text-muted-foreground">
             Tambahkan barang wishlist untuk menghitung estimasi sisa saldo.
           </p>
@@ -165,7 +166,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
             onClick={openCreate}
           >
             <PlusIcon className="size-4" />
-            Plan baru
+            Wish baru
           </Button>
         </div>
       ) : (

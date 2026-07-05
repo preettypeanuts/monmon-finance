@@ -1,9 +1,9 @@
 import {
   CalendarBlankIcon,
-  ListStarIcon,
+  ChatIcon,
+  HeartIcon,
   NotebookIcon,
   SquaresFourIcon,
-  TrayIcon,
   type Icon,
 } from "@/lib/icons";
 
@@ -15,6 +15,9 @@ import {
 export const OVERVIEW_ROUTE = "/overview";
 export const PAYPLAN_ROUTE = "/payplan";
 export const PLANS_ROUTE = "/plans";
+
+/** User-facing page title for `/plans` — internal route unchanged. */
+export const WISH_PAGE_TITLE = "Wish";
 
 export interface NavItem {
   title: string;
@@ -33,7 +36,7 @@ export const mainNavItems: NavItem[] = [
   {
     title: "Inbox",
     href: "/",
-    icon: TrayIcon,
+    icon: ChatIcon,
     gradient: SIDEBAR_APP_ICON_GRADIENTS.inbox,
   },
   {
@@ -49,9 +52,9 @@ export const mainNavItems: NavItem[] = [
     gradient: SIDEBAR_APP_ICON_GRADIENTS.payplan,
   },
   {
-    title: "Plans",
+    title: WISH_PAGE_TITLE,
     href: PLANS_ROUTE,
-    icon: ListStarIcon,
+    icon: HeartIcon,
     gradient: SIDEBAR_APP_ICON_GRADIENTS.plans,
   },
 ];

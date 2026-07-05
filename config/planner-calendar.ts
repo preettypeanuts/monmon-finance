@@ -127,3 +127,9 @@ export const PLANNER_CALENDAR_DAY_DIALOG_PAID =
 
 export const PLANNER_CALENDAR_DAY_DIALOG_PENDING =
   "text-xs font-medium text-[#FF9500]";
+
+export const PLANNER_CALENDAR_TAB_LIST =
+  "h-8 w-full border border-black/8 bg-[var(--glass-fill)] p-1 shadow-none glass-backdrop dark:border-white/10";
+
+export const PLANNER_CALENDAR_TAB_TRIGGER =
+  "flex-1 gap-1.5 rounded-lg border border-transparent bg-transparent px-2.5 text-xs text-muted-foreground shadow-none data-active:border-black/6 data-active:bg-white/35 data-active:text-foreground data-active:shadow-sm dark:data-active:border-white/10 dark:data-active:bg-white/10";

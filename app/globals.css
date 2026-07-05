@@ -87,12 +87,24 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --glass-shell-fill: rgb(255 255 255 / 0.6);
+  --glass-fill-rgb: 255 255 255;
+  --glass-fill-opacity: 0.6;
+  --glass-fill: rgb(var(--glass-fill-rgb) / var(--glass-fill-opacity));
+  --glass-shell-fill: rgb(var(--glass-fill-rgb) / var(--glass-fill-opacity));
   --glass-shell-border: rgb(0 0 0 / 0.12);
   --glass-shell-specular: rgb(255 255 255 / 0.55);
   --glass-shell-shadow: rgb(0 0 0 / 0.06);
   --glass-shell-backdrop-brightness: 1.05;
   --glass-shell-backdrop-saturate: 1.25;
+  --glass-backdrop-blur: 12px;
+  --glass-backdrop-brightness: 1.05;
+  --glass-backdrop-saturate: 1.25;
+}
+
+/* Plain default wallpaper — solid gray glass so UI separates from white/black bg. */
+:root[data-wallpaper="default"] {
+  --glass-fill-rgb: 248 248 248;
+  --glass-fill-opacity: 0.65;
 }
 
 /* Apple system accents — light (deeper). */
@@ -186,12 +198,22 @@
   --sidebar-accent: oklch(1 0 0 / 0.1);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --glass-shell-fill: rgb(0 0 0 / 0.5);
+  --glass-fill-rgb: 0 0 0;
+  --glass-fill-opacity: 0.5;
+  --glass-fill: rgb(var(--glass-fill-rgb) / var(--glass-fill-opacity));
+  --glass-shell-fill: rgb(var(--glass-fill-rgb) / var(--glass-fill-opacity));
   --glass-shell-border: rgb(255 255 255 / 0.12);
   --glass-shell-specular: rgb(255 255 255 / 0.07);
   --glass-shell-shadow: rgb(0 0 0 / 0.4);
   --glass-shell-backdrop-brightness: 0.88;
   --glass-shell-backdrop-saturate: 1.2;
+  --glass-backdrop-brightness: 0.88;
+  --glass-backdrop-saturate: 1.2;
+}
+
+.dark[data-wallpaper="default"] {
+  --glass-fill-rgb: 51 51 49;
+  --glass-fill-opacity: 0.51;
 }
 
 .dark[data-accent="blue"] {
@@ -275,7 +297,23 @@
 }
 
 @layer components {
-  /* Keep in sync with GLASS_SURFACE + SEPARATED_SHELL in config/ */
+  /* Keep in sync with GLASS_BACKDROP in config/glass.ts */
+  .glass-backdrop {
+    -webkit-backdrop-filter: blur(var(--glass-backdrop-blur))
+      saturate(var(--glass-backdrop-saturate))
+      brightness(var(--glass-backdrop-brightness));
+    backdrop-filter: blur(var(--glass-backdrop-blur))
+      saturate(var(--glass-backdrop-saturate))
+      brightness(var(--glass-backdrop-brightness));
+  }
+
+  :root[data-glass-blur="off"] .glass-backdrop,
+  :root[data-glass-blur="off"] .app-sidebar > [data-slot="sidebar-inner"] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Keep in sync with GLASS_SURFACE + GLASS_FILL in config/glass.ts */
   .app-sidebar[data-slot="sidebar-container"] {
     padding: 0.75rem !important;
   }
@@ -290,9 +328,11 @@
     box-shadow:
       inset 0 1px 0 0 var(--glass-shell-specular),
       0 1px 3px var(--glass-shell-shadow) !important;
-    -webkit-backdrop-filter: blur(12px) saturate(var(--glass-shell-backdrop-saturate))
+    -webkit-backdrop-filter: blur(var(--glass-backdrop-blur))
+      saturate(var(--glass-shell-backdrop-saturate))
       brightness(var(--glass-shell-backdrop-brightness));
-    backdrop-filter: blur(12px) saturate(var(--glass-shell-backdrop-saturate))
+    backdrop-filter: blur(var(--glass-backdrop-blur))
+      saturate(var(--glass-shell-backdrop-saturate))
       brightness(var(--glass-shell-backdrop-brightness));
     --tw-ring-shadow: 0 0 #0000 !important;
     --tw-ring-offset-shadow: 0 0 #0000 !important;

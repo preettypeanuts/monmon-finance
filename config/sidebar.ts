@@ -47,10 +47,10 @@ export type SidebarAppIconGradient =
   (typeof SIDEBAR_APP_ICON_GRADIENTS)[keyof typeof SIDEBAR_APP_ICON_GRADIENTS];
 
 /** Apple Dock magnification — peak scale at cursor. */
-export const SIDEBAR_DOCK_MAX_SCALE = 1.55;
+export const SIDEBAR_DOCK_MAX_SCALE = 1.75;
 
 /** Distance (px) from cursor where magnification falls to 1. */
-export const SIDEBAR_DOCK_INFLUENCE = 52;
+export const SIDEBAR_DOCK_INFLUENCE = 70;
 
 /** Base icon size in px (size-9 = 36). */
 export const SIDEBAR_DOCK_ICON_SIZE = 36;

@@ -1,18 +1,18 @@
 import { Type } from "@google/genai";
 
 import {
-  TRANSACTION_CATEGORIES,
   buildGeminiCategoryInstruction,
   isTransactionCategory,
   normalizeCategory,
   resolveCategoryForType,
+  TRANSACTION_CATEGORIES,
   type TransactionCategoryId,
 } from "@/config/categories";
+import { GEMINI_MAX_OUTPUT_TOKENS, GEMINI_MODEL } from "@/config/gemini";
 import {
   buildGeminiCategoryClassifierSystemInstruction,
-  GEMINI_MONMON_APP_CONTEXT,
+  GEMINI_WANG_APP_CONTEXT,
 } from "@/config/gemini-locale";
-import { GEMINI_MAX_OUTPUT_TOKENS, GEMINI_MODEL } from "@/config/gemini";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
 import type { TransactionType } from "@/types/transaction";
 
@@ -26,7 +26,7 @@ const SYSTEM_INSTRUCTION = buildGeminiCategoryClassifierSystemInstruction(
 
 function buildPrompt(description: string, type: TransactionType): string {
   return [
-    GEMINI_MONMON_APP_CONTEXT,
+    GEMINI_WANG_APP_CONTEXT,
     "",
     `Tipe transaksi: ${type}`,
     `Deskripsi user (Bahasa Indonesia): ${description}`,

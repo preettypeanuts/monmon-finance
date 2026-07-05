@@ -40,7 +40,7 @@ import {
   buildPlannedItemsManageParams,
 } from "@/lib/validations/planned-items-manage";
 import { cn } from "@/lib/utils";
-import type { PlannedItemsFilters, PlannerTab } from "@/types/planner";
+import type { PlannedItemsFilters, PlannerManageLayout } from "@/types/planner";
 
 type PlannedItemsFilterDraft = Omit<PlannedItemsFilters, "q">;
 
@@ -51,12 +51,12 @@ function toFilterDraft(filters: PlannedItemsFilters): PlannedItemsFilterDraft {
 
 interface PlannedItemsFilterMenuProps {
   filters: PlannedItemsFilters;
-  tab: Extract<PlannerTab, "cards" | "table">;
+  layout: PlannerManageLayout;
 }
 
 export function PlannedItemsFilterMenu({
   filters,
-  tab,
+  layout,
 }: PlannedItemsFilterMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -77,7 +77,7 @@ export function PlannedItemsFilterMenu({
     const merged: PlannedItemsFilters = { ...draft, ...next, q: filters.q };
     const params = buildPlannedItemsManageParams(
       merged,
-      tab,
+      layout,
       new URLSearchParams(searchParams.toString()),
     );
 
@@ -90,7 +90,7 @@ export function PlannedItemsFilterMenu({
     setDraft(resetDraft);
     const params = buildPlannedItemsManageParams(
       { ...PLANNED_ITEMS_DEFAULT_FILTERS, q: filters.q },
-      tab,
+      layout,
       new URLSearchParams(searchParams.toString()),
     );
 

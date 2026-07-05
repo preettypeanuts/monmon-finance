@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-
-import { useSidebar } from "@/components/ui/sidebar";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
+import { APP_NAME, APP_NAME_INITIAL, APP_TAGLINE } from "@/config/app";
+import { SEPARATED_CONTROL } from "@/config/shape";
 import {
   SEPARATED_MENU_ITEM,
   SIDEBAR_APP_ICON_GRADIENTS,
   SIDEBAR_APP_ICON_SHELL,
 } from "@/config/sidebar";
-import { SEPARATED_CONTROL } from "@/config/shape";
 import { cn } from "@/lib/utils";
 
 interface SidebarBrandButtonProps {
@@ -48,12 +47,14 @@ export function SidebarBrandButton({ className }: SidebarBrandButtonProps) {
             isCollapsed && "text-white drop-shadow-sm",
           )}
         >
-          M
+          {APP_NAME_INITIAL}
         </span>
       </div>
       <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-        <span className="truncate font-semibold">Monmon</span>
-        <span className="truncate text-xs text-muted-foreground">Finance AI</span>
+        <span className="truncate font-semibold">{APP_NAME}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          {APP_TAGLINE}
+        </span>
       </div>
     </SidebarMenuButton>
   );

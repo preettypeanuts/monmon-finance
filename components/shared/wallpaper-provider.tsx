@@ -8,36 +8,56 @@ import {
   useMemo,
   useState,
 } from "react";
-
-import { CUSTOM_WALLPAPER_ID, DEFAULT_WALLPAPER_ID } from "@/config/wallpapers";
 import { DEFAULT_WALLPAPER_MASK } from "@/config/wallpaper-mask";
 import {
-  deleteCustomWallpaper,
-  readCustomWallpaper,
-  writeCustomWallpaper,
+  DEFAULT_WALLPAPER_ID,
+  MAX_CUSTOM_WALLPAPERS,
+} from "@/config/wallpapers";
+import {
+  readCustomWallpaperSlots,
+  setCustomWallpaperAtSlot,
 } from "@/lib/wallpaper/custom-storage";
 import {
-  processWallpaperFile,
-  WallpaperUploadError,
-} from "@/lib/wallpaper/process-image";
-import { resolveActiveWallpaper } from "@/lib/wallpaper/resolve-wallpaper";
+  type CustomWallpaperSlots,
+  countFilledCustomWallpaperSlots,
+  customWallpaperIdForSlot,
+  EMPTY_CUSTOM_WALLPAPER_SLOTS,
+  findFirstEmptyCustomWallpaperSlot,
+  isCustomWallpaperId,
+  normalizeStoredWallpaperId,
+  slotForCustomWallpaperId,
+} from "@/lib/wallpaper/custom-wallpaper";
 import {
   readStoredWallpaperMask,
   readStoredWallpaperMaskColor,
   writeStoredWallpaperMask,
   writeStoredWallpaperMaskColor,
 } from "@/lib/wallpaper/mask-storage";
-import type { WallpaperMaskColor } from "@/types/wallpaper";
+import {
+  processWallpaperFile,
+  processWallpaperFromUrl,
+  WallpaperUploadError,
+} from "@/lib/wallpaper/process-image";
+import {
+  isActiveCustomWallpaper,
+  resolveActiveWallpaper,
+} from "@/lib/wallpaper/resolve-wallpaper";
 import {
   readStoredWallpaperId,
   writeStoredWallpaperId,
 } from "@/lib/wallpaper/storage";
-import type { Wallpaper, WallpaperId } from "@/types/wallpaper";
+import type {
+  Wallpaper,
+  WallpaperId,
+  WallpaperMaskColor,
+} from "@/types/wallpaper";
 
 interface WallpaperContextValue {
   wallpaper: Wallpaper;
   wallpaperId: WallpaperId;
-  customWallpaperUrl: string | null;
+  customWallpaperSlots: CustomWallpaperSlots;
+  customWallpaperCount: number;
+  canUploadMoreCustomWallpapers: boolean;
   maskOpacity: number;
   maskColor: WallpaperMaskColor;
   isUploading: boolean;
@@ -46,7 +66,8 @@ interface WallpaperContextValue {
   setMaskOpacity: (value: number) => void;
   setMaskColor: (value: WallpaperMaskColor) => void;
   uploadCustomWallpaper: (file: File) => Promise<void>;
-  removeCustomWallpaper: () => Promise<void>;
+  uploadCustomWallpaperFromUrl: (url: string) => Promise<void>;
+  removeCustomWallpaper: (slot: number) => Promise<void>;
 }
 
 const WallpaperContext = createContext<WallpaperContextValue | null>(null);
@@ -55,44 +76,71 @@ interface WallpaperProviderProps {
   children: React.ReactNode;
 }
 
-async function loadInitialWallpaperState(): Promise<{
-  wallpaperId: WallpaperId;
-  customWallpaperUrl: string | null;
-}> {
-  const [storedId, customWallpaperUrl] = await Promise.all([
-    Promise.resolve(readStoredWallpaperId()),
-    readCustomWallpaper(),
-  ]);
+function resolveInitialWallpaperId(
+  storedId: WallpaperId,
+  slots: CustomWallpaperSlots,
+): WallpaperId {
+  const normalizedId = normalizeStoredWallpaperId(storedId) as WallpaperId;
 
-  if (storedId === CUSTOM_WALLPAPER_ID && !customWallpaperUrl) {
-    writeStoredWallpaperId(DEFAULT_WALLPAPER_ID);
-    return { wallpaperId: DEFAULT_WALLPAPER_ID, customWallpaperUrl: null };
+  if (isCustomWallpaperId(normalizedId)) {
+    return isActiveCustomWallpaper(normalizedId, slots)
+      ? normalizedId
+      : DEFAULT_WALLPAPER_ID;
   }
 
-  return { wallpaperId: storedId, customWallpaperUrl };
+  return normalizedId;
+}
+
+async function loadInitialWallpaperState(): Promise<{
+  wallpaperId: WallpaperId;
+  customWallpaperSlots: CustomWallpaperSlots;
+}> {
+  const [storedId, customWallpaperSlots] = await Promise.all([
+    Promise.resolve(readStoredWallpaperId()),
+    readCustomWallpaperSlots(),
+  ]);
+
+  const wallpaperId = resolveInitialWallpaperId(storedId, customWallpaperSlots);
+
+  if (wallpaperId !== storedId) {
+    writeStoredWallpaperId(wallpaperId);
+  }
+
+  return { wallpaperId, customWallpaperSlots };
 }
 
 export function WallpaperProvider({ children }: WallpaperProviderProps) {
   const [wallpaperId, setWallpaperIdState] =
     useState<WallpaperId>(DEFAULT_WALLPAPER_ID);
-  const [customWallpaperUrl, setCustomWallpaperUrl] = useState<string | null>(
-    null,
-  );
+  const [customWallpaperSlots, setCustomWallpaperSlots] =
+    useState<CustomWallpaperSlots>(EMPTY_CUSTOM_WALLPAPER_SLOTS);
   const [maskOpacity, setMaskOpacityState] = useState(DEFAULT_WALLPAPER_MASK);
   const [maskColor, setMaskColorState] = useState<WallpaperMaskColor>("black");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const customWallpaperCount = useMemo(
+    () => countFilledCustomWallpaperSlots(customWallpaperSlots),
+    [customWallpaperSlots],
+  );
+
+  const canUploadMoreCustomWallpapers =
+    customWallpaperCount < MAX_CUSTOM_WALLPAPERS;
+
   useEffect(() => {
     void loadInitialWallpaperState().then(
-      ({ wallpaperId, customWallpaperUrl }) => {
+      ({ wallpaperId, customWallpaperSlots }) => {
         setWallpaperIdState(wallpaperId);
-        setCustomWallpaperUrl(customWallpaperUrl);
+        setCustomWallpaperSlots(customWallpaperSlots);
       },
     );
     setMaskOpacityState(readStoredWallpaperMask());
     setMaskColorState(readStoredWallpaperMaskColor());
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.wallpaper = wallpaperId;
+  }, [wallpaperId]);
 
   const setWallpaperId = useCallback((id: WallpaperId) => {
     setUploadError(null);
@@ -110,45 +158,96 @@ export function WallpaperProvider({ children }: WallpaperProviderProps) {
     writeStoredWallpaperMaskColor(value);
   }, []);
 
-  const uploadCustomWallpaper = useCallback(async (file: File) => {
-    setIsUploading(true);
-    setUploadError(null);
+  const saveCustomWallpaperDataUrl = useCallback(async (dataUrl: string) => {
+    const slots = await readCustomWallpaperSlots();
+    const emptySlot = findFirstEmptyCustomWallpaperSlot(slots);
 
-    try {
-      const dataUrl = await processWallpaperFile(file);
-      await writeCustomWallpaper(dataUrl);
-      setCustomWallpaperUrl(dataUrl);
-      setWallpaperIdState(CUSTOM_WALLPAPER_ID);
-      writeStoredWallpaperId(CUSTOM_WALLPAPER_ID);
-    } catch (error) {
-      const message =
-        error instanceof WallpaperUploadError
-          ? error.message
-          : "Gagal mengunggah wallpaper.";
-      setUploadError(message);
-    } finally {
-      setIsUploading(false);
+    if (emptySlot === null) {
+      throw new WallpaperUploadError(
+        `Maksimal ${MAX_CUSTOM_WALLPAPERS} wallpaper kustom.`,
+      );
     }
+
+    const nextSlots = await setCustomWallpaperAtSlot(emptySlot, dataUrl);
+    const nextId = customWallpaperIdForSlot(emptySlot);
+
+    setCustomWallpaperSlots(nextSlots);
+    setWallpaperIdState(nextId);
+    writeStoredWallpaperId(nextId);
   }, []);
 
-  const removeCustomWallpaper = useCallback(async () => {
-    await deleteCustomWallpaper();
-    setCustomWallpaperUrl(null);
-    setUploadError(null);
-    setWallpaperIdState(DEFAULT_WALLPAPER_ID);
-    writeStoredWallpaperId(DEFAULT_WALLPAPER_ID);
-  }, []);
+  const uploadCustomWallpaper = useCallback(
+    async (file: File) => {
+      setIsUploading(true);
+      setUploadError(null);
+
+      try {
+        const dataUrl = await processWallpaperFile(file);
+        await saveCustomWallpaperDataUrl(dataUrl);
+      } catch (error) {
+        const message =
+          error instanceof WallpaperUploadError
+            ? error.message
+            : "Gagal mengunggah wallpaper.";
+        setUploadError(message);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [saveCustomWallpaperDataUrl],
+  );
+
+  const uploadCustomWallpaperFromUrl = useCallback(
+    async (url: string) => {
+      setIsUploading(true);
+      setUploadError(null);
+
+      try {
+        const dataUrl = await processWallpaperFromUrl(url);
+        await saveCustomWallpaperDataUrl(dataUrl);
+      } catch (error) {
+        const message =
+          error instanceof WallpaperUploadError
+            ? error.message
+            : "Gagal mengimpor wallpaper dari link.";
+        setUploadError(message);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [saveCustomWallpaperDataUrl],
+  );
+
+  const removeCustomWallpaper = useCallback(
+    async (slot: number) => {
+      const nextSlots = await setCustomWallpaperAtSlot(slot, null);
+      setCustomWallpaperSlots(nextSlots);
+      setUploadError(null);
+
+      const selectedSlot = slotForCustomWallpaperId(
+        normalizeStoredWallpaperId(wallpaperId),
+      );
+
+      if (selectedSlot === slot) {
+        setWallpaperIdState(DEFAULT_WALLPAPER_ID);
+        writeStoredWallpaperId(DEFAULT_WALLPAPER_ID);
+      }
+    },
+    [wallpaperId],
+  );
 
   const wallpaper = useMemo(
-    () => resolveActiveWallpaper(wallpaperId, customWallpaperUrl),
-    [customWallpaperUrl, wallpaperId],
+    () => resolveActiveWallpaper(wallpaperId, customWallpaperSlots),
+    [customWallpaperSlots, wallpaperId],
   );
 
   const value = useMemo<WallpaperContextValue>(
     () => ({
       wallpaper,
       wallpaperId,
-      customWallpaperUrl,
+      customWallpaperSlots,
+      customWallpaperCount,
+      canUploadMoreCustomWallpapers,
       maskOpacity,
       maskColor,
       isUploading,
@@ -157,10 +256,13 @@ export function WallpaperProvider({ children }: WallpaperProviderProps) {
       setMaskOpacity,
       setMaskColor,
       uploadCustomWallpaper,
+      uploadCustomWallpaperFromUrl,
       removeCustomWallpaper,
     }),
     [
-      customWallpaperUrl,
+      canUploadMoreCustomWallpapers,
+      customWallpaperCount,
+      customWallpaperSlots,
       isUploading,
       maskColor,
       maskOpacity,
@@ -169,6 +271,7 @@ export function WallpaperProvider({ children }: WallpaperProviderProps) {
       setMaskOpacity,
       setWallpaperId,
       uploadCustomWallpaper,
+      uploadCustomWallpaperFromUrl,
       uploadError,
       wallpaper,
       wallpaperId,

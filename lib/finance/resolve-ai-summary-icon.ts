@@ -3,7 +3,7 @@ import {
   CloudBoltIcon,
   CloudRainIcon,
   ExclamationTriangleIcon,
-  ListStarIcon,
+  HeartIcon,
   MoonIcon,
   ShieldIcon,
   SunIcon,
@@ -19,12 +19,12 @@ const FINANCE_CONDITION_ICONS: Record<string, Icon> = {
   boros: CloudRainIcon,
   kritis: CloudBoltIcon,
   tenang: MoonIcon,
-  kosong: ListStarIcon,
+  kosong: HeartIcon,
   risiko: XCircleIcon,
 };
 
 const PLANS_INSIGHT_ICONS: Record<PlansInsightTone, Icon> = {
-  empty: ListStarIcon,
+  empty: HeartIcon,
   safe: CheckCircleIcon,
   tight: ExclamationTriangleIcon,
   unsafe: XCircleIcon,

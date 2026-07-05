@@ -1,18 +1,24 @@
 import { Type } from "@google/genai";
 
 import { getCategoryLabel } from "@/config/categories";
-import { GEMINI_MONMON_APP_CONTEXT } from "@/config/gemini-locale";
 import {
   GEMINI_DAILY_INSIGHT_MAX_OUTPUT_TOKENS,
   GEMINI_MODEL,
 } from "@/config/gemini";
+import { GEMINI_WANG_APP_CONTEXT } from "@/config/gemini-locale";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
-import { formatJournalDate } from "@/lib/finance/format-datetime";
 import { formatIdr } from "@/lib/finance/format-currency";
+import { formatJournalDate } from "@/lib/finance/format-datetime";
 import type { FinanceCondition } from "@/types/summary";
 
-const CONDITION_LABELS = ["Aman", "Stabil", "Waspada", "Boros", "Kritis"] as const;
+const CONDITION_LABELS = [
+  "Aman",
+  "Stabil",
+  "Waspada",
+  "Boros",
+  "Kritis",
+] as const;
 
 interface DailySummaryTransaction {
   type: "income" | "expense";
@@ -21,9 +27,9 @@ interface DailySummaryTransaction {
   description: string;
 }
 
-const SYSTEM_INSTRUCTION = `${GEMINI_MONMON_APP_CONTEXT}
+const SYSTEM_INSTRUCTION = `${GEMINI_WANG_APP_CONTEXT}
 
-Kamu analis keuangan Monmon. Berikan refleksi singkat (2-3 kalimat) tentang aktivitas keuangan user kemarin berdasarkan data transaksi.
+Kamu analis keuangan Wang. Berikan refleksi singkat (2-3 kalimat) tentang aktivitas keuangan user kemarin berdasarkan data transaksi.
 Bahasa Indonesia, nada ramah dan objektif, tanpa menghakimi.
 Sebut apakah pola pengeluaran/pemasukan terlihat wajar, boros, atau hemat RELATIF terhadap data yang diberikan.
 Berikan satu saran praktis spesifik jika relevan.

@@ -1,7 +1,15 @@
+import {
+  CUSTOM_WALLPAPER_SLOT_IDS,
+  type CustomWallpaperSlots,
+  EMPTY_CUSTOM_WALLPAPER_SLOTS,
+  MAX_CUSTOM_WALLPAPERS,
+} from "@/lib/wallpaper/custom-wallpaper";
+
 const DB_NAME = "monmon-app";
 const DB_VERSION = 1;
 const STORE_NAME = "settings";
-const CUSTOM_WALLPAPER_KEY = "custom-wallpaper";
+const CUSTOM_WALLPAPERS_KEY = "custom-wallpapers";
+const LEGACY_CUSTOM_WALLPAPER_KEY = "custom-wallpaper";
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -38,30 +46,84 @@ function runStoreRequest<T>(
   );
 }
 
-export async function readCustomWallpaper(): Promise<string | null> {
+function normalizeSlots(value: unknown): CustomWallpaperSlots {
+  if (!Array.isArray(value)) {
+    return [...EMPTY_CUSTOM_WALLPAPER_SLOTS];
+  }
+
+  const slots: CustomWallpaperSlots = [...EMPTY_CUSTOM_WALLPAPER_SLOTS];
+  for (let index = 0; index < MAX_CUSTOM_WALLPAPERS; index += 1) {
+    const entry = value[index];
+    slots[index] = typeof entry === "string" ? entry : null;
+  }
+
+  return slots;
+}
+
+async function migrateLegacyCustomWallpaper(): Promise<CustomWallpaperSlots> {
+  try {
+    const legacy = await runStoreRequest("readonly", (store) =>
+      store.get(LEGACY_CUSTOM_WALLPAPER_KEY),
+    );
+
+    if (typeof legacy !== "string") {
+      return [...EMPTY_CUSTOM_WALLPAPER_SLOTS];
+    }
+
+    const slots: CustomWallpaperSlots = [legacy, null, null];
+    await writeCustomWallpaperSlots(slots);
+    await runStoreRequest("readwrite", (store) =>
+      store.delete(LEGACY_CUSTOM_WALLPAPER_KEY),
+    );
+
+    return slots;
+  } catch {
+    return [...EMPTY_CUSTOM_WALLPAPER_SLOTS];
+  }
+}
+
+export async function readCustomWallpaperSlots(): Promise<CustomWallpaperSlots> {
   if (typeof window === "undefined") {
-    return null;
+    return [...EMPTY_CUSTOM_WALLPAPER_SLOTS];
   }
 
   try {
     const value = await runStoreRequest("readonly", (store) =>
-      store.get(CUSTOM_WALLPAPER_KEY),
+      store.get(CUSTOM_WALLPAPERS_KEY),
     );
 
-    return typeof value === "string" ? value : null;
+    if (value === undefined) {
+      return migrateLegacyCustomWallpaper();
+    }
+
+    return normalizeSlots(value);
   } catch {
-    return null;
+    return [...EMPTY_CUSTOM_WALLPAPER_SLOTS];
   }
 }
 
-export async function writeCustomWallpaper(dataUrl: string): Promise<void> {
+export async function writeCustomWallpaperSlots(
+  slots: CustomWallpaperSlots,
+): Promise<void> {
   await runStoreRequest("readwrite", (store) =>
-    store.put(dataUrl, CUSTOM_WALLPAPER_KEY),
+    store.put(normalizeSlots(slots), CUSTOM_WALLPAPERS_KEY),
   );
 }
 
-export async function deleteCustomWallpaper(): Promise<void> {
-  await runStoreRequest("readwrite", (store) =>
-    store.delete(CUSTOM_WALLPAPER_KEY),
-  );
+export async function setCustomWallpaperAtSlot(
+  slot: number,
+  dataUrl: string | null,
+): Promise<CustomWallpaperSlots> {
+  const slots = await readCustomWallpaperSlots();
+
+  if (slot < 0 || slot >= MAX_CUSTOM_WALLPAPERS) {
+    throw new Error("Slot wallpaper tidak valid.");
+  }
+
+  slots[slot] = dataUrl;
+  await writeCustomWallpaperSlots(slots);
+
+  return slots;
 }
+
+export { CUSTOM_WALLPAPER_SLOT_IDS };

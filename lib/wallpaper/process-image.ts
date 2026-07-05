@@ -11,22 +11,42 @@ export class WallpaperUploadError extends Error {
   }
 }
 
-function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+function loadImageFromObjectUrl(objectUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    const objectUrl = URL.createObjectURL(file);
     const image = new Image();
 
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve(image);
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
+    image.onload = () => resolve(image);
+    image.onerror = () =>
       reject(new WallpaperUploadError("Gagal membaca gambar."));
-    };
 
     image.src = objectUrl;
+  });
+}
+
+function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+  const objectUrl = URL.createObjectURL(file);
+
+  return loadImageFromObjectUrl(objectUrl).finally(() => {
+    URL.revokeObjectURL(objectUrl);
+  });
+}
+
+function loadImageFromUrlWithCrossOrigin(
+  url: string,
+): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+
+    image.onload = () => resolve(image);
+    image.onerror = () =>
+      reject(
+        new WallpaperUploadError(
+          "Gagal memuat gambar dari link. Pastikan link publik (JPG/PNG/WebP).",
+        ),
+      );
+
+    image.src = url;
   });
 }
 
@@ -48,16 +68,7 @@ function scaleDimensions(
   };
 }
 
-export async function processWallpaperFile(file: File): Promise<string> {
-  if (!ACCEPTED_MIME_TYPES.has(file.type)) {
-    throw new WallpaperUploadError("Format harus JPG, PNG, atau WebP.");
-  }
-
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    throw new WallpaperUploadError("Ukuran file maksimal 8 MB.");
-  }
-
-  const image = await loadImageFromFile(file);
+function encodeImageElement(image: HTMLImageElement): string {
   const { width, height } = scaleDimensions(
     image.naturalWidth,
     image.naturalHeight,
@@ -83,4 +94,85 @@ export async function processWallpaperFile(file: File): Promise<string> {
   }
 
   return dataUrl;
+}
+
+function assertAcceptedImageMime(mime: string): void {
+  if (mime && !mime.startsWith("image/")) {
+    throw new WallpaperUploadError("Link harus menuju ke file gambar.");
+  }
+
+  if (mime && !ACCEPTED_MIME_TYPES.has(mime)) {
+    throw new WallpaperUploadError("Format harus JPG, PNG, atau WebP.");
+  }
+}
+
+export function normalizeWallpaperUrl(input: string): string {
+  const trimmed = input.trim();
+
+  if (!trimmed) {
+    throw new WallpaperUploadError("Link tidak boleh kosong.");
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(trimmed);
+  } catch {
+    throw new WallpaperUploadError("Link tidak valid.");
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new WallpaperUploadError("Link harus diawali http:// atau https://");
+  }
+
+  return url.toString();
+}
+
+async function loadImageFromRemoteUrl(url: string): Promise<HTMLImageElement> {
+  try {
+    const response = await fetch(url, { mode: "cors" });
+
+    if (!response.ok) {
+      throw new WallpaperUploadError("Gagal mengunduh gambar dari link.");
+    }
+
+    const blob = await response.blob();
+
+    if (blob.size > MAX_FILE_SIZE_BYTES) {
+      throw new WallpaperUploadError("Ukuran gambar maksimal 8 MB.");
+    }
+
+    assertAcceptedImageMime(blob.type);
+
+    const file = new File([blob], "wallpaper", {
+      type: blob.type || "image/jpeg",
+    });
+
+    return loadImageFromFile(file);
+  } catch (error) {
+    if (error instanceof WallpaperUploadError) {
+      throw error;
+    }
+  }
+
+  return loadImageFromUrlWithCrossOrigin(url);
+}
+
+export async function processWallpaperFile(file: File): Promise<string> {
+  if (!ACCEPTED_MIME_TYPES.has(file.type)) {
+    throw new WallpaperUploadError("Format harus JPG, PNG, atau WebP.");
+  }
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new WallpaperUploadError("Ukuran file maksimal 8 MB.");
+  }
+
+  const image = await loadImageFromFile(file);
+  return encodeImageElement(image);
+}
+
+export async function processWallpaperFromUrl(input: string): Promise<string> {
+  const url = normalizeWallpaperUrl(input);
+  const image = await loadImageFromRemoteUrl(url);
+  return encodeImageElement(image);
 }

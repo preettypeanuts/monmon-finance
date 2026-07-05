@@ -1,5 +1,5 @@
-import { generatePlansInsightWithGemini } from "@/lib/ai/generate-plans-insight-gemini";
 import { isGeminiConfigured } from "@/lib/ai/gemini-client";
+import { generatePlansInsightWithGemini } from "@/lib/ai/generate-plans-insight-gemini";
 import { buildFallbackPlansInsight } from "@/lib/finance/build-plans-overview";
 import type { PlanRecord } from "@/types/plan";
 

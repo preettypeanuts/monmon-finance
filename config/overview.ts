@@ -38,8 +38,8 @@ export const OVERVIEW_TOP_PAIR = `grid grid-cols-1 ${GRID_GAP} md:grid-cols-2 ${
 export const OVERVIEW_BALANCE_METRICS = `mt-4 grid grid-cols-1 ${GRID_GAP} sm:grid-cols-3`;
 
 export const OVERVIEW_BALANCE_METRIC = [
-  "flex min-h-[7.5rem] flex-col rounded-xl bg-[#F2F2F7] p-3 ring-1 ring-black/10",
-  "dark:bg-[#3A3A3C] dark:ring-white/12",
+  "flex min-h-[7.5rem] flex-col rounded-xl bg-[#F2F2F78F] p-3 ring-1 ring-black/10",
+  "dark:bg-[#3A3A3C8F] dark:ring-white/12",
 ].join(" ");
 
 export const OVERVIEW_BALANCE_DELTA =

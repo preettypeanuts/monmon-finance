@@ -6,6 +6,9 @@ export type WallpaperId =
   | "forest"
   | "midnight"
   | "rose"
+  | "custom-1"
+  | "custom-2"
+  | "custom-3"
   | "custom";
 
 export type WallpaperKind = "gradient" | "image";

@@ -1,15 +1,18 @@
-import { PlannerCalendar } from "@/components/planner/planner-calendar";
+import { BudgetManage } from "@/components/planner/budget-manage";
 import { PlannedItemsManage } from "@/components/planner/planned-items-manage";
+import { PlannerCalendar } from "@/components/planner/planner-calendar";
+import { PlannerCalendarTabBar } from "@/components/planner/planner-calendar-tab-bar";
 import { PlannerShell } from "@/components/planner/planner-shell";
 import { PlannerTabBar } from "@/components/planner/planner-tab-bar";
 import { MobileBackButton } from "@/components/shared/mobile-back-button";
 import { APP_GUTTER, STACK_GAP } from "@/config/spacing";
-import { getPlannerMonthData } from "@/lib/db/planner";
+import { listBudgetsForMonth } from "@/lib/db/budgets";
 import { listPlannedItems } from "@/lib/db/planned-items";
+import { getPlannerMonthData } from "@/lib/db/planner";
 import { pickDefaultDayKey } from "@/lib/planner/calendar";
-import { parsePlannerSearchParams } from "@/lib/validations/planner";
 import { cn } from "@/lib/utils";
-import { isPayPlanManageTab } from "@/types/planner";
+import { parsePlannerSearchParams } from "@/lib/validations/planner";
+import { isPlannerManageLayout } from "@/types/planner";
 
 export const dynamic = "force-dynamic";
 
@@ -19,14 +22,16 @@ interface PayPlanPageProps {
 
 export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
   const params = await searchParams;
-  const { monthKey, tab, filters } = parsePlannerSearchParams(params);
-  const isManage = isPayPlanManageTab(tab);
+  const { monthKey, tab, calendarLayout, filters } =
+    parsePlannerSearchParams(params);
+  const isManage = tab === "calendar" && isPlannerManageLayout(calendarLayout);
   const needsMonthOccurrences = isManage && filters.paymentStatus !== "all";
-  const [data, plannedItems] = await Promise.all([
-    tab === "calendar" || needsMonthOccurrences
+  const [data, plannedItems, budgets] = await Promise.all([
+    tab === "calendar" && (calendarLayout === "month" || needsMonthOccurrences)
       ? getPlannerMonthData(monthKey)
       : null,
     isManage ? listPlannedItems() : null,
+    tab === "budget" ? listBudgetsForMonth(monthKey) : null,
   ]);
   const initialDayKey = data
     ? pickDefaultDayKey(data.monthKey, data.marks)
@@ -45,7 +50,9 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
                     PayPlan
                   </h1>
                   <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
-                    Tagihan dan pemasukan terjadwal.
+                    {tab === "budget"
+                      ? "Atur budget kategori — terhubung dengan Inbox."
+                      : "Tagihan, pemasukan terjadwal, dan budget."}
                   </p>
                 </div>
               </div>
@@ -56,11 +63,24 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
                 className="mt-0.5 shrink-0"
               />
             </div>
+
+            {tab === "calendar" ? (
+              <div className="mt-3">
+                <PlannerCalendarTabBar
+                  layout={calendarLayout}
+                  monthKey={monthKey}
+                />
+              </div>
+            ) : null}
           </header>
+
+          {tab === "budget" && budgets ? (
+            <BudgetManage monthKey={monthKey} budgets={budgets} />
+          ) : null}
 
           {isManage && plannedItems ? (
             <PlannedItemsManage
-              tab={tab}
+              layout={calendarLayout}
               items={plannedItems.map((item) => ({
                 ...item,
                 startAt: item.startAt.toISOString(),
@@ -76,7 +96,10 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
             />
           ) : null}
 
-          {tab === "calendar" && data && initialDayKey ? (
+          {tab === "calendar" &&
+          calendarLayout === "month" &&
+          data &&
+          initialDayKey ? (
             <PlannerCalendar
               monthKey={data.monthKey}
               year={data.year}

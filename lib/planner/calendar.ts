@@ -49,6 +49,10 @@ export function getMonthRange(year: number, month: number) {
   return { start, end };
 }
 
+export function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
 export function shiftMonthKey(monthKey: string, delta: number): string {
   const parsed = parseMonthKey(monthKey) ?? {
     year: new Date().getFullYear(),

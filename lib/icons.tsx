@@ -9,6 +9,7 @@ import {
   sfBagFill,
   sfBanknoteFill,
   sfBookFill,
+  sfBubbleLeftAndBubbleRightFill,
   sfCalendar,
   sfCarFill,
   sfCartFill,
@@ -16,6 +17,7 @@ import {
   sfCheckmarkCircleFill,
   sfCloudBoltFill,
   sfCloudRainFill,
+  sfChartBarFill,
   sfChevronDown,
   sfChevronLeft,
   sfChevronRight,
@@ -27,9 +29,9 @@ import {
   sfExclamationmarkTriangleFill,
   sfCupAndSaucerFill,
   sfGearshapeFill,
+  sfHeartFill,
   sfInfinity,
   sfLine3HorizontalDecrease,
-  sfListStar,
   sfMoonFill,
   sfPencil,
   sfPlus,
@@ -43,7 +45,6 @@ import {
   sfSunMaxFill,
   sfTablecellsFill,
   sfTrashFill,
-  sfTrayFill,
   sfWalletBifoldFill,
   sfXmark,
   sfXmarkCircleFill,
@@ -103,6 +104,11 @@ export const CaretDownIcon = createSFIcon(sfChevronDown, "CaretDownIcon");
 export const CaretLeftIcon = createSFIcon(sfChevronLeft, "CaretLeftIcon");
 export const CaretRightIcon = createSFIcon(sfChevronRight, "CaretRightIcon");
 export const CaretUpIcon = createSFIcon(sfChevronUp, "CaretUpIcon");
+export const ChartBarIcon = createSFIcon(sfChartBarFill, "ChartBarIcon");
+export const ChatIcon = createSFIcon(
+  sfBubbleLeftAndBubbleRightFill,
+  "ChatIcon",
+);
 export const CheckIcon = createSFIcon(sfCheckmark, "CheckIcon");
 export const CheckCircleIcon = createSFIcon(
   sfCheckmarkCircleFill,
@@ -135,8 +141,8 @@ export const FunnelIcon = createSFIcon(
   "FunnelIcon",
 );
 export const GearSixIcon = createSFIcon(sfGearshapeFill, "GearSixIcon");
+export const HeartIcon = createSFIcon(sfHeartFill, "HeartIcon");
 export const InfinityIcon = createSFIcon(sfInfinity, "InfinityIcon");
-export const ListStarIcon = createSFIcon(sfListStar, "ListStarIcon");
 export const MoonIcon = createSFIcon(sfMoonFill, "MoonIcon");
 export const NotebookIcon = createSFIcon(sfBookFill, "NotebookIcon");
 export const PencilSimpleIcon = createSFIcon(sfPencil, "PencilSimpleIcon");
@@ -153,7 +159,6 @@ export const SquaresFourIcon = createSFIcon(
 export const SunIcon = createSFIcon(sfSunMaxFill, "SunIcon");
 export const TableIcon = createSFIcon(sfTablecellsFill, "TableIcon");
 export const TrashIcon = createSFIcon(sfTrashFill, "TrashIcon");
-export const TrayIcon = createSFIcon(sfTrayFill, "TrayIcon");
 export const UploadSimpleIcon = createSFIcon(
   sfSquareAndArrowUpFill,
   "UploadSimpleIcon",

@@ -1,5 +1,5 @@
-import { generateJournalConditionWithGemini } from "@/lib/ai/generate-journal-condition-gemini";
 import { isGeminiConfigured } from "@/lib/ai/gemini-client";
+import { generateJournalConditionWithGemini } from "@/lib/ai/generate-journal-condition-gemini";
 import { buildFallbackJournalCondition } from "@/lib/finance/build-journal-condition";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
 import type { JournalCondition } from "@/types/journal";

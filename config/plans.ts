@@ -1,4 +1,10 @@
 import { GLASS_SURFACE, GLASS_TILE_BASE } from "@/config/glass";
+import {
+  PLANNER_MANAGE_CARD,
+  PLANNER_MANAGE_CARD_DIVIDER_LINE,
+  PLANNER_MANAGE_CARD_SURFACE,
+} from "@/config/planner-manage";
+import { SOLID_WIDGET_TILE_STYLES } from "@/config/solid-widget-tiles";
 import { GRID_GAP } from "@/config/spacing";
 import { SEPARATED_SURFACE } from "@/config/shape";
 import type { SummaryTileIcon } from "@/config/summary-tiles";
@@ -10,7 +16,17 @@ export const PLANS_GLASS = GLASS_SURFACE;
 export const PLANS_WIDGET_GRID =
   `grid grid-cols-1 sm:grid-cols-3 ${GRID_GAP}`;
 
+/** Empty-state / neutral tile shell. */
 export const PLANS_WIDGET_TILE = `${SEPARATED_SURFACE} ${PLANS_GLASS} px-3.5 py-3`;
+
+export const PLANS_WIDGET_TILE_LAYOUT =
+  "flex min-h-[5.5rem] flex-col justify-between px-3.5 py-3 sm:py-4";
+
+export const PLANS_WIDGET_SURFACE = {
+  active: SOLID_WIDGET_TILE_STYLES.primary,
+  estimated: SOLID_WIDGET_TILE_STYLES.expense,
+  balance: SOLID_WIDGET_TILE_STYLES.balance,
+} as const;
 
 export const PLANS_AI_SUMMARY_SHELL =
   "relative isolate min-h-28 overflow-hidden rounded-2xl ring-1 ring-white/20 dark:ring-white/10";
@@ -97,7 +113,7 @@ export function getPlansInsightToneStyle(
   return PLAN_INSIGHT_TONE_STYLES[tone];
 }
 
-export const PLANS_CARD = `${SEPARATED_SURFACE} ${PLANS_GLASS} flex max-h-60 min-h-56 flex-col overflow-hidden`;
+export const PLANS_CARD = PLANNER_MANAGE_CARD;
 
 export const PLANS_CARD_LIST = `grid grid-cols-1 pb-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 ${GRID_GAP}`;
 
@@ -106,8 +122,7 @@ export const PLANS_CARD_BODY =
 
 export const PLANS_CARD_FOOTER = "mt-auto shrink-0";
 
-export const PLANS_CARD_DIVIDER =
-  "h-px w-full border-t border-black/8 dark:border-white/10";
+export const PLANS_CARD_DIVIDER = PLANNER_MANAGE_CARD_DIVIDER_LINE;
 
 export const PLANS_CARD_FOOTER_CONTENT = "px-3.5 py-2.5 sm:px-4";
 
@@ -119,7 +134,7 @@ export const PLAN_STATUS_LABEL: Record<"active" | "done", string> = {
 export type PlanWidgetId = "active" | "estimated" | "balance";
 
 export interface PlanAccentStyle {
-  icon: SummaryTileIcon | "list-star" | "sparkle";
+  icon: SummaryTileIcon | "heart" | "sparkle";
   iconColor: string;
   iconSurface: string;
   valueColor: string;
@@ -129,7 +144,7 @@ export interface PlanAccentStyle {
 /** Color codes for Plans summary widgets. */
 export const PLAN_WIDGET_STYLES: Record<PlanWidgetId, PlanAccentStyle> = {
   active: {
-    icon: "list-star",
+    icon: "heart",
     iconColor: "text-[#007AFF]",
     iconSurface: "bg-[#007AFF]/15 dark:bg-[#007AFF]/20",
     valueColor: "text-[#007AFF]",
@@ -353,7 +368,7 @@ export type PlanIconName = PlanAccentStyle["icon"];
 
 export const PLANS_AI_ICON_SURFACE = `${GLASS_TILE_BASE} bg-muted/50`;
 
-export const PLANS_RELATED_UPCOMING_SHELL = `${SEPARATED_SURFACE} ${PLANS_GLASS} overflow-hidden`;
+export const PLANS_RELATED_UPCOMING_SHELL = `${PLANNER_MANAGE_CARD_SURFACE} overflow-hidden`;
 
 export const PLANS_RELATED_UPCOMING_HEADER = "px-3.5 py-3 sm:px-4";
 
@@ -362,8 +377,7 @@ export const PLANS_RELATED_UPCOMING_LIST = "flex flex-col";
 export const PLANS_RELATED_UPCOMING_ROW =
   "flex items-center justify-between gap-3 px-3.5 py-3 sm:px-4";
 
-export const PLANS_RELATED_UPCOMING_DIVIDER =
-  "h-px w-full border-t border-black/8 dark:border-white/10";
+export const PLANS_RELATED_UPCOMING_DIVIDER = PLANNER_MANAGE_CARD_DIVIDER_LINE;
 
 export const PLANS_RELATED_UPCOMING_EMPTY =
   "px-3.5 py-6 text-center text-xs text-muted-foreground sm:px-4";
