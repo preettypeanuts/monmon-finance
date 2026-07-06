@@ -1,3 +1,4 @@
+import { formatGeminiApiError } from "@/lib/ai/format-gemini-api-error";
 import { isTransactionParseError } from "@/lib/ai/transaction-parse-error";
 import type { ChatMessage } from "@/types/chat";
 
@@ -9,6 +10,11 @@ export function formatInboxProcessingError(error: unknown): string {
     return error.message;
   }
 
+  const geminiError = formatGeminiApiError(error);
+  if (geminiError) {
+    return geminiError;
+  }
+
   if (error instanceof Error) {
     if (error.message.includes("API key")) {
       return "Gemini belum dikonfigurasi. Tambahkan GEMINI_API_KEY di .env.local.";
@@ -16,6 +22,14 @@ export function formatInboxProcessingError(error: unknown): string {
 
     if (error.message.includes("DATABASE_URL")) {
       return "Database belum dikonfigurasi. Cek DATABASE_URL di .env.";
+    }
+
+    if (
+      /body exceeded|payload too large|request entity too large/i.test(
+        error.message,
+      )
+    ) {
+      return "Gambar struk terlalu besar. Coba foto lebih dekat atau resolusi lebih kecil.";
     }
 
     if (error.message.length > 0 && error.message.length <= 160) {

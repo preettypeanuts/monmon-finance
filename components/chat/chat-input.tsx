@@ -14,13 +14,19 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { CategoryMentionOption } from "@/config/category-mentions";
 import { GLASS_SURFACE } from "@/config/glass";
+import { RECEIPT_ACCEPT_ATTRIBUTE } from "@/config/receipt";
 import { CONTROL_GAP } from "@/config/spacing";
 import {
   detectCategoryMentionRange,
   filterCategoryMentionOptions,
   insertCategoryMention,
 } from "@/lib/chat/category-mentions";
-import { ArrowUpIcon, CalculatorIcon, PlusIcon } from "@/lib/icons";
+import {
+  ArrowUpIcon,
+  CalculatorIcon,
+  PlusIcon,
+  ReceiptIcon,
+} from "@/lib/icons";
 import { filterUnpaidPayPlanChatItems } from "@/lib/planner/unpaid-payplan-chat";
 import { filterActivePlanChatItems } from "@/lib/plans/active-plan-chat";
 import { cn } from "@/lib/utils";
@@ -35,6 +41,7 @@ const CONTROL_MIN_HEIGHT = "min-h-9";
 
 interface ChatInputProps {
   onSubmit: (text: string) => Promise<void>;
+  onReceiptFile?: (file: File) => Promise<void>;
   onPayPlan?: (item: UnpaidPayPlanChatItem) => Promise<void>;
   onMarkPlanDone?: (item: ActivePlanChatItem) => Promise<void>;
   unpaidPayPlanItems?: UnpaidPayPlanChatItem[];
@@ -46,6 +53,7 @@ interface ChatInputProps {
 
 export function ChatInput({
   onSubmit,
+  onReceiptFile,
   onPayPlan,
   onMarkPlanDone,
   unpaidPayPlanItems = [],
@@ -55,6 +63,7 @@ export function ChatInput({
   onDraftTextApplied,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
   const [cursor, setCursor] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -197,6 +206,24 @@ export function ChatInput({
     syncCursor();
   }
 
+  async function handleReceiptFileChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !onReceiptFile || isInputDisabled) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onReceiptFile(file);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   function handlePickerEnter() {
     if (isSlashOpen) {
       const selected = slashEntries[highlightedIndex];
@@ -266,6 +293,14 @@ export function ChatInput({
 
   return (
     <div className="relative shrink-0">
+      <input
+        ref={receiptInputRef}
+        type="file"
+        accept={RECEIPT_ACCEPT_ATTRIBUTE}
+        className="sr-only"
+        onChange={(event) => void handleReceiptFileChange(event)}
+      />
+
       {isSlashOpen ? (
         <ChatSlashMenu
           payPlanItems={filteredPayPlanItems}
@@ -311,8 +346,14 @@ export function ChatInput({
               <CalculatorIcon className="size-4" />
               Kalkulator
             </DropdownMenuItem>
-            <DropdownMenuItem>Upload struk</DropdownMenuItem>
-            <DropdownMenuItem>Input manual</DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!onReceiptFile}
+              onClick={() => receiptInputRef.current?.click()}
+            >
+              <ReceiptIcon className="size-4" />
+              Upload struk
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>Input manual</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

@@ -1,10 +1,13 @@
+"use client";
+
 import { PlansInsightBadgeIcon } from "@/components/shared/ai-summary-badge-icon";
+import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import { PlanIcon } from "@/components/plans/plan-icon";
 import {
   PLANS_AI_SUMMARY_SHELL,
   getPlansInsightToneStyle,
 } from "@/config/plans";
-import { formatIdr } from "@/lib/finance/format-currency";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { cn } from "@/lib/utils";
 import type { PlansOverview } from "@/types/plan";
 
@@ -13,6 +16,7 @@ interface PlansAiSummaryProps {
 }
 
 export function PlansAiSummary({ overview }: PlansAiSummaryProps) {
+  const { formatAmount } = useProtectedCurrency();
   const { insightMeta } = overview;
   const style = getPlansInsightToneStyle(insightMeta.tone);
 
@@ -57,16 +61,19 @@ export function PlansAiSummary({ overview }: PlansAiSummaryProps) {
             </p>
           </div>
 
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-              style.badgeSurface,
-              style.subtitleColor,
-            )}
-          >
-            <PlansInsightBadgeIcon tone={insightMeta.tone} />
-            {insightMeta.label}
-          </span>
+          <div className="flex shrink-0 items-center gap-1">
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                style.badgeSurface,
+                style.subtitleColor,
+              )}
+            >
+              <PlansInsightBadgeIcon tone={insightMeta.tone} />
+              {insightMeta.label}
+            </span>
+            <BalanceVisibilityToggle />
+          </div>
         </div>
 
         <p
@@ -82,15 +89,15 @@ export function PlansAiSummary({ overview }: PlansAiSummaryProps) {
           <p className={cn("mt-2.5 text-xs", style.subtitleColor)}>
             Spend{" "}
             <span className={cn("font-semibold", style.metricSpend)}>
-              {formatIdr(overview.estimatedCost)}
+              {formatAmount(overview.estimatedCost)}
             </span>
             {" · saldo "}
             <span className={cn("font-semibold", style.metricBalance)}>
-              {formatIdr(overview.availableBalance)}
+              {formatAmount(overview.availableBalance)}
             </span>
             {" · sisa "}
             <span className={cn("font-semibold", style.metricRemaining)}>
-              {formatIdr(overview.remainingBalance)}
+              {formatAmount(overview.remainingBalance)}
             </span>
           </p>
         ) : null}

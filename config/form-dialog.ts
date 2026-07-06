@@ -10,7 +10,7 @@ export const FORM_DIALOG_CONTENT = `flex max-h-[min(calc(100dvh-2rem),56rem)] fl
 export const FORM_DIALOG_CONTENT_WIDE = `flex max-h-[min(calc(100dvh-2rem),56rem)] flex-col gap-0 p-0 ${FORM_DIALOG_SURFACE} sm:max-w-[34rem]`;
 
 export const FORM_DIALOG_HEADER =
-  "shrink-0 border-b border-black/8 px-6 pt-5 pb-3.5 dark:border-white/10";
+  "shrink-0 border-b border-black/8 pl-6 pr-14 pt-5 pb-3.5 dark:border-white/10";
 
 export const FORM_DIALOG_BODY =
   "flex max-h-[min(75vh,36rem)] flex-col gap-4 overflow-y-auto px-5 pb-5";

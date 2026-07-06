@@ -1,13 +1,18 @@
+"use client";
+
 import { DailySummaryReflection } from "@/components/finance/daily-summary-reflection";
 import { DailySummaryStats } from "@/components/finance/daily-summary-stats";
-import { formatIdr } from "@/lib/finance/format-currency";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import type { DailySummarySnapshot } from "@/types/summary";
 
 interface DailySummarySectionProps {
   dailySummary: DailySummarySnapshot;
 }
 
-export function DailySummarySection({ dailySummary }: DailySummarySectionProps) {
+export function DailySummarySection({
+  dailySummary,
+}: DailySummarySectionProps) {
+  const { formatAmount } = useProtectedCurrency();
   const { summary } = dailySummary;
   const topCategories = summary.categories.slice(0, 2);
 
@@ -28,7 +33,7 @@ export function DailySummarySection({ dailySummary }: DailySummarySectionProps) 
           {topCategories
             .map(
               (category) =>
-                `${category.label} ${formatIdr(category.total)}`,
+                `${category.label} ${formatAmount(category.total)}`,
             )
             .join(" · ")}
         </p>

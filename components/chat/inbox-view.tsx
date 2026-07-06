@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import {
   markPlanDoneFromInboxAction,
@@ -10,15 +10,35 @@ import {
   submitInboxMessage,
   undoInboxMessageAction,
 } from "@/app/actions/inbox";
+import {
+  parseReceiptFromImageAction,
+  submitInboxMessageFromReceipt,
+} from "@/app/actions/receipt";
 import { ChatHeader } from "@/components/chat/chat-header";
 import { ChatInput } from "@/components/chat/chat-input";
+import { ChatReceiptDropOverlay } from "@/components/chat/chat-receipt-drop-overlay";
+import { ChatReceiptProcessingOverlay } from "@/components/chat/chat-receipt-processing-overlay";
 import { MessageList } from "@/components/chat/message-list";
+import { ReceiptConfirmDialog } from "@/components/chat/receipt-confirm-dialog";
+import type { TransactionCategoryId } from "@/config/categories";
 import { CHAT_INPUT_DOCK } from "@/config/chat-layout";
+import { buildReceiptManualFallbackNotice } from "@/lib/ai/format-gemini-api-error";
+import {
+  getReceiptImageFromDataTransfer,
+  hasReceiptImageInDataTransfer,
+} from "@/lib/receipt/image-file";
+import { createEmptyReceiptDraft } from "@/lib/receipt/create-empty-receipt-draft";
+import {
+  processReceiptImageFile,
+  ReceiptImageError,
+} from "@/lib/receipt/process-receipt-image";
 import type {
   ActivePlanChatItem,
   ChatMessage,
   UnpaidPayPlanChatItem,
 } from "@/types/chat";
+import type { ReceiptDraft } from "@/types/receipt";
+import type { TransactionType } from "@/types/transaction";
 
 interface InboxViewProps {
   initialMessages: ChatMessage[];
@@ -39,10 +59,161 @@ export function InboxView({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isProcessing, setIsProcessing] = useState(false);
   const [draftText, setDraftText] = useState<string | null>(null);
+  const [receiptDraft, setReceiptDraft] = useState<ReceiptDraft | null>(null);
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(
+    null,
+  );
+  const [isReceiptConfirmOpen, setIsReceiptConfirmOpen] = useState(false);
+  const [isParsingReceipt, setIsParsingReceipt] = useState(false);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
+  const [receiptParseNotice, setReceiptParseNotice] = useState<string | null>(
+    null,
+  );
+  const [isDraggingReceipt, setIsDraggingReceipt] = useState(false);
+  const dragDepthRef = useRef(0);
 
   const handleDraftTextApplied = useCallback(() => {
     setDraftText(null);
   }, []);
+
+  function clearReceiptPreview() {
+    setReceiptPreviewUrl(null);
+  }
+
+  function closeReceiptConfirm() {
+    setIsReceiptConfirmOpen(false);
+    setReceiptDraft(null);
+    setReceiptParseNotice(null);
+    clearReceiptPreview();
+  }
+
+  async function handleReceiptFile(file: File) {
+    setReceiptError(null);
+    setIsParsingReceipt(true);
+
+    try {
+      const processed = await processReceiptImageFile(file);
+      setReceiptPreviewUrl(processed.previewUrl);
+
+      const result = await parseReceiptFromImageAction(
+        processed.base64,
+        processed.mimeType,
+      );
+
+      if (!result.ok) {
+        setReceiptDraft(createEmptyReceiptDraft());
+        setReceiptParseNotice(buildReceiptManualFallbackNotice(result.error));
+        setIsReceiptConfirmOpen(true);
+        return;
+      }
+
+      setReceiptParseNotice(null);
+      setReceiptDraft(result.draft);
+      setIsReceiptConfirmOpen(true);
+    } catch (error) {
+      clearReceiptPreview();
+      setReceiptError(
+        error instanceof ReceiptImageError
+          ? error.message
+          : "Gagal memproses struk. Coba lagi.",
+      );
+    } finally {
+      setIsParsingReceipt(false);
+    }
+  }
+
+  async function handleReceiptConfirm(input: {
+    type: TransactionType;
+    amount: string;
+    category: TransactionCategoryId;
+    description: string;
+    merchant: string;
+    occurredAt: string;
+  }) {
+    const pendingId = createPendingId();
+    const optimisticUser: ChatMessage = {
+      id: pendingId,
+      role: "user",
+      content: `📄 Struk ${input.merchant.trim() || "Struk"} · ${input.description.trim()}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    closeReceiptConfirm();
+    setMessages((current) => [...current, optimisticUser]);
+    setIsProcessing(true);
+
+    try {
+      const result = await submitInboxMessageFromReceipt(input);
+
+      setMessages((current) => [
+        ...current.filter((message) => message.id !== pendingId),
+        result.userMessage,
+        result.assistantMessage,
+      ]);
+
+      if (result.ok) {
+        router.refresh();
+      }
+    } catch (error) {
+      setMessages((current) =>
+        current.filter((message) => message.id !== pendingId),
+      );
+      setReceiptError(
+        error instanceof Error ? error.message : "Gagal mencatat struk.",
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  function handleDragEnter(event: React.DragEvent<HTMLElement>) {
+    if (!hasReceiptImageInDataTransfer(event.dataTransfer)) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepthRef.current += 1;
+    setIsDraggingReceipt(true);
+  }
+
+  function handleDragLeave(event: React.DragEvent<HTMLElement>) {
+    if (!hasReceiptImageInDataTransfer(event.dataTransfer)) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+
+    if (dragDepthRef.current === 0) {
+      setIsDraggingReceipt(false);
+    }
+  }
+
+  function handleDragOver(event: React.DragEvent<HTMLElement>) {
+    if (!hasReceiptImageInDataTransfer(event.dataTransfer)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  }
+
+  async function handleDrop(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    dragDepthRef.current = 0;
+    setIsDraggingReceipt(false);
+
+    if (isProcessing || isParsingReceipt) {
+      return;
+    }
+
+    const file = getReceiptImageFromDataTransfer(event.dataTransfer);
+    if (!file) {
+      return;
+    }
+
+    await handleReceiptFile(file);
+  }
 
   async function handleSubmit(text: string) {
     const trimmed = text.trim();
@@ -87,7 +258,11 @@ export function InboxView({
     setMessages((current) =>
       current.map((message) =>
         message.id === assistantMessageId
-          ? { ...message, content: "Memproses ulang...", transaction: undefined }
+          ? {
+              ...message,
+              content: "Memproses ulang...",
+              transaction: undefined,
+            }
           : message,
       ),
     );
@@ -178,11 +353,7 @@ export function InboxView({
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((current) => [
-      ...current,
-      optimisticUser,
-      optimisticAssistant,
-    ]);
+    setMessages((current) => [...current, optimisticUser, optimisticAssistant]);
     setIsProcessing(true);
 
     try {
@@ -229,11 +400,7 @@ export function InboxView({
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((current) => [
-      ...current,
-      optimisticUser,
-      optimisticAssistant,
-    ]);
+    setMessages((current) => [...current, optimisticUser, optimisticAssistant]);
     setIsProcessing(true);
 
     try {
@@ -262,7 +429,14 @@ export function InboxView({
   }
 
   return (
-    <div className="relative h-full min-h-0 w-full flex-1 overflow-hidden">
+    <section
+      aria-label="Inbox chat"
+      className="relative h-full min-h-0 w-full flex-1 overflow-hidden"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={(event) => void handleDrop(event)}
+    >
       <MessageList
         messages={messages}
         onRetry={handleRetry}
@@ -271,18 +445,42 @@ export function InboxView({
         actionsDisabled={isProcessing}
       />
       <ChatHeader />
+      <ChatReceiptDropOverlay visible={isDraggingReceipt} />
+      <ChatReceiptProcessingOverlay visible={isParsingReceipt} />
       <div className={CHAT_INPUT_DOCK}>
+        {receiptError ? (
+          <p className="mb-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {receiptError}
+          </p>
+        ) : null}
         <ChatInput
           onSubmit={handleSubmit}
+          onReceiptFile={handleReceiptFile}
           onPayPlan={handlePayPlan}
           onMarkPlanDone={handleMarkPlanDone}
           unpaidPayPlanItems={unpaidPayPlanItems}
           activePlanItems={activePlanItems}
-          disabled={isProcessing}
+          disabled={isProcessing || isParsingReceipt}
           draftText={draftText}
           onDraftTextApplied={handleDraftTextApplied}
         />
       </div>
-    </div>
+
+      <ReceiptConfirmDialog
+        open={isReceiptConfirmOpen}
+        draft={receiptDraft}
+        previewUrl={receiptPreviewUrl}
+        notice={receiptParseNotice}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeReceiptConfirm();
+            return;
+          }
+
+          setIsReceiptConfirmOpen(true);
+        }}
+        onConfirm={handleReceiptConfirm}
+      />
+    </section>
   );
 }

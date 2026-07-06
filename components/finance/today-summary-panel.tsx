@@ -1,5 +1,8 @@
+"use client";
+
 import { DailySummarySection } from "@/components/finance/daily-summary-section";
 import { SummaryTile } from "@/components/finance/summary-tile";
+import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import { GLASS_SURFACE } from "@/config/glass";
 import {
   getCategoryTileStyle,
@@ -8,8 +11,8 @@ import {
 import { SOLID_WIDGET_TILE_STYLES } from "@/config/solid-widget-tiles";
 import { SEPARATED_SHELL } from "@/config/shape";
 import { GRID_GAP, SHELL_PADDING, STACK_GAP } from "@/config/spacing";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { formatDayMonth, formatWeekday } from "@/lib/finance/format-datetime";
-import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
 import type { DailySummarySnapshot, TodaySummary } from "@/types/summary";
 
@@ -23,6 +26,7 @@ export function TodaySummaryPanel({
   dailySummary,
 }: TodaySummaryPanelProps) {
   const today = new Date();
+  const { formatAmount } = useProtectedCurrency();
   const income = SOLID_WIDGET_TILE_STYLES.income;
   const expense = SOLID_WIDGET_TILE_STYLES.expense;
   const balance = SOLID_WIDGET_TILE_STYLES.balance;
@@ -46,11 +50,14 @@ export function TodaySummaryPanel({
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Hari ini
           </p>
-          <div className="flex flex-row items-center justify-between">
-            <h2 className="mt-1 text-lg font-semibold tracking-tight">
-              Ringkasan
-            </h2>
-            <p className="mt-1 text-sm font-medium capitalize text-foreground/90">
+          <div className="flex flex-row items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-1">
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                Ringkasan
+              </h2>
+              <BalanceVisibilityToggle className="mt-1" />
+            </div>
+            <p className="mt-1 shrink-0 text-sm font-medium capitalize text-foreground/90">
               {formatWeekday(today)}, {formatDayMonth(today)}
             </p>
           </div>
@@ -59,7 +66,7 @@ export function TodaySummaryPanel({
         <section className={cn("grid grid-cols-2", GRID_GAP)}>
           <SummaryTile
             label="Pemasukan"
-            value={formatIdr(summary.totalIncome)}
+            value={formatAmount(summary.totalIncome)}
             icon={TOTAL_TILE_STYLES.income.icon}
             surfaceClassName={income.surface}
             iconClassName={income.iconColor}
@@ -68,7 +75,7 @@ export function TodaySummaryPanel({
           />
           <SummaryTile
             label="Pengeluaran"
-            value={formatIdr(summary.totalExpense)}
+            value={formatAmount(summary.totalExpense)}
             icon={TOTAL_TILE_STYLES.expense.icon}
             surfaceClassName={expense.surface}
             iconClassName={expense.iconColor}
@@ -77,7 +84,7 @@ export function TodaySummaryPanel({
           />
           <SummaryTile
             label="Saldo"
-            value={formatIdr(summary.balance)}
+            value={formatAmount(summary.balance)}
             icon={TOTAL_TILE_STYLES.balance.icon}
             surfaceClassName={balance.surface}
             iconClassName={balance.iconColor}
@@ -103,7 +110,7 @@ export function TodaySummaryPanel({
                   <SummaryTile
                     key={category.category}
                     label={category.label}
-                    value={formatIdr(category.total)}
+                    value={formatAmount(category.total)}
                     subtitle={`${category.count} transaksi`}
                     icon={tile.icon}
                     surfaceClassName={tile.surface}

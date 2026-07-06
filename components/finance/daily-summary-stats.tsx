@@ -8,7 +8,7 @@ import {
 
 import { SOLID_WIDGET_TILE_STYLES } from "@/config/solid-widget-tiles";
 import { SEPARATED_SURFACE } from "@/config/shape";
-import { formatIdr } from "@/lib/finance/format-currency";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { cn } from "@/lib/utils";
 
 const STAT_ICONS = {
@@ -49,6 +49,7 @@ export function DailySummaryStats({
   totalIncome,
   balance,
 }: DailySummaryStatsProps) {
+  const { formatAmount } = useProtectedCurrency();
   const values = {
     totalExpense,
     totalIncome,
@@ -84,7 +85,7 @@ export function DailySummaryStats({
                 tile.valueColor,
               )}
             >
-              {formatIdr(values[stat.valueKey])}
+              {formatAmount(values[stat.valueKey])}
             </span>
           </div>
         );

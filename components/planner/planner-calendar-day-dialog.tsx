@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon } from "@/lib/icons";
-
+import { useState } from "react";
 import { savePlannedItemAction } from "@/app/actions/planner";
 import { PlannedItemFormDialog } from "@/components/planner/planned-item-form-dialog";
 import { PlannerCalendarDayItem } from "@/components/planner/planner-calendar-day-item";
@@ -22,10 +20,11 @@ import {
   FORM_GROUP,
 } from "@/config/form-dialog";
 import { GRID_GAP } from "@/config/spacing";
-import { formatDayMonth, formatWeekday } from "@/lib/finance/format-datetime";
 import { formatIdr } from "@/lib/finance/format-currency";
-import { toDateInputValue } from "@/lib/validations/planned-item";
+import { formatDayMonth, formatWeekday } from "@/lib/finance/format-datetime";
+import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
+import { toDateInputValue } from "@/lib/validations/planned-item";
 import type { PlannedOccurrence } from "@/types/planner";
 
 interface PlannerCalendarDayDialogProps {
@@ -73,44 +72,41 @@ export function PlannerCalendarDayDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className={FORM_DIALOG_CONTENT}>
           <DialogHeader className={FORM_DIALOG_HEADER}>
-            <div className="flex items-start justify-between gap-3 pr-0">
-              <div className="min-w-0">
-                <DialogTitle className="text-lg font-semibold capitalize tracking-tight">
-                  {formatWeekday(date)}, {formatDayMonth(date)}
-                </DialogTitle>
-                <DialogDescription className="mt-1 text-[13px] leading-snug">
-                  {hasItems ? (
-                    <>
-                      {items.length} item
-                      <span className="mx-1">·</span>
-                      <span className="font-medium text-foreground/85">
-                        {formatIdr(Math.abs(totalAmount))}
-                        {totalAmount > 0
-                          ? " keluar"
-                          : totalAmount < 0
-                            ? " masuk"
-                            : ""}
-                      </span>
-                    </>
-                  ) : (
-                    "Tidak ada tagihan di tanggal ini."
-                  )}
-                </DialogDescription>
-              </div>
-
-              <Button
-                type="button"
-                size="sm"
-                className="shrink-0"
-                onClick={openCreateForm}
-              >
-                <PlusIcon />
-                Tambah Pay Plan
-              </Button>
-            </div>
+            <DialogTitle className="text-lg font-semibold capitalize tracking-tight">
+              {formatWeekday(date)}, {formatDayMonth(date)}
+            </DialogTitle>
+            <DialogDescription className="text-[13px] leading-snug">
+              {hasItems ? (
+                <>
+                  {items.length} item
+                  <span className="mx-1">·</span>
+                  <span className="font-medium text-foreground/85">
+                    {formatIdr(Math.abs(totalAmount))}
+                    {totalAmount > 0
+                      ? " keluar"
+                      : totalAmount < 0
+                        ? " masuk"
+                        : ""}
+                  </span>
+                </>
+              ) : (
+                "Tidak ada tagihan di tanggal ini."
+              )}
+            </DialogDescription>
           </DialogHeader>
 
           <div className={FORM_DIALOG_BODY_SCROLL}>
+            {hasItems ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-1 w-full"
+                onClick={openCreateForm}
+              >
+                <PlusIcon /> New Plan
+              </Button>
+            ) : null}
             {error ? (
               <p className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {error}

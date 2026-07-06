@@ -109,14 +109,19 @@ export async function buildInboxTransactionReplyForParsed(
   rawInput: string,
   transaction: ParsedTransaction,
 ): Promise<string> {
-  const budgetStatus =
-    transaction.type === "expense"
-      ? await getBudgetStatusForExpense(
-          transaction.category,
-          transaction.occurredAt,
-          transaction.amount,
-        )
-      : null;
+  let budgetStatus: BudgetStatus | null = null;
+
+  if (transaction.type === "expense") {
+    try {
+      budgetStatus = await getBudgetStatusForExpense(
+        transaction.category,
+        transaction.occurredAt,
+        transaction.amount,
+      );
+    } catch {
+      // Reply should still succeed without budget context.
+    }
+  }
 
   return buildInboxTransactionReply(rawInput, transaction, budgetStatus);
 }

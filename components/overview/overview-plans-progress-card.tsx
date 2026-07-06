@@ -1,6 +1,9 @@
+"use client";
+
 import { HeartIcon } from "@/lib/icons";
 
 import { PlansInsightBadgeIcon } from "@/components/shared/ai-summary-badge-icon";
+import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import { OverviewActionLink } from "@/components/overview/overview-action-link";
 import { OverviewIconShell } from "@/components/overview/overview-icon-shell";
 import { OverviewStatusBadge } from "@/components/overview/overview-status-badge";
@@ -11,7 +14,7 @@ import {
   OVERVIEW_SECTION_TITLE,
 } from "@/config/overview";
 import { PLANS_ROUTE, WISH_PAGE_TITLE } from "@/config/navigation";
-import { formatIdr } from "@/lib/finance/format-currency";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { cn } from "@/lib/utils";
 import type { PlansOverview } from "@/types/plan";
 
@@ -24,6 +27,7 @@ export function OverviewPlansProgressCard({
   overview,
   className,
 }: OverviewPlansProgressCardProps) {
+  const { formatAmount } = useProtectedCurrency();
   const progress =
     overview.availableBalance <= 0
       ? overview.estimatedCost > 0
@@ -50,10 +54,13 @@ export function OverviewPlansProgressCard({
             </h2>
           </div>
         </div>
-        <OverviewStatusBadge
-          icon={<PlansInsightBadgeIcon tone={overview.insightMeta.tone} />}
-          label={overview.insightMeta.label}
-        />
+        <div className="flex shrink-0 items-center gap-1">
+          <OverviewStatusBadge
+            icon={<PlansInsightBadgeIcon tone={overview.insightMeta.tone} />}
+            label={overview.insightMeta.label}
+          />
+          <BalanceVisibilityToggle />
+        </div>
       </div>
 
       <div className="mt-4">
@@ -82,7 +89,7 @@ export function OverviewPlansProgressCard({
           <div>
             <p className="text-muted-foreground">Estimasi</p>
             <p className="mt-0.5 font-semibold tabular-nums">
-              {formatIdr(overview.estimatedCost)}
+              {formatAmount(overview.estimatedCost)}
             </p>
           </div>
           <div className="text-right">
@@ -95,7 +102,7 @@ export function OverviewPlansProgressCard({
                   : "text-foreground/90",
               )}
             >
-              {formatIdr(overview.remainingBalance)}
+              {formatAmount(overview.remainingBalance)}
             </p>
           </div>
         </div>

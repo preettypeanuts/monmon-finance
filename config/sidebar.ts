@@ -35,7 +35,7 @@ export const SIDEBAR_APP_ICON_GLYPH = "size-4 text-white drop-shadow-sm";
 export const SIDEBAR_APP_ICON_GRADIENTS = {
   brand: "from-[#7C8CFF] via-[#5B6CFF] to-[#3B4FE0]",
   overview: "from-[#5AC8FA] via-[#32ADE6] to-[#007AFF]",
-  inbox: "from-[#64D2FF] via-[#32ADE6] to-[#007AFF]",
+  inbox: "from-[#46F765] via-[#40E05C] to-[#1FBE3A]",
   journal: "from-[#FFD60A] via-[#FF9F0A] to-[#F5A623]",
   payplan: "from-[#BF5AF2] via-[#AF52DE] to-[#8E5AF7]",
   plans: "from-[#FF70C1] via-[#FF2D55] to-[#D91A45]",

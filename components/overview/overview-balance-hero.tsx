@@ -1,6 +1,9 @@
+"use client";
+
 import { ArrowDownIcon, ArrowUpIcon, WalletIcon } from "@/lib/icons";
 
 import { OverviewIconShell } from "@/components/overview/overview-icon-shell";
+import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import {
   OVERVIEW_BALANCE_DELTA,
   OVERVIEW_BALANCE_METRIC,
@@ -10,7 +13,7 @@ import {
   OVERVIEW_SECTION_LABEL,
   OVERVIEW_SECTION_TITLE,
 } from "@/config/overview";
-import { formatIdr, formatSignedIdrDelta } from "@/lib/finance/format-currency";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { cn } from "@/lib/utils";
 import type { OverviewDayDeltas } from "@/types/overview";
 
@@ -40,12 +43,13 @@ function resolveDeltaClass(
 interface BalanceMetricDeltaProps {
   delta: number;
   tone: "income" | "expense" | "balance";
+  label: string;
 }
 
-function BalanceMetricDelta({ delta, tone }: BalanceMetricDeltaProps) {
+function BalanceMetricDelta({ delta, tone, label }: BalanceMetricDeltaProps) {
   return (
     <p className={cn(OVERVIEW_BALANCE_DELTA, resolveDeltaClass(delta, tone))}>
-      {formatSignedIdrDelta(delta)} vs kemarin
+      {label}
     </p>
   );
 }
@@ -57,6 +61,8 @@ export function OverviewBalanceHero({
   dayDeltas,
   className,
 }: OverviewBalanceHeroProps) {
+  const { formatAmount, formatSignedAmount, formatSignedDelta, formatExpenseAmount } =
+    useProtectedCurrency();
   const isNegative = balance < 0;
 
   return (
@@ -66,6 +72,7 @@ export function OverviewBalanceHero({
           <p className={OVERVIEW_SECTION_LABEL}>Saldo</p>
           <h2 className={cn("mt-1", OVERVIEW_SECTION_TITLE)}>Balance Hero</h2>
         </div>
+        <BalanceVisibilityToggle />
       </div>
 
       <div className={OVERVIEW_BALANCE_METRICS}>
@@ -85,9 +92,13 @@ export function OverviewBalanceHero({
                 isNegative ? "text-[#FF3B30]" : "text-foreground/95",
               )}
             >
-              {formatIdr(balance)}
+              {formatAmount(balance)}
             </p>
-            <BalanceMetricDelta delta={dayDeltas.balanceDelta} tone="balance" />
+            <BalanceMetricDelta
+              delta={dayDeltas.balanceDelta}
+              tone="balance"
+              label={`${formatSignedDelta(dayDeltas.balanceDelta)} vs kemarin`}
+            />
           </div>
         </div>
 
@@ -102,9 +113,13 @@ export function OverviewBalanceHero({
           </div>
           <div className="mt-auto pt-3">
             <p className="text-xl font-semibold tabular-nums tracking-tight text-[#34C759] sm:text-2xl">
-              +{formatIdr(todayIncome)}
+              {formatSignedAmount(todayIncome)}
             </p>
-            <BalanceMetricDelta delta={dayDeltas.incomeDelta} tone="income" />
+            <BalanceMetricDelta
+              delta={dayDeltas.incomeDelta}
+              tone="income"
+              label={`${formatSignedDelta(dayDeltas.incomeDelta)} vs kemarin`}
+            />
           </div>
         </div>
 
@@ -119,9 +134,13 @@ export function OverviewBalanceHero({
           </div>
           <div className="mt-auto pt-3">
             <p className="text-xl font-semibold tabular-nums tracking-tight text-foreground/90 sm:text-2xl">
-              −{formatIdr(todayExpense)}
+              {formatExpenseAmount(todayExpense)}
             </p>
-            <BalanceMetricDelta delta={dayDeltas.expenseDelta} tone="expense" />
+            <BalanceMetricDelta
+              delta={dayDeltas.expenseDelta}
+              tone="expense"
+              label={`${formatSignedDelta(dayDeltas.expenseDelta)} vs kemarin`}
+            />
           </div>
         </div>
       </div>

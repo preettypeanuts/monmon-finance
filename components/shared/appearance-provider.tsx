@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { DEFAULT_ACCENT_ID } from "@/config/accent-colors";
+import { DEFAULT_BALANCE_VISIBLE } from "@/config/balance-visibility";
 import { DEFAULT_GLASS_BLUR_LEVEL } from "@/config/glass-blur";
 import { DEFAULT_GLASS_FILL_TRANSPARENCY } from "@/config/glass-fill";
 import { DEFAULT_THEME_MODE } from "@/config/theme-modes";
@@ -19,6 +20,10 @@ import {
   resolveDarkMode,
 } from "@/lib/appearance/apply-appearance";
 import { applyGlassAppearance } from "@/lib/appearance/apply-glass-blur";
+import {
+  readStoredBalanceVisible,
+  writeStoredBalanceVisible,
+} from "@/lib/appearance/balance-visibility-storage";
 import {
   readStoredGlassBlurLevel,
   readStoredGlassFillTransparency,
@@ -39,11 +44,13 @@ interface AppearanceContextValue {
   accentId: AccentColorId;
   glassBlurLevel: GlassBlurLevelId;
   glassFillTransparency: number;
+  balanceVisible: boolean;
   resolvedDark: boolean;
   setThemeMode: (mode: ThemeMode) => void;
   setAccentId: (id: AccentColorId) => void;
   setGlassBlurLevel: (levelId: GlassBlurLevelId) => void;
   setGlassFillTransparency: (value: number) => void;
+  toggleBalanceVisibility: () => void;
 }
 
 const AppearanceContext = createContext<AppearanceContextValue | null>(null);
@@ -69,6 +76,9 @@ export function AppearanceProvider({
   const [glassFillTransparency, setGlassFillTransparencyState] = useState(
     DEFAULT_GLASS_FILL_TRANSPARENCY,
   );
+  const [balanceVisible, setBalanceVisibleState] = useState(
+    DEFAULT_BALANCE_VISIBLE,
+  );
   const [resolvedDark, setResolvedDark] = useState(initialResolvedDark);
 
   useLayoutEffect(() => {
@@ -76,15 +86,18 @@ export function AppearanceProvider({
     const storedAccentId = readStoredAccentId();
     const storedGlassBlurLevel = readStoredGlassBlurLevel();
     const storedGlassFillTransparency = readStoredGlassFillTransparency();
+    const storedBalanceVisible = readStoredBalanceVisible();
 
     setThemeModeState(storedThemeMode);
     setAccentIdState(storedAccentId);
     setGlassBlurLevelState(storedGlassBlurLevel);
     setGlassFillTransparencyState(storedGlassFillTransparency);
+    setBalanceVisibleState(storedBalanceVisible);
     writeStoredThemeMode(storedThemeMode);
     writeStoredAccentId(storedAccentId);
     writeStoredGlassBlurLevel(storedGlassBlurLevel);
     writeStoredGlassFillTransparency(storedGlassFillTransparency);
+    writeStoredBalanceVisible(storedBalanceVisible);
     applyAppearance({
       themeMode: storedThemeMode,
       accentId: storedAccentId,
@@ -137,20 +150,31 @@ export function AppearanceProvider({
     writeStoredGlassFillTransparency(value);
   }, []);
 
+  const toggleBalanceVisibility = useCallback(() => {
+    setBalanceVisibleState((current) => {
+      const next = !current;
+      writeStoredBalanceVisible(next);
+      return next;
+    });
+  }, []);
+
   const value = useMemo<AppearanceContextValue>(
     () => ({
       themeMode,
       accentId,
       glassBlurLevel,
       glassFillTransparency,
+      balanceVisible,
       resolvedDark,
       setThemeMode,
       setAccentId,
       setGlassBlurLevel,
       setGlassFillTransparency,
+      toggleBalanceVisibility,
     }),
     [
       accentId,
+      balanceVisible,
       glassBlurLevel,
       glassFillTransparency,
       resolvedDark,
@@ -159,6 +183,7 @@ export function AppearanceProvider({
       setGlassFillTransparency,
       setThemeMode,
       themeMode,
+      toggleBalanceVisibility,
     ],
   );
 

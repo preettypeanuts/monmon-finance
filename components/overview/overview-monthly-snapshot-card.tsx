@@ -1,6 +1,9 @@
+"use client";
+
 import { TableIcon } from "@/lib/icons";
 
 import { OverviewIconShell } from "@/components/overview/overview-icon-shell";
+import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import {
   OVERVIEW_CARD,
   OVERVIEW_CARD_PADDING,
@@ -8,7 +11,7 @@ import {
   OVERVIEW_SECTION_TITLE,
   OVERVIEW_STAT_TILE,
 } from "@/config/overview";
-import { formatIdr } from "@/lib/finance/format-currency";
+import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { cn } from "@/lib/utils";
 import type { OverviewMonthlySnapshot } from "@/types/overview";
 
@@ -21,18 +24,23 @@ export function OverviewMonthlySnapshotCard({
   snapshot,
   className,
 }: OverviewMonthlySnapshotCardProps) {
+  const { formatAmount, formatSignedAmount } = useProtectedCurrency();
+
   return (
     <section className={cn(OVERVIEW_CARD, OVERVIEW_CARD_PADDING, className)}>
-      <div className="flex items-start gap-2.5">
-        <OverviewIconShell variant="indigo">
-          <TableIcon />
-        </OverviewIconShell>
-        <div className="min-w-0">
-          <p className={OVERVIEW_SECTION_LABEL}>Monthly Snapshot</p>
-          <h2 className={cn("mt-0.5 capitalize", OVERVIEW_SECTION_TITLE)}>
-            {snapshot.monthLabel}
-          </h2>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2.5">
+          <OverviewIconShell variant="indigo">
+            <TableIcon />
+          </OverviewIconShell>
+          <div className="min-w-0">
+            <p className={OVERVIEW_SECTION_LABEL}>Monthly Snapshot</p>
+            <h2 className={cn("mt-0.5 capitalize", OVERVIEW_SECTION_TITLE)}>
+              {snapshot.monthLabel}
+            </h2>
+          </div>
         </div>
+        <BalanceVisibilityToggle />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
@@ -41,7 +49,7 @@ export function OverviewMonthlySnapshotCard({
             Masuk
           </p>
           <p className="mt-1 text-sm font-semibold tabular-nums text-[#34C759]">
-            {formatIdr(snapshot.totalIncome)}
+            {formatAmount(snapshot.totalIncome)}
           </p>
         </div>
         <div className={OVERVIEW_STAT_TILE}>
@@ -49,7 +57,7 @@ export function OverviewMonthlySnapshotCard({
             Keluar
           </p>
           <p className="mt-1 text-sm font-semibold tabular-nums text-foreground/90">
-            {formatIdr(snapshot.totalExpense)}
+            {formatAmount(snapshot.totalExpense)}
           </p>
         </div>
         <div className={OVERVIEW_STAT_TILE}>
@@ -62,8 +70,7 @@ export function OverviewMonthlySnapshotCard({
               snapshot.netFlow >= 0 ? "text-[#34C759]" : "text-[#FF3B30]",
             )}
           >
-            {snapshot.netFlow >= 0 ? "+" : "−"}
-            {formatIdr(Math.abs(snapshot.netFlow))}
+            {formatSignedAmount(snapshot.netFlow)}
           </p>
         </div>
         <div className={OVERVIEW_STAT_TILE}>

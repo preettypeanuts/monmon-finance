@@ -27,6 +27,8 @@ import {
   sfDollarsignCircleFill,
   sfEllipsis,
   sfExclamationmarkTriangleFill,
+  sfEyeFill,
+  sfEyeSlashFill,
   sfCupAndSaucerFill,
   sfGearshapeFill,
   sfHeartFill,
@@ -128,6 +130,8 @@ export const DotsThreeVerticalIcon = createSFIcon(
   sfEllipsis,
   "DotsThreeVerticalIcon",
 );
+export const EyeIcon = createSFIcon(sfEyeFill, "EyeIcon");
+export const EyeSlashIcon = createSFIcon(sfEyeSlashFill, "EyeSlashIcon");
 export const ExclamationTriangleIcon = createSFIcon(
   sfExclamationmarkTriangleFill,
   "ExclamationTriangleIcon",
