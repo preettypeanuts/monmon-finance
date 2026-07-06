@@ -4,7 +4,7 @@ import { PlannerCalendar } from "@/components/planner/planner-calendar";
 import { PlannerCalendarTabBar } from "@/components/planner/planner-calendar-tab-bar";
 import { PlannerShell } from "@/components/planner/planner-shell";
 import { PlannerTabBar } from "@/components/planner/planner-tab-bar";
-import { MobileBackButton } from "@/components/shared/mobile-back-button";
+import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
 import { APP_GUTTER, STACK_GAP } from "@/config/spacing";
 import { listBudgetsForMonth } from "@/lib/db/budgets";
 import { listPlannedItems } from "@/lib/db/planned-items";
@@ -37,24 +37,32 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
     ? pickDefaultDayKey(data.monthKey, data.marks)
     : null;
 
+  const subtitle =
+    tab === "budget"
+      ? "Atur budget kategori — terhubung dengan Inbox."
+      : "Tagihan, pemasukan terjadwal, dan budget.";
+
   return (
-    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER)}>
+    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER, "max-md:p-0")}>
       <PlannerShell className="min-h-0 flex-1">
-        <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP)}>
-          <header className="shrink-0">
+        <MobileScrollSurface
+          className={cn(
+            "flex min-h-0 flex-1 flex-col",
+            STACK_GAP,
+            "max-md:overflow-y-auto max-md:overscroll-y-contain",
+            "md:overflow-hidden",
+          )}
+          title="PayPlan"
+        >
+          <header className="shrink-0 max-md:hidden">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex min-w-0 items-start gap-2">
-                <MobileBackButton className="mt-0.5 shrink-0 md:hidden" />
-                <div className="min-w-0">
-                  <h1 className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
-                    PayPlan
-                  </h1>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
-                    {tab === "budget"
-                      ? "Atur budget kategori — terhubung dengan Inbox."
-                      : "Tagihan, pemasukan terjadwal, dan budget."}
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <h1 className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
+                  PayPlan
+                </h1>
+                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
+                  {subtitle}
+                </p>
               </div>
 
               <PlannerTabBar
@@ -73,6 +81,19 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
               </div>
             ) : null}
           </header>
+
+          <div className="shrink-0 space-y-3 md:hidden">
+            <p className="text-[11px] text-muted-foreground max-md:-mt-1">
+              {subtitle}
+            </p>
+
+            {tab === "calendar" ? (
+              <PlannerCalendarTabBar
+                layout={calendarLayout}
+                monthKey={monthKey}
+              />
+            ) : null}
+          </div>
 
           {tab === "budget" && budgets ? (
             <BudgetManage monthKey={monthKey} budgets={budgets} />
@@ -111,7 +132,7 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
               }))}
             />
           ) : null}
-        </div>
+        </MobileScrollSurface>
       </PlannerShell>
     </div>
   );

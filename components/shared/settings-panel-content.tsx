@@ -1,55 +1,122 @@
-import { AccentColorPicker } from "@/components/shared/accent-color-picker";
-import { GlassBlurPicker } from "@/components/shared/glass-blur-picker";
-import { SettingsSection } from "@/components/shared/settings-section";
-import { ThemeModePicker } from "@/components/shared/theme-mode-picker";
-import { WallpaperGrid } from "@/components/shared/wallpaper-grid";
-import { WallpaperMaskSlider } from "@/components/shared/wallpaper-mask-slider";
-import { WallpaperUpload } from "@/components/shared/wallpaper-upload";
-import { WallpaperUrlImport } from "@/components/shared/wallpaper-url-import";
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { useAppearance } from "@/components/shared/appearance-provider";
+import { useWallpaper } from "@/components/shared/wallpaper-provider";
+import { SettingsAccentPanel } from "@/components/settings/settings-accent-panel";
+import { SettingsAppearancePanel } from "@/components/settings/settings-appearance-panel";
+import { SettingsGlassPanel } from "@/components/settings/settings-glass-panel";
+import { SettingsIosProfileCard } from "@/components/settings/settings-ios-profile-card";
+import { SettingsIosRow } from "@/components/settings/settings-ios-row";
+import { SettingsIosSection } from "@/components/settings/settings-ios-section";
+import { SettingsWallpaperPanel } from "@/components/settings/settings-wallpaper-panel";
+import { ACCENT_COLORS } from "@/config/accent-colors";
+import { GLASS_BLUR_LEVELS } from "@/config/glass-blur";
 import {
-  SETTINGS_INSET_BLOCK,
-  SETTINGS_ROW_DIVIDER,
-  SETTINGS_SCROLL,
-} from "@/config/settings-layout";
-import { cn } from "@/lib/utils";
+  SETTINGS_IOS_ICON_ACCENT,
+  SETTINGS_IOS_ICON_GLASS,
+  SETTINGS_IOS_ICON_THEME,
+  SETTINGS_IOS_ICON_WALLPAPER,
+  SETTINGS_IOS_LARGE_TITLE,
+  SETTINGS_IOS_SCROLL,
+} from "@/config/settings-ios";
+import { THEME_MODES } from "@/config/theme-modes";
+import {
+  DesktopIcon,
+  HeartIcon,
+  SparkleIcon,
+  SquaresFourIcon,
+} from "@/lib/icons";
+import { resolveActiveWallpaper } from "@/lib/wallpaper/resolve-wallpaper";
 
-export function SettingsPanelContent() {
+type SettingsPanel = "root" | "appearance" | "accent" | "glass" | "wallpaper";
+
+interface SettingsPanelContentProps {
+  open: boolean;
+}
+
+export function SettingsPanelContent({ open }: SettingsPanelContentProps) {
+  const [panel, setPanel] = useState<SettingsPanel>("root");
+  const { themeMode, accentId, glassBlurLevel } = useAppearance();
+  const { wallpaperId, customWallpaperSlots } = useWallpaper();
+
+  useEffect(() => {
+    if (!open) {
+      setPanel("root");
+    }
+  }, [open]);
+
+  const themeLabel =
+    THEME_MODES.find((mode) => mode.id === themeMode)?.label ?? "Sistem";
+  const accentLabel =
+    ACCENT_COLORS.find((accent) => accent.id === accentId)?.label ?? "Biru";
+  const glassLabel =
+    GLASS_BLUR_LEVELS.find((level) => level.id === glassBlurLevel)?.label ??
+    "Normal";
+  const wallpaperLabel = resolveActiveWallpaper(
+    wallpaperId,
+    customWallpaperSlots,
+  ).label;
+
+  if (panel === "appearance") {
+    return <SettingsAppearancePanel onBack={() => setPanel("root")} />;
+  }
+
+  if (panel === "accent") {
+    return <SettingsAccentPanel onBack={() => setPanel("root")} />;
+  }
+
+  if (panel === "glass") {
+    return <SettingsGlassPanel onBack={() => setPanel("root")} />;
+  }
+
+  if (panel === "wallpaper") {
+    return <SettingsWallpaperPanel onBack={() => setPanel("root")} />;
+  }
+
   return (
-    <section className={SETTINGS_SCROLL}>
-      <SettingsSection
-        label="Tampilan"
-        footer="Terang, gelap, atau ikuti preferensi sistem perangkat."
-      >
-        <ThemeModePicker />
-      </SettingsSection>
+    <section className={SETTINGS_IOS_SCROLL}>
+      <h2 className={SETTINGS_IOS_LARGE_TITLE}>Pengaturan</h2>
 
-      <SettingsSection
-        label="Warna aksen"
-        footer="Mengatur warna tombol dan highlight di seluruh aplikasi."
-      >
-        <AccentColorPicker />
-      </SettingsSection>
+      <SettingsIosProfileCard />
 
-      <SettingsSection
-        label="Blur glass"
-        footer="Atur blur dan transparansi panel glass — berlaku di semua level blur."
-      >
-        <GlassBlurPicker />
-      </SettingsSection>
+      <SettingsIosSection label="Tampilan">
+        <SettingsIosRow
+          icon={<DesktopIcon aria-hidden />}
+          iconClassName={SETTINGS_IOS_ICON_THEME}
+          label="Mode tampilan"
+          value={themeLabel}
+          onClick={() => setPanel("appearance")}
+        />
+        <SettingsIosRow
+          icon={<HeartIcon aria-hidden />}
+          iconClassName={SETTINGS_IOS_ICON_ACCENT}
+          label="Warna aksen"
+          value={accentLabel}
+          onClick={() => setPanel("accent")}
+        />
+        <SettingsIosRow
+          icon={<SparkleIcon aria-hidden />}
+          iconClassName={SETTINGS_IOS_ICON_GLASS}
+          label="Blur glass"
+          value={glassLabel}
+          onClick={() => setPanel("glass")}
+        />
+      </SettingsIosSection>
 
-      <SettingsSection
+      <SettingsIosSection
         label="Wallpaper"
-        footer="Preset bawaan atau foto sendiri. Atur mask jika teks sulit dibaca."
+        footer="Pilih preset atau upload foto. Mask membantu keterbacaan teks di atas wallpaper."
       >
-        <WallpaperUpload />
-        <WallpaperUrlImport />
-        <WallpaperMaskSlider />
-        <div
-          className={cn(SETTINGS_INSET_BLOCK, SETTINGS_ROW_DIVIDER, "border-t")}
-        >
-          <WallpaperGrid />
-        </div>
-      </SettingsSection>
+        <SettingsIosRow
+          icon={<SquaresFourIcon aria-hidden />}
+          iconClassName={SETTINGS_IOS_ICON_WALLPAPER}
+          label="Wallpaper"
+          value={wallpaperLabel}
+          onClick={() => setPanel("wallpaper")}
+        />
+      </SettingsIosSection>
     </section>
   );
 }

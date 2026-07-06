@@ -8,8 +8,10 @@ import {
 import { BudgetCard } from "@/components/planner/budget-card";
 import { BudgetFormDialog } from "@/components/planner/budget-form-dialog";
 import { BudgetMonthHeader } from "@/components/planner/budget-month-header";
+import { PayplanAddFab } from "@/components/planner/payplan-add-fab";
 import { Button } from "@/components/ui/button";
 import { BUDGET_CARD_GRID } from "@/config/budget";
+import { PAYPLAN_MANAGE_EMPTY_MOBILE } from "@/config/payplan-mobile";
 import { CONTROL_GAP, STACK_GAP } from "@/config/spacing";
 import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -73,7 +75,7 @@ export function BudgetManage({ monthKey, budgets }: BudgetManageProps) {
         <Button
           type="button"
           size="sm"
-          className="shrink-0 gap-1.5"
+          className="max-md:hidden shrink-0 gap-1.5"
           onClick={openCreate}
           disabled={isPending}
         >
@@ -83,7 +85,12 @@ export function BudgetManage({ monthKey, budgets }: BudgetManageProps) {
       </div>
 
       {budgets.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-black/10 px-6 py-16 text-center dark:border-white/12">
+        <div
+          className={cn(
+            "flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-black/10 px-6 py-16 text-center dark:border-white/12",
+            PAYPLAN_MANAGE_EMPTY_MOBILE,
+          )}
+        >
           <p className="text-sm font-medium text-foreground/90">
             Belum ada budget kategori
           </p>
@@ -94,7 +101,7 @@ export function BudgetManage({ monthKey, budgets }: BudgetManageProps) {
           <Button
             type="button"
             size="sm"
-            className="mt-4 gap-1.5"
+            className="mt-4 gap-1.5 max-md:hidden"
             onClick={openCreate}
           >
             <PlusIcon className="size-4" />
@@ -114,6 +121,8 @@ export function BudgetManage({ monthKey, budgets }: BudgetManageProps) {
           ))}
         </div>
       )}
+
+      <PayplanAddFab onClick={openCreate} label="Tambah budget" />
 
       <BudgetFormDialog
         open={sheetOpen}

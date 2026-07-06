@@ -3,6 +3,8 @@ import {
   PLANNER_MANAGE_EMPTY,
   PLANNER_MANAGE_LIST,
 } from "@/config/planner-manage";
+import { PAYPLAN_MANAGE_EMPTY_MOBILE, PAYPLAN_MANAGE_LIST_MOBILE } from "@/config/payplan-mobile";
+import { cn } from "@/lib/utils";
 import type { PlannedItemRecord } from "@/types/planner";
 
 interface PlannedItemsListProps {
@@ -22,7 +24,7 @@ export function PlannedItemsList({
 }: PlannedItemsListProps) {
   if (items.length === 0) {
     return (
-      <div className={PLANNER_MANAGE_EMPTY}>
+      <div className={cn(PLANNER_MANAGE_EMPTY, PAYPLAN_MANAGE_EMPTY_MOBILE)}>
         <p className="text-sm font-medium">
           {filteredEmpty ? "Tidak ada jadwal cocok" : "Belum ada jadwal"}
         </p>
@@ -36,7 +38,7 @@ export function PlannedItemsList({
   }
 
   return (
-    <div className={PLANNER_MANAGE_LIST}>
+    <div className={cn(PLANNER_MANAGE_LIST, PAYPLAN_MANAGE_LIST_MOBILE)}>
       {items.map((item) => (
         <PlannedItemCard
           key={item.id}

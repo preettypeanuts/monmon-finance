@@ -1,8 +1,16 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import {
+  JOURNAL_PAGINATION_BUTTON_MOBILE,
+  JOURNAL_PAGINATION_COUNT_MOBILE,
+  JOURNAL_PAGINATION_MOBILE,
+  JOURNAL_PAGINATION_NAV_MOBILE,
+  JOURNAL_PAGINATION_PAGE_MOBILE,
+} from "@/config/journal-mobile";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { buildJournalSearchParams } from "@/lib/validations/journal";
+import { cn } from "@/lib/utils";
 import type { JournalFilters } from "@/types/journal";
 
 interface JournalPaginationProps {
@@ -30,16 +38,70 @@ export function JournalPagination({
   const end = Math.min(page * pageSize, total);
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
+  const countLabel =
+    total === 0
+      ? "0 entri"
+      : `Menampilkan ${start}–${end} dari ${total} entri`;
+  const pageLabel = `Halaman ${page} / ${totalPages}`;
 
   return (
-    <div className="flex shrink-0 flex-col gap-3 border-t border-black/6 pt-3 dark:border-white/8 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs text-muted-foreground">
-        {total === 0
-          ? "0 entri"
-          : `Menampilkan ${start}–${end} dari ${total} entri`}
+      <div
+        className={cn(
+          "flex shrink-0 flex-col gap-3 border-t border-black/6 pt-3 dark:border-white/8 md:flex-row md:items-center md:justify-between",
+          JOURNAL_PAGINATION_MOBILE,
+        )}
+      >
+      <p className={cn("text-xs text-muted-foreground", JOURNAL_PAGINATION_COUNT_MOBILE)}>
+        {countLabel}
       </p>
 
-      <div className="flex items-center gap-2">
+      <div className={cn("flex flex-col gap-2 md:hidden")}>
+        <div className={JOURNAL_PAGINATION_NAV_MOBILE}>
+          {hasPrev ? (
+            <Button
+              variant="outline"
+              nativeButton={false}
+              className={cn(SEPARATED_CONTROL, JOURNAL_PAGINATION_BUTTON_MOBILE)}
+              render={<Link href={buildPageHref(filters, page - 1)} />}
+            >
+              Sebelumnya
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className={cn(SEPARATED_CONTROL, JOURNAL_PAGINATION_BUTTON_MOBILE)}
+              disabled
+            >
+              Sebelumnya
+            </Button>
+          )}
+
+          {hasNext ? (
+            <Button
+              variant="outline"
+              nativeButton={false}
+              className={cn(SEPARATED_CONTROL, JOURNAL_PAGINATION_BUTTON_MOBILE)}
+              render={<Link href={buildPageHref(filters, page + 1)} />}
+            >
+              Berikutnya
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className={cn(SEPARATED_CONTROL, JOURNAL_PAGINATION_BUTTON_MOBILE)}
+              disabled
+            >
+              Berikutnya
+            </Button>
+          )}
+        </div>
+
+        <p className={cn("text-xs tabular-nums text-muted-foreground", JOURNAL_PAGINATION_PAGE_MOBILE)}>
+          {pageLabel}
+        </p>
+      </div>
+
+      <div className="hidden items-center gap-2 md:flex">
         {hasPrev ? (
           <Button
             variant="outline"
@@ -51,12 +113,7 @@ export function JournalPagination({
             Sebelumnya
           </Button>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className={SEPARATED_CONTROL}
-            disabled
-          >
+          <Button variant="outline" size="sm" className={SEPARATED_CONTROL} disabled>
             Sebelumnya
           </Button>
         )}
@@ -74,12 +131,7 @@ export function JournalPagination({
             Berikutnya
           </Button>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className={SEPARATED_CONTROL}
-            disabled
-          >
+          <Button variant="outline" size="sm" className={SEPARATED_CONTROL} disabled>
             Berikutnya
           </Button>
         )}

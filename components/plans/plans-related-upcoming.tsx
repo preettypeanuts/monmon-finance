@@ -7,6 +7,7 @@ import {
   PLANS_RELATED_UPCOMING_LIST,
   PLANS_RELATED_UPCOMING_ROW,
   PLANS_RELATED_UPCOMING_SHELL,
+  PLANS_MOBILE_SOLID_CARD,
 } from "@/config/plans";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,7 @@ export function PlansRelatedUpcoming({
   className,
 }: PlansRelatedUpcomingProps) {
   return (
-    <section className={cn(PLANS_RELATED_UPCOMING_SHELL, className)}>
+    <section className={cn(PLANS_RELATED_UPCOMING_SHELL, PLANS_MOBILE_SOLID_CARD, className)}>
       <header className={PLANS_RELATED_UPCOMING_HEADER}>
         <div className="flex items-start gap-2.5">
           <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#FF9500]/15 text-[#FF9500] dark:bg-[#FF9500]/20">

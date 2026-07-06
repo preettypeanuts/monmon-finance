@@ -17,6 +17,15 @@ export interface JournalEntry {
   occurredAt: Date;
 }
 
+export interface JournalEntryFormInput {
+  type: TransactionType;
+  amount: number;
+  category: string;
+  description: string;
+  rawInput: string;
+  occurredAt: Date;
+}
+
 export interface JournalListResult {
   items: JournalEntry[];
   total: number;

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { recordPlanPurchase } from "@/lib/finance/record-plan-purchase";
 import type { PlanFormInput, PlanRecord, PlanStatus } from "@/types/plan";
 import type { Plan, PlanStatus as PrismaPlanStatus } from "@/generated/prisma/client";
 
@@ -43,13 +44,25 @@ export async function createPlan(input: PlanFormInput): Promise<PlanRecord> {
     },
   });
 
-  return mapPlan(record);
+  const plan = mapPlan(record);
+
+  if (input.status === "done") {
+    await recordPlanPurchase(plan);
+  }
+
+  return plan;
 }
 
 export async function updatePlan(
   id: string,
   input: PlanFormInput,
 ): Promise<PlanRecord> {
+  const existing = await prisma.plan.findUnique({ where: { id } });
+
+  if (!existing) {
+    throw new Error("Wish tidak ditemukan.");
+  }
+
   const record = await prisma.plan.update({
     where: { id },
     data: {
@@ -61,7 +74,13 @@ export async function updatePlan(
     },
   });
 
-  return mapPlan(record);
+  const plan = mapPlan(record);
+
+  if (existing.status === "active" && input.status === "done") {
+    await recordPlanPurchase(plan);
+  }
+
+  return plan;
 }
 
 export async function deletePlan(id: string): Promise<void> {
@@ -69,10 +88,23 @@ export async function deletePlan(id: string): Promise<void> {
 }
 
 export async function markPlanDone(id: string): Promise<PlanRecord> {
+  const existing = await prisma.plan.findUnique({ where: { id } });
+
+  if (!existing) {
+    throw new Error("Wish tidak ditemukan.");
+  }
+
+  if (existing.status === "done") {
+    return mapPlan(existing);
+  }
+
   const record = await prisma.plan.update({
     where: { id },
     data: { status: "done" },
   });
 
-  return mapPlan(record);
+  const plan = mapPlan(record);
+  await recordPlanPurchase(plan);
+
+  return plan;
 }

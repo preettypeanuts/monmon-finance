@@ -12,11 +12,13 @@ import type { PlannedItemsFilters, PlannerManageLayout } from "@/types/planner";
 interface PlannedItemsSearchInputProps {
   filters: PlannedItemsFilters;
   layout: PlannerManageLayout;
+  className?: string;
 }
 
 export function PlannedItemsSearchInput({
   filters,
   layout,
+  className,
 }: PlannedItemsSearchInputProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -51,7 +53,7 @@ export function PlannedItemsSearchInput({
       onChange={(event) => setQ(event.target.value)}
       placeholder="Cari jadwal..."
       aria-label="Cari jadwal"
-      className={cn(SEPARATED_CONTROL, "h-8 w-36 sm:w-44")}
+      className={cn(SEPARATED_CONTROL, "h-8 w-36 sm:w-44", className)}
     />
   );
 }

@@ -10,8 +10,8 @@ export const OVERVIEW_PAGE_ROOT =
 
 export const OVERVIEW_PAGE_SCROLL = [
   "min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
-  "-mr-3 pr-3",
-  "pb-20",
+  "-mr-3 pr-3 pl-3 md:pl-0",
+  "md:pb-20",
 ].join(" ");
 
 export const OVERVIEW_PAGE_SCROLL_INNER = "pb-3";
@@ -104,14 +104,3 @@ export const OVERVIEW_ALERT_TONE_STYLES = {
 
 export const OVERVIEW_STAT_TILE =
   "rounded-xl bg-black/6 px-3 py-2.5 ring-1 ring-black/8 dark:bg-white/8 dark:ring-white/10";
-
-/** Floating action — jump to Inbox from Overview. */
-export const OVERVIEW_INBOX_FAB = [
-  "fixed bottom-5 right-5 z-20",
-  "flex size-14 items-center justify-center rounded-full bg-linear-to-b",
-  "from-[#64D2FF] via-[#32ADE6] to-[#007AFF]",
-  "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45),0_4px_14px_rgba(0,122,255,0.35)]",
-  "ring-1 ring-black/10 transition-transform hover:scale-105 active:scale-95",
-  "dark:ring-white/12 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35),0_4px_18px_rgba(0,0,0,0.45)]",
-  "[&_svg]:size-5 [&_svg]:text-white [&_svg]:drop-shadow-sm",
-].join(" ");

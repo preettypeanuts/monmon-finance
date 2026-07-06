@@ -1,4 +1,5 @@
 import { InboxView } from "@/components/chat/inbox-view";
+import { InboxMobileLayout } from "@/components/inbox/inbox-mobile-layout";
 import { TodaySummaryPanel } from "@/components/finance/today-summary-panel";
 import { APP_GAP, APP_GUTTER } from "@/config/spacing";
 import { getYesterdayDailySummary } from "@/lib/db/daily-summary";
@@ -29,11 +30,14 @@ export default async function InboxPage() {
       className={cn("flex h-full min-h-0 flex-1 overflow-hidden", APP_GAP)}
     >
       <section className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <InboxView
-          initialMessages={initialMessages}
-          unpaidPayPlanItems={unpaidPayPlanItems}
-          activePlanItems={activePlanItems}
-        />
+        <InboxMobileLayout dailySummary={dailySummary} summary={summary}>
+          <InboxView
+            activePlanItems={activePlanItems}
+            fixedMobileTopBar
+            initialMessages={initialMessages}
+            unpaidPayPlanItems={unpaidPayPlanItems}
+          />
+        </InboxMobileLayout>
       </section>
       <aside
         className={cn(

@@ -1,5 +1,5 @@
 /** Outer gutter between viewport edge and floating shells. */
-export const APP_GUTTER = "pr-3 py-3";
+export const APP_GUTTER = "pr-3 py-3 max-md:py-0";
 
 /** Gap between major layout columns. */
 export const APP_GAP = "gap-3";

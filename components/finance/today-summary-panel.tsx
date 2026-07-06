@@ -19,11 +19,14 @@ import type { DailySummarySnapshot, TodaySummary } from "@/types/summary";
 interface TodaySummaryPanelProps {
   summary: TodaySummary;
   dailySummary: DailySummarySnapshot | null;
+  /** Flat layout for mobile drawer — no outer glass shell. */
+  embedded?: boolean;
 }
 
 export function TodaySummaryPanel({
   summary,
   dailySummary,
+  embedded = false,
 }: TodaySummaryPanelProps) {
   const today = new Date();
   const { formatAmount } = useProtectedCurrency();
@@ -34,9 +37,9 @@ export function TodaySummaryPanel({
   return (
     <div
       className={cn(
-        SEPARATED_SHELL,
-        GLASS_SURFACE,
         "flex h-full min-h-0 flex-col overflow-hidden",
+        !embedded && SEPARATED_SHELL,
+        !embedded && GLASS_SURFACE,
       )}
     >
       <div

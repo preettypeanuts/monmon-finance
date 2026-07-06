@@ -1,6 +1,6 @@
 import { PlansView } from "@/components/plans/plans-view";
 import { PlansShell } from "@/components/plans/plans-shell";
-import { MobileBackButton } from "@/components/shared/mobile-back-button";
+import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
 import { WISH_PAGE_TITLE } from "@/config/navigation";
 import { APP_GUTTER, STACK_GAP } from "@/config/spacing";
 import { generatePlansInsight } from "@/lib/ai/generate-plans-insight";
@@ -22,33 +22,38 @@ export default async function PlansPage() {
   const overview = buildPlansOverview(plans, availableBalance, insight);
 
   return (
-    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER)}>
+    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER, "max-md:p-0")}>
       <PlansShell className="min-h-0 flex-1">
-        <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP)}>
-          <header className="shrink-0">
-            <div className="flex min-w-0 items-start gap-2">
-              <MobileBackButton className="mt-0.5 shrink-0 md:hidden" />
-              <div className="min-w-0">
-                <h1 className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
-                  {WISH_PAGE_TITLE}
-                </h1>
-                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
-                  Wishlist belanja dan sisa saldo setelah wish.
-                </p>
-              </div>
+        <MobileScrollSurface
+          className={cn(
+            "flex min-h-0 flex-1 flex-col",
+            STACK_GAP,
+            "max-md:overflow-y-auto max-md:overscroll-y-contain",
+            "md:overflow-hidden",
+          )}
+          title={WISH_PAGE_TITLE}
+        >
+          <header className="shrink-0 max-md:hidden">
+            <div className="min-w-0">
+              <h1 className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
+                {WISH_PAGE_TITLE}
+              </h1>
+              <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
+                Wishlist belanja dan sisa saldo setelah wish.
+              </p>
             </div>
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
-            <div className={cn("flex flex-col", STACK_GAP)}>
-              <PlansView
-                plans={plans}
-                overview={overview}
-                upcomingImpact={upcomingImpact}
-              />
-            </div>
-          </div>
-        </div>
+          <p className="text-[11px] text-muted-foreground md:hidden max-md:-mt-1">
+            Wishlist belanja dan sisa saldo setelah wish.
+          </p>
+
+          <PlansView
+            plans={plans}
+            overview={overview}
+            upcomingImpact={upcomingImpact}
+          />
+        </MobileScrollSurface>
       </PlansShell>
     </div>
   );

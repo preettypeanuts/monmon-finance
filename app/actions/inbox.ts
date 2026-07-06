@@ -336,6 +336,8 @@ export async function markPlanDoneFromInboxAction(
 
     revalidatePath("/");
     revalidatePath("/plans");
+    revalidatePath("/journal");
+    revalidatePath("/overview");
 
     return {
       ok: true,

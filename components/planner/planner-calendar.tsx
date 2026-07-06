@@ -14,6 +14,7 @@ import {
   PLANNER_CALENDAR_WEEKDAY,
   PLANNER_CALENDAR_WEEKDAY_HEADER,
 } from "@/config/planner-calendar";
+import { PAYPLAN_CALENDAR_FRAME_MOBILE } from "@/config/payplan-mobile";
 import { STACK_GAP } from "@/config/spacing";
 import { toDayKey } from "@/lib/finance/day-range";
 import {
@@ -148,7 +149,7 @@ export function PlannerCalendar({
 
       <PlannerCalendarSummary items={normalizedItems} monthKey={monthKey} />
 
-      <section className={PLANNER_CALENDAR_FRAME}>
+      <section className={cn(PLANNER_CALENDAR_FRAME, PAYPLAN_CALENDAR_FRAME_MOBILE)}>
         <div className="grid grid-cols-7 border-b border-black/8 dark:border-white/10">
           {WEEKDAY_LABELS.map((label) => (
             <div key={label} className={PLANNER_CALENDAR_WEEKDAY_HEADER}>

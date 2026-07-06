@@ -20,6 +20,10 @@ import {
   PLANNER_MANAGE_REPEAT,
 } from "@/config/planner-manage";
 import {
+  PAYPLAN_MANAGE_CARD_MOBILE,
+  PAYPLAN_MOBILE_SOLID_CARD,
+} from "@/config/payplan-mobile";
+import {
   formatPlannedInstallmentCount,
   formatPlannedItemKind,
   formatPlannedItemRepeat,
@@ -59,7 +63,13 @@ export function PlannedItemCard({
   const isIncome = item.flowType === "income";
 
   return (
-    <article className={PLANNER_MANAGE_CARD}>
+    <article
+      className={cn(
+        PLANNER_MANAGE_CARD,
+        PAYPLAN_MOBILE_SOLID_CARD,
+        PAYPLAN_MANAGE_CARD_MOBILE,
+      )}
+    >
       <div className={PLANNER_MANAGE_CARD_BODY}>
         <div className="flex items-center gap-2.5">
           <div

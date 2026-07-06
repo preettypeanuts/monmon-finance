@@ -1,6 +1,7 @@
 "use client";
 
 import { PlanIcon } from "@/components/plans/plan-icon";
+import { useAppearance } from "@/components/shared/appearance-provider";
 import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import {
   PLAN_WIDGET_STYLES,
@@ -45,6 +46,7 @@ const WIDGETS: Array<{
 ];
 
 export function PlansSummaryWidgets({ overview }: PlansSummaryWidgetsProps) {
+  const { balanceVisible } = useAppearance();
   const { formatAmount } = useProtectedCurrency();
 
   function formatWidgetValue(
@@ -60,7 +62,10 @@ export function PlansSummaryWidgets({ overview }: PlansSummaryWidgetsProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between md:justify-end">
+        <span className="text-xs font-medium text-muted-foreground md:hidden">
+          {balanceVisible ? "Sembunyikan" : "Tampilkan"}
+        </span>
         <BalanceVisibilityToggle />
       </div>
       <div className={PLANS_WIDGET_GRID}>

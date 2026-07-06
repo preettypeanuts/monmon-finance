@@ -21,34 +21,38 @@ export function PlansAiSummary({ overview }: PlansAiSummaryProps) {
   const style = getPlansInsightToneStyle(insightMeta.tone);
 
   return (
-    <div className={cn(PLANS_AI_SUMMARY_SHELL, style.surface)}>
+    <div className={PLANS_AI_SUMMARY_SHELL}>
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute -right-6 -top-18 size-32 rounded-full blur-2xl opacity-60 animate-pulse",
+          "pointer-events-none absolute -right-8 -top-20 size-36 rounded-full blur-3xl opacity-70",
           style.glowOrb,
         )}
       />
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute -bottom-10 -left-6 size-24 rounded-full blur-2xl opacity-70",
+          "pointer-events-none absolute -bottom-12 -left-8 size-28 rounded-full blur-3xl opacity-60",
           style.secondaryOrb,
         )}
       />
 
-      <div className="relative flex h-full flex-col p-4">
+      <div className="relative flex h-full flex-col p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div
               className={cn(
-                "flex size-7 items-center justify-center rounded-lg",
+                "relative flex size-7 items-center justify-center rounded-full",
                 style.iconSurface,
               )}
             >
+              <span
+                aria-hidden
+                className="absolute inset-[3px] rounded-full bg-white/70 dark:bg-white/20"
+              />
               <PlanIcon
                 name="sparkle"
-                className={cn("size-3.5", style.textColor)}
+                className={cn("relative size-3.5", style.iconColor)}
               />
             </div>
             <p
@@ -66,7 +70,7 @@ export function PlansAiSummary({ overview }: PlansAiSummaryProps) {
               className={cn(
                 "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
                 style.badgeSurface,
-                style.subtitleColor,
+                style.badgeText,
               )}
             >
               <PlansInsightBadgeIcon tone={insightMeta.tone} />

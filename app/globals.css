@@ -294,6 +294,26 @@
   html {
     @apply font-sans;
   }
+
+  /* Mobile chrome — keep in sync with config/mobile-nav.ts & mobile-chrome.ts */
+  :root {
+    --mobile-safe-top: max(0.75rem, env(safe-area-inset-top));
+    --mobile-top-bar-height: 2.75rem;
+    --mobile-top-bar-offset: calc(
+      var(--mobile-safe-top) + var(--mobile-top-bar-height)
+    );
+    --mobile-bottom-nav-safe-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    --mobile-nav-bar-height: 3.75rem;
+    --mobile-drawer-bottom: var(--mobile-bottom-nav-safe-bottom);
+    --mobile-bottom-nav-offset: calc(
+      var(--mobile-nav-bar-height) + var(--mobile-bottom-nav-safe-bottom)
+    );
+    /* Keep in sync with MOBILE_CHROME_SCROLL_BOTTOM_BLEED in config/mobile-chrome.ts */
+    --mobile-chrome-scroll-bottom-bleed: 15rem;
+    --mobile-scroll-inset-bottom: calc(
+      var(--mobile-bottom-nav-offset) + var(--mobile-chrome-scroll-bottom-bleed)
+    );
+  }
 }
 
 @layer components {
@@ -311,6 +331,149 @@
   :root[data-glass-blur="off"] .app-sidebar > [data-slot="sidebar-inner"] {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+
+  /* Keep in sync with MOBILE_SCROLL_TOP_BLUR in config/mobile-chrome.ts */
+  .mobile-scroll-top-blur {
+    height: calc(var(--mobile-safe-top) + var(--mobile-top-bar-height) + 0.5rem);
+    -webkit-mask-image: linear-gradient(to bottom, black 35%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 35%, transparent 100%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--background) 78%, transparent) 0%,
+      color-mix(in srgb, var(--background) 40%, transparent) 55%,
+      transparent 100%
+    );
+  }
+
+  /* Keep in sync with INBOX_MOBILE_TOP_BLUR in config/inbox-mobile.ts */
+  .inbox-mobile-top-blur {
+    height: calc(var(--mobile-top-bar-offset) + 1.25rem);
+    -webkit-mask-image: linear-gradient(to bottom, black 15%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 15%, transparent 100%);
+    /* Blur lebih soft, saturasi & brightness lebih rendah */
+    -webkit-backdrop-filter: blur(4px) saturate(110%) brightness(1.02);
+    backdrop-filter: blur(4px) saturate(110%) brightness(1.02);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--background) 78%, transparent) 0%,
+      color-mix(in srgb, var(--background) 35%, transparent) 55%,
+      transparent 100%
+    );
+  }
+
+  /* Keep in sync with INBOX_MOBILE_BOTTOM_BLUR in config/inbox-mobile.ts */
+  .inbox-mobile-bottom-blur {
+    height: calc(5rem + max(0.75rem, env(safe-area-inset-bottom)));
+    -webkit-mask-image: linear-gradient(to top, black 6%, transparent 70%);
+    mask-image: linear-gradient(to top, black 6%, transparent 70%);
+    -webkit-backdrop-filter: blur(3px) saturate(105%) brightness(1.01);
+    backdrop-filter: blur(3px) saturate(105%) brightness(1.01);
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--background) 48%, transparent) 0%,
+      color-mix(in srgb, var(--background) 18%, transparent) 40%,
+      transparent 100%
+    );
+  }
+
+  /* Keep in sync with CHAT_BUBBLE_USER in config/chat-bubbles.ts */
+  .chat-bubble-user {
+    background-color: color-mix(in srgb, var(--primary) 80%, transparent);
+    border-color: color-mix(in srgb, var(--primary) 42%, transparent);
+  }
+
+  :is(.dark) .chat-bubble-user {
+    background-color: color-mix(in srgb, var(--primary) 80%, transparent);
+    border-color: color-mix(in srgb, var(--primary) 48%, transparent);
+  }
+
+  /* Keep in sync with INBOX_SUMMARY_DRAWER_POPUP in config/inbox-mobile.ts */
+  .inbox-summary-drawer-popup {
+    --drawer-inset: 0;
+    --drawer-content-width: min(22rem, 92vw);
+  }
+
+  .inbox-summary-drawer-popup[data-swipe-axis="x"] {
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  @media (min-width: 640px) {
+    .inbox-summary-drawer-popup {
+      --drawer-content-width: 20rem;
+    }
+  }
+
+  /* Keep in sync with MOBILE_SCROLL_BOTTOM_SPACER in config/mobile-chrome.ts */
+  .mobile-scroll-bottom-spacer {
+    display: none;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 767px) {
+    .mobile-scroll-bottom-spacer {
+      display: block;
+      height: var(--mobile-scroll-inset-bottom);
+    }
+  }
+
+  /* Keep in sync with PLANS_WISH_CARD_MOBILE in config/plans.ts */
+  @media (max-width: 767px) {
+    .plans-wish-card-mobile {
+      background-color: var(--muted) !important;
+      background-image: none !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      --tw-ring-shadow: 0 0 #0000 !important;
+      --tw-ring-offset-shadow: 0 0 #0000 !important;
+    }
+  }
+
+  /* Keep in sync with JOURNAL_MOBILE_SOLID_SURFACE in config/journal-mobile.ts */
+  @media (max-width: 767px) {
+    .journal-mobile-solid-surface {
+      background-color: var(--muted) !important;
+      background-image: none !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      --tw-ring-shadow: 0 0 #0000 !important;
+      --tw-ring-offset-shadow: 0 0 #0000 !important;
+    }
+  }
+
+  /* Keep in sync with PAYPLAN_TOP_BAR_TAB in config/payplan-mobile.ts */
+  @media (max-width: 767px) {
+    .payplan-top-bar-tab[data-active] {
+      color: var(--primary) !important;
+    }
+
+    .payplan-top-bar-tab[data-active] svg {
+      color: var(--primary) !important;
+    }
+  }
+
+  /* Keep in sync with MOBILE_DRAWER_POPUP in config/mobile-nav.ts */
+  @media (max-width: 767px) {
+    .mobile-nav-drawer-popup {
+      /* Same visual inset as inset-x-3 + bottom safe-area — do not override bottom/inset-x. */
+      margin: 0 0.75rem var(--mobile-drawer-bottom) !important;
+    }
+
+    .mobile-nav-drawer-popup[data-swipe-direction="down"] {
+      --closed-transform: translate3d(
+        0,
+        calc(100% + var(--mobile-drawer-bottom) + 2px),
+        0
+      );
+    }
   }
 
   /* Keep in sync with GLASS_SURFACE + GLASS_FILL in config/glass.ts */

@@ -1,4 +1,4 @@
-import { OverviewInboxFab } from "@/components/overview/overview-inbox-fab";
+import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
 import {
   OVERVIEW_PAGE_ROOT,
   OVERVIEW_PAGE_SCROLL,
@@ -14,13 +14,11 @@ interface OverviewScrollShellProps {
 export function OverviewScrollShell({ children }: OverviewScrollShellProps) {
   return (
     <div className={OVERVIEW_PAGE_ROOT}>
-      <div className={OVERVIEW_PAGE_SCROLL}>
+      <MobileScrollSurface className={OVERVIEW_PAGE_SCROLL} title="Overview">
         <div className={cn("flex flex-col", STACK_GAP, OVERVIEW_PAGE_SCROLL_INNER)}>
           {children}
         </div>
-      </div>
-
-      <OverviewInboxFab />
+      </MobileScrollSurface>
     </div>
   );
 }

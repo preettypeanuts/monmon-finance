@@ -1,25 +1,23 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { JournalFilterFields } from "@/components/journal/journal-filter-fields";
+import { JournalFiltersDialog } from "@/components/journal/journal-filters-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  JOURNAL_CATEGORY_OPTIONS,
-  JOURNAL_TYPE_OPTIONS,
-} from "@/config/journal";
+  JOURNAL_FILTER_SEARCH_INPUT,
+  JOURNAL_FILTER_TRIGGER,
+  JOURNAL_FILTER_TRIGGER_ACTIVE,
+  JOURNAL_FILTERS_BAR_MOBILE,
+  JOURNAL_FILTERS_MOBILE_ROW,
+} from "@/config/journal-mobile";
 import { GLASS_SURFACE } from "@/config/glass";
 import { SEPARATED_CONTROL } from "@/config/shape";
-import { CONTROL_GAP } from "@/config/spacing";
 import { buildJournalSearchParams } from "@/lib/validations/journal";
+import { FunnelIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type { JournalFilters } from "@/types/journal";
 
@@ -33,6 +31,15 @@ export function JournalFiltersBar({ filters }: JournalFiltersBarProps) {
   const [q, setQ] = useState(filters.q);
   const [type, setType] = useState(filters.type);
   const [category, setCategory] = useState(filters.category);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const hasRichFilters = type !== "all" || category !== "all";
+
+  useEffect(() => {
+    setQ(filters.q);
+    setType(filters.type);
+    setCategory(filters.category);
+  }, [filters]);
 
   function applyFilters(next?: Partial<JournalFilters>) {
     const merged: JournalFilters = {
@@ -56,17 +63,8 @@ export function JournalFiltersBar({ filters }: JournalFiltersBarProps) {
   }
 
   return (
-    <div
-      className={cn(
-        SEPARATED_CONTROL,
-        GLASS_SURFACE,
-        "flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-end",
-      )}
-    >
-      <div className="grid min-w-0 flex-1 gap-1.5">
-        <label htmlFor="journal-search" className="text-xs font-medium">
-          Cari
-        </label>
+    <>
+      <div className={JOURNAL_FILTERS_MOBILE_ROW}>
         <Input
           id="journal-search"
           value={q}
@@ -76,70 +74,75 @@ export function JournalFiltersBar({ filters }: JournalFiltersBarProps) {
               applyFilters();
             }
           }}
-          placeholder="Deskripsi, pesan inbox..."
-          className={cn(SEPARATED_CONTROL, "h-9 w-full")}
+          placeholder="Cari transaksi..."
+          aria-label="Cari transaksi"
+          className={cn(SEPARATED_CONTROL, JOURNAL_FILTER_SEARCH_INPUT)}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Buka filter"
+          aria-expanded={dialogOpen}
+          className={cn(
+            SEPARATED_CONTROL,
+            JOURNAL_FILTER_TRIGGER,
+            hasRichFilters && JOURNAL_FILTER_TRIGGER_ACTIVE,
+          )}
+          onClick={() => setDialogOpen(true)}
+        >
+          <FunnelIcon aria-hidden className="size-4" />
+        </Button>
+      </div>
+
+      <JournalFiltersDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        type={type}
+        category={category}
+        onTypeChange={setType}
+        onCategoryChange={setCategory}
+        onApply={() => applyFilters()}
+        onReset={resetFilters}
+      />
+
+      <div
+        className={cn(
+          "hidden md:flex",
+          SEPARATED_CONTROL,
+          GLASS_SURFACE,
+          JOURNAL_FILTERS_BAR_MOBILE,
+          "flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-end",
+        )}
+      >
+        <div className="grid min-w-0 flex-1 gap-1.5">
+          <label htmlFor="journal-search-desktop" className="text-xs font-medium">
+            Cari
+          </label>
+          <Input
+            id="journal-search-desktop"
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                applyFilters();
+              }
+            }}
+            placeholder="Deskripsi, pesan inbox..."
+            className={cn(SEPARATED_CONTROL, "h-9 w-full")}
+          />
+        </div>
+
+        <JournalFilterFields
+          type={type}
+          category={category}
+          onTypeChange={setType}
+          onCategoryChange={setCategory}
+          onApply={() => applyFilters()}
+          onReset={resetFilters}
+          layout="inline"
         />
       </div>
-
-      <div className="grid gap-1.5 sm:w-40">
-        <span className="text-xs font-medium">Tipe</span>
-        <Select
-          value={type}
-          onValueChange={(value) =>
-            setType((value as JournalFilters["type"] | null) ?? "all")
-          }
-        >
-          <SelectTrigger className={cn(SEPARATED_CONTROL, "h-9 w-full")}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {JOURNAL_TYPE_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-1.5 sm:w-44">
-        <span className="text-xs font-medium">Kategori</span>
-        <Select
-          value={category}
-          onValueChange={(value) => setCategory(value ?? "all")}
-        >
-          <SelectTrigger className={cn(SEPARATED_CONTROL, "h-9 w-full")}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {JOURNAL_CATEGORY_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className={cn("flex shrink-0", CONTROL_GAP)}>
-        <Button
-          type="button"
-          size="sm"
-          className={SEPARATED_CONTROL}
-          onClick={() => applyFilters()}
-        >
-          Terapkan
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className={SEPARATED_CONTROL}
-          onClick={resetFilters}
-        >
-          Reset
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }

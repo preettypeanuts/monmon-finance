@@ -9,6 +9,7 @@ import {
 
 import { JournalStatTile } from "@/components/journal/journal-stat-tile";
 import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
+import { useAppearance } from "@/components/shared/appearance-provider";
 import { JOURNAL_WIDGET_TILE_STYLES } from "@/config/journal-widget";
 import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export function JournalSummaryWidget({
   summary,
   className,
 }: JournalSummaryWidgetProps) {
+  const { balanceVisible } = useAppearance();
   const { formatAmount, formatSignedDelta } = useProtectedCurrency();
   const expense = JOURNAL_WIDGET_TILE_STYLES.expense;
   const income = JOURNAL_WIDGET_TILE_STYLES.income;
@@ -31,10 +33,13 @@ export function JournalSummaryWidget({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <div className="flex items-center justify-end px-1">
+      <div className="flex items-center justify-between md:justify-end">
+        <span className="text-xs font-medium text-muted-foreground md:hidden">
+          {balanceVisible ? "Sembunyikan" : "Tampilkan"}
+        </span>
         <BalanceVisibilityToggle />
       </div>
-      <div className="flex gap-4 overflow-x-auto">
+      <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 overflow-x-auto">
         <JournalStatTile
           icon={ArrowUpIcon}
           label="Keluar"

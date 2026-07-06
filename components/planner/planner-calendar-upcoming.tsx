@@ -7,6 +7,8 @@ import {
   PLANNER_CALENDAR_UPCOMING_HEADER,
   PLANNER_CALENDAR_UPCOMING_LIST,
 } from "@/config/planner-calendar";
+import { PAYPLAN_CALENDAR_UPCOMING_FRAME_MOBILE } from "@/config/payplan-mobile";
+import { cn } from "@/lib/utils";
 import { formatDayMonth, formatWeekday } from "@/lib/finance/format-datetime";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { isPastDay } from "@/lib/planner/calendar";
@@ -27,7 +29,12 @@ export function PlannerCalendarUpcoming({
   const isPast = isPastDay(date);
 
   return (
-    <section className={PLANNER_CALENDAR_UPCOMING_FRAME}>
+    <section
+      className={cn(
+        PLANNER_CALENDAR_UPCOMING_FRAME,
+        PAYPLAN_CALENDAR_UPCOMING_FRAME_MOBILE,
+      )}
+    >
       <header className={PLANNER_CALENDAR_UPCOMING_HEADER}>
         <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">

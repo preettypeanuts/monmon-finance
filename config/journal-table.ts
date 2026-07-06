@@ -7,7 +7,7 @@ export const JOURNAL_LIST_CONTAINER =
 export const JOURNAL_LIST_FRAME = `${SEPARATED_SURFACE} flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl`;
 
 export const JOURNAL_LIST_SCROLL =
-  "min-h-0 flex-1 overflow-y-auto overscroll-y-contain";
+  "min-h-0 flex-1 overflow-y-auto overscroll-y-contain max-md:overflow-visible max-md:flex-none";
 
 export const JOURNAL_LIST_SECTION = "pb-1.5 last:pb-0";
 

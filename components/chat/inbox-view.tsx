@@ -14,7 +14,6 @@ import {
   parseReceiptFromImageAction,
   submitInboxMessageFromReceipt,
 } from "@/app/actions/receipt";
-import { ChatHeader } from "@/components/chat/chat-header";
 import { ChatInput } from "@/components/chat/chat-input";
 import { ChatReceiptDropOverlay } from "@/components/chat/chat-receipt-drop-overlay";
 import { ChatReceiptProcessingOverlay } from "@/components/chat/chat-receipt-processing-overlay";
@@ -22,6 +21,7 @@ import { MessageList } from "@/components/chat/message-list";
 import { ReceiptConfirmDialog } from "@/components/chat/receipt-confirm-dialog";
 import type { TransactionCategoryId } from "@/config/categories";
 import { CHAT_INPUT_DOCK } from "@/config/chat-layout";
+import { INBOX_CHAT_INPUT_DOCK } from "@/config/inbox-mobile";
 import { buildReceiptManualFallbackNotice } from "@/lib/ai/format-gemini-api-error";
 import {
   getReceiptImageFromDataTransfer,
@@ -44,6 +44,7 @@ interface InboxViewProps {
   initialMessages: ChatMessage[];
   unpaidPayPlanItems: UnpaidPayPlanChatItem[];
   activePlanItems: ActivePlanChatItem[];
+  fixedMobileTopBar?: boolean;
 }
 
 function createPendingId(): string {
@@ -54,6 +55,7 @@ export function InboxView({
   initialMessages,
   unpaidPayPlanItems,
   activePlanItems,
+  fixedMobileTopBar = false,
 }: InboxViewProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -438,16 +440,18 @@ export function InboxView({
       onDrop={(event) => void handleDrop(event)}
     >
       <MessageList
+        fixedMobileTopBar={fixedMobileTopBar}
         messages={messages}
         onRetry={handleRetry}
         onEditMessage={handleEditMessage}
         onUndoMessage={handleUndoMessage}
         actionsDisabled={isProcessing}
       />
-      <ChatHeader />
       <ChatReceiptDropOverlay visible={isDraggingReceipt} />
       <ChatReceiptProcessingOverlay visible={isParsingReceipt} />
-      <div className={CHAT_INPUT_DOCK}>
+      <div
+        className={fixedMobileTopBar ? INBOX_CHAT_INPUT_DOCK : CHAT_INPUT_DOCK}
+      >
         {receiptError ? (
           <p className="mb-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             {receiptError}

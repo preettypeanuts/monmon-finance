@@ -3,7 +3,7 @@ import { JournalPagination } from "@/components/journal/journal-pagination";
 import { JournalShell } from "@/components/journal/journal-shell";
 import { JournalSummaryWidget } from "@/components/journal/journal-summary-widget";
 import { JournalTable } from "@/components/journal/journal-table";
-import { MobileBackButton } from "@/components/shared/mobile-back-button";
+import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
 import { APP_GUTTER, STACK_GAP } from "@/config/spacing";
 import { getJournalDaySummary } from "@/lib/db/journal-summary";
 import { listJournalTransactions } from "@/lib/db/journal";
@@ -26,32 +26,41 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
   ]);
 
   return (
-    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER)}>
+    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER, "max-md:p-0")}>
       <JournalShell className="min-h-0 flex-1">
-        <div
+        <MobileScrollSurface
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden",
+            "flex min-h-0 flex-1 flex-col",
             STACK_GAP,
+            "max-md:overflow-y-auto max-md:overscroll-y-contain",
+            "md:overflow-hidden",
           )}
+          title="Journal"
         >
-          <header className="shrink-0">
+          <header className="shrink-0 max-md:hidden">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex min-w-0 items-start gap-2">
-                <MobileBackButton className="mt-0.5 shrink-0 md:hidden" />
-                <div className="min-w-0">
-                  <h1 className="mt-1 text-lg font-semibold tracking-tight">
-                    Journal
-                  </h1>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Semua transaksi tercatat dari inbox.
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <h1 className="mt-1 text-lg font-semibold tracking-tight">
+                  Journal
+                </h1>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Semua transaksi tercatat dari inbox.
+                </p>
               </div>
               <p className="shrink-0 text-right text-sm font-semibold capitalize text-foreground/90">
                 {formatJournalHeaderDate(daySummary.date)}
               </p>
             </div>
           </header>
+
+          <div className="flex items-center justify-between gap-3 max-md:-mt-1 md:hidden">
+            <p className="text-[11px] text-muted-foreground">
+              Semua transaksi tercatat dari inbox.
+            </p>
+            <p className="shrink-0 text-[11px] font-semibold capitalize text-foreground/90">
+              {formatJournalHeaderDate(daySummary.date)}
+            </p>
+          </div>
 
           <JournalSummaryWidget summary={daySummary} className="shrink-0" />
 
@@ -68,7 +77,7 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
             pageSize={result.pageSize}
             filters={filters}
           />
-        </div>
+        </MobileScrollSurface>
       </JournalShell>
     </div>
   );

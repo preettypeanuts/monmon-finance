@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import {
   createPlan,
   deletePlan,
+  markPlanDone,
   updatePlan,
 } from "@/lib/db/plans";
 import { parsePlanFormData } from "@/lib/validations/plan";
@@ -24,6 +25,8 @@ export type PlanActionResult = PlanActionSuccess | PlanActionFailure;
 
 function revalidatePlans() {
   revalidatePath("/plans");
+  revalidatePath("/overview");
+  revalidatePath("/journal");
 }
 
 export async function savePlanAction(
@@ -61,5 +64,23 @@ export async function deletePlanAction(
     return { ok: true };
   } catch {
     return { ok: false, error: "Gagal menghapus wish." };
+  }
+}
+
+export async function markPlanPurchasedAction(
+  id: string,
+): Promise<PlanActionResult> {
+  const trimmed = id.trim();
+
+  if (!trimmed) {
+    return { ok: false, error: "Wish tidak ditemukan." };
+  }
+
+  try {
+    const plan = await markPlanDone(trimmed);
+    revalidatePlans();
+    return { ok: true, plan };
+  } catch {
+    return { ok: false, error: "Gagal menandai wish sudah dibeli." };
   }
 }

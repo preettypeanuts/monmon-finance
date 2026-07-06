@@ -7,7 +7,9 @@ import {
   PLANNER_MANAGE_CARD_FOOTER_CONTENT,
   PLANNER_MANAGE_META,
 } from "@/config/planner-manage";
+import { PAYPLAN_MOBILE_SOLID_DIVIDER } from "@/config/payplan-mobile";
 import { formatPlannedStartLabel } from "@/lib/planner/format-planned-item";
+import { cn } from "@/lib/utils";
 import type { InstallmentProgress } from "@/lib/planner/installment-progress";
 import type { PlannedItemRecord } from "@/types/planner";
 
@@ -26,7 +28,12 @@ export function PlannedItemCardFooter({
         {installmentProgress ? (
           <PlannedItemInstallmentProgressBar progress={installmentProgress} />
         ) : (
-          <div className={PLANNER_MANAGE_CARD_DIVIDER_LINE} />
+          <div
+            className={cn(
+              PLANNER_MANAGE_CARD_DIVIDER_LINE,
+              PAYPLAN_MOBILE_SOLID_DIVIDER,
+            )}
+          />
         )}
       </div>
 

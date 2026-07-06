@@ -1,0 +1,70 @@
+---
+description: Mobile-only layout — aktif saat user menulis mobileEdit=true
+alwaysApply: true
+---
+
+# Mobile Layout Only (`mobileEdit=true`)
+
+> **Status:** `alwaysApply: true` (sementara) — matikan kalau user minta.
+
+**Aktifkan rule ini** ketika user menulis `mobileEdit=true` di prompt, atau secara eksplisit minta perbaikan **mobile view saja**.
+
+## Tujuan
+
+Fokus layout & penyesuaian UI **hanya untuk layar kecil**. **Desktop (`md` ke atas) tidak boleh berubah sama sekali** — pixel-perfect sama seperti sebelum edit.
+
+!JIKA UI DESKTOP TIDAK POSSIBLE DIBUAT MOBILE VERSION TANPA MENGGANGGU TAMPILANNYA DI DESKTOP, MAKA DIPERBOLEHKAN BUAT KOMPONEN BARU KHUSUS UNTUK MOBILE!
+
+## Breakpoint proyek
+
+- **Mobile**: `< md` → pakai prefix Tailwind `max-md:`
+- **Desktop**: `≥ md` (768px) → **jangan ubah** class `md:`, `lg:`, `xl:`, `2xl:` yang sudah ada
+
+Konstanta: `config/mobile-layout.ts`
+
+## Wajib
+
+1. **Hanya tambah/ubah class dengan `max-md:`** untuk perilaku mobile
+2. **Jangan ubah** class tanpa prefix jika class itu juga dipakai desktop (kecuali sudah di-override penuh di `md:`)
+3. **Jangan ubah/hapus** class `md:*`, `lg:*`, `xl:*` yang mengatur desktop
+4. **Jangan ubah** `config/*` shared layout jika constant dipakai desktop — pecah constant mobile baru di `config/mobile-layout.ts`
+5. Setelah edit: mental check — *"Apakah viewport 1024px+ masih identik?"*
+
+## Pola aman
+
+```tsx
+// ✅ Tambah override mobile saja
+className={cn("md:grid-cols-3", "max-md:grid-cols-1 max-md:gap-2")}
+
+// ✅ Desktop eksplisit, mobile di max-md
+className="hidden max-md:flex md:block"
+
+// ❌ Jangan — mengubah base = desktop ikut berubah
+className="grid-cols-1 gap-2 md:grid-cols-3"  // ganti gap-2 base → desktop ikut
+
+// ❌ Jangan — mengubah breakpoint desktop
+className="md:grid-cols-2"  // was md:grid-cols-3
+```
+
+## Helper
+
+```tsx
+import { mobileOnly, MOBILE_ONLY_PREFIX } from "@/config/mobile-layout";
+
+className={cn(existingDesktopClasses, mobileOnly("px-3 gap-2"))}
+// → max-md:px-3 max-md:gap-2
+```
+
+## Scope kerja (mobile)
+
+Layout, spacing, overflow, scroll, sticky header, sidebar/sheet, touch target, font size kecil, grid/flex stack — **hanya di `max-md:`**.
+
+## Di luar scope (kecuali diminta)
+
+Logic bisnis, API, DB, fitur baru, refactor desktop, ubah `components/ui/`.
+
+## Sebelum selesai
+
+- [ ] Tidak ada class desktop (`md:`+) yang diubah/dihapus
+- [ ] Perubahan mobile pakai `max-md:` atau constant di `config/mobile-layout.ts`
+- [ ] User bisa verifikasi: resize browser ≥768px = tampilan desktop sama persis

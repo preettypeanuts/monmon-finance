@@ -5,15 +5,17 @@ import { useEffect, useState } from "react";
 
 import {
   deletePlanAction,
+  markPlanPurchasedAction,
   savePlanAction,
 } from "@/app/actions/plans";
 import { PlanCard } from "@/components/plans/plan-card";
 import { PlanDetailDialog } from "@/components/plans/plan-detail-dialog";
+import { PlansAddFab } from "@/components/plans/plans-add-fab";
 import { PlansRelatedUpcoming } from "@/components/plans/plans-related-upcoming";
 import { PlansAiSummary } from "@/components/plans/plans-ai-summary";
 import { PlansSummaryWidgets } from "@/components/plans/plans-summary-widgets";
 import { Button } from "@/components/ui/button";
-import { PLANS_CARD_LIST, PLANS_WIDGET_TILE } from "@/config/plans";
+import { PLANS_CARD_LIST, PLANS_MOBILE_SOLID_CARD, PLANS_WIDGET_TILE } from "@/config/plans";
 import { WISH_PAGE_TITLE } from "@/config/navigation";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { STACK_GAP } from "@/config/spacing";
@@ -125,6 +127,26 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
     router.refresh();
   }
 
+  async function handleMarkPurchased(plan: PlanRecord) {
+    const result = await markPlanPurchasedAction(plan.id);
+
+    if (!result.ok) {
+      return;
+    }
+
+    setItems((current) => {
+      const next = sortPlans(
+        current.map((entry) =>
+          entry.id === result.plan.id ? result.plan : entry,
+        ),
+      );
+      setSummary(buildLocalOverview(next, summary.availableBalance));
+      return next;
+    });
+    setSelectedPlan(result.plan);
+    router.refresh();
+  }
+
   return (
     <div className={cn("flex flex-col", STACK_GAP)}>
       <PlansSummaryWidgets overview={summary} />
@@ -140,7 +162,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
         <Button
           type="button"
           size="sm"
-          className={SEPARATED_CONTROL}
+          className={cn(SEPARATED_CONTROL, "max-md:hidden")}
           onClick={openCreate}
         >
           <PlusIcon className="size-4" />
@@ -152,6 +174,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
         <div
           className={cn(
             PLANS_WIDGET_TILE,
+            PLANS_MOBILE_SOLID_CARD,
             "flex flex-col items-center justify-center px-4 py-12 text-center",
           )}
         >
@@ -162,7 +185,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
           <Button
             type="button"
             size="sm"
-            className={cn(SEPARATED_CONTROL, "mt-4")}
+            className={cn(SEPARATED_CONTROL, "mt-4 max-md:hidden")}
             onClick={openCreate}
           >
             <PlusIcon className="size-4" />
@@ -179,6 +202,8 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
 
       <PlansRelatedUpcoming items={upcomingImpact} />
 
+      <PlansAddFab onClick={openCreate} />
+
       <PlanDetailDialog
         open={dialogOpen}
         plan={selectedPlan}
@@ -187,6 +212,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
         onModeChange={setDialogMode}
         onSubmit={handleSubmit}
         onDelete={handleDelete}
+        onMarkPurchased={handleMarkPurchased}
       />
     </div>
   );

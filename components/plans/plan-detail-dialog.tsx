@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useTransition } from "react";
 
+import { PlanMarkPurchasedSection } from "@/components/plans/plan-mark-purchased-section";
+import { PlanPurchasedNotice } from "@/components/plans/plan-purchased-notice";
 import { AmountTextInput } from "@/components/shared/amount-text-input";
 import { FormDialogField } from "@/components/shared/form-dialog-field";
 import { Button } from "@/components/ui/button";
@@ -43,7 +45,8 @@ import {
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
-import type { PlanRecord, PlanStatus } from "@/types/plan";
+import type { PlanRecord } from "@/types/plan";
+import { PencilSimpleIcon, TrashIcon } from "@/lib/icons";
 
 type DialogMode = "view" | "edit" | "create";
 
@@ -55,6 +58,7 @@ interface PlanDetailDialogProps {
   onModeChange: (mode: DialogMode) => void;
   onSubmit: (formData: FormData) => Promise<void>;
   onDelete: (plan: PlanRecord) => Promise<void>;
+  onMarkPurchased: (plan: PlanRecord) => Promise<void>;
 }
 
 const EXPENSE_CATEGORIES = TRANSACTION_CATEGORIES.filter(
@@ -72,10 +76,10 @@ export function PlanDetailDialog({
   onModeChange,
   onSubmit,
   onDelete,
+  onMarkPurchased,
 }: PlanDetailDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [category, setCategory] = useState("shopping");
-  const [status, setStatus] = useState<PlanStatus>("active");
   const isForm = mode === "edit" || mode === "create";
   const title =
     mode === "create"
@@ -91,19 +95,17 @@ export function PlanDetailDialog({
 
     if (plan && mode !== "create") {
       setCategory(plan.category);
-      setStatus(plan.status);
       return;
     }
 
     setCategory("shopping");
-    setStatus("active");
   }, [open, plan, mode]);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     formData.set("category", category);
-    formData.set("status", status);
+    formData.set("status", plan?.status ?? "active");
 
     if (plan && mode === "edit") {
       formData.set("id", plan.id);
@@ -121,6 +123,16 @@ export function PlanDetailDialog({
 
     startTransition(async () => {
       await onDelete(plan);
+    });
+  }
+
+  function handleMarkPurchased() {
+    if (!plan) {
+      return;
+    }
+
+    startTransition(async () => {
+      await onMarkPurchased(plan);
     });
   }
 
@@ -205,38 +217,11 @@ export function PlanDetailDialog({
                   </Select>
                 </FormDialogField>
 
-                <FormDialogField label="Status" htmlFor="plan-status">
-                  <Select
-                    value={status}
-                    onValueChange={(value) => {
-                      if (value) {
-                        setStatus(value as PlanStatus);
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      id="plan-status"
-                      className={cn(
-                        PLANNER_SELECT_TRIGGER,
-                        FORM_FIELD_SELECT,
-                        "text-left",
-                      )}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={PLANNER_SELECT_CONTENT}>
-                      <SelectItem
-                        value="active"
-                        className={PLANNER_SELECT_ITEM}
-                      >
-                        {PLAN_STATUS_LABEL.active}
-                      </SelectItem>
-                      <SelectItem value="done" className={PLANNER_SELECT_ITEM}>
-                        {PLAN_STATUS_LABEL.done}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormDialogField>
+                {plan ? (
+                  <input type="hidden" name="status" value={plan.status} />
+                ) : (
+                  <input type="hidden" name="status" value="active" />
+                )}
               </div>
 
               <div className={FORM_GROUP}>
@@ -299,6 +284,20 @@ export function PlanDetailDialog({
                 </div>
               </div>
 
+              {plan.status === "active" ? (
+                <div className="pb-1">
+                  <PlanMarkPurchasedSection
+                    amount={plan.amount}
+                    disabled={isPending}
+                    onMarkPurchased={handleMarkPurchased}
+                  />
+                </div>
+              ) : (
+                <div className="px-4 pb-1">
+                  <PlanPurchasedNotice amount={plan.amount} />
+                </div>
+              )}
+
               {plan.note ? (
                 <div className={FORM_GROUP}>
                   <div className="px-4 py-3">
@@ -316,23 +315,30 @@ export function PlanDetailDialog({
             <div className={FORM_DIALOG_FOOTER}>
               <Button
                 type="button"
+                size="icon"
                 variant="destructive"
                 disabled={isPending}
                 className={cn(SEPARATED_CONTROL, "shrink-0")}
                 onClick={handleDelete}
+                aria-label="Hapus"
               >
-                Hapus
+                <span className="sr-only">Hapus</span>
+                <TrashIcon className="size-4" />
               </Button>
               <div className="flex min-w-0 flex-1 gap-2">
                 <Button
                   type="button"
+                  size="icon"
                   variant="outline"
                   disabled={isPending}
-                  className={cn(SEPARATED_CONTROL, "flex-1")}
+                  className={cn(SEPARATED_CONTROL, "shrink-0")}
                   onClick={() => onModeChange("edit")}
+                  aria-label="Edit"
                 >
-                  Edit
+                  <span className="sr-only">Edit</span>
+                  <PencilSimpleIcon className="size-4" />
                 </Button>
+           
                 <Button
                   type="button"
                   disabled={isPending}

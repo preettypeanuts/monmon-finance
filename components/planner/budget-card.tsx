@@ -16,6 +16,11 @@ import {
   PLANNER_MANAGE_META_BETWEEN,
 } from "@/config/planner-manage";
 import { getPlanCategoryAccent } from "@/config/plans";
+import {
+  PAYPLAN_MANAGE_CARD_MOBILE,
+  PAYPLAN_MOBILE_SOLID_CARD,
+  PAYPLAN_MOBILE_SOLID_DIVIDER,
+} from "@/config/payplan-mobile";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
 import type { BudgetStatus } from "@/types/budget";
@@ -50,7 +55,14 @@ export function BudgetCard({
   const isOver = status.remaining < 0;
 
   return (
-    <article className={cn(PLANNER_MANAGE_CARD, disabled && "opacity-60")}>
+    <article
+      className={cn(
+        PLANNER_MANAGE_CARD,
+        PAYPLAN_MOBILE_SOLID_CARD,
+        PAYPLAN_MANAGE_CARD_MOBILE,
+        disabled && "opacity-60",
+      )}
+    >
       <div className={PLANNER_MANAGE_CARD_BODY}>
         <div className="flex items-center gap-2.5">
           <div
@@ -144,7 +156,12 @@ export function BudgetCard({
 
       {status.budget.note?.trim() ? (
         <div className={PLANNER_MANAGE_CARD_FOOTER}>
-          <div className={PLANNER_MANAGE_CARD_DIVIDER_LINE} />
+          <div
+            className={cn(
+              PLANNER_MANAGE_CARD_DIVIDER_LINE,
+              PAYPLAN_MOBILE_SOLID_DIVIDER,
+            )}
+          />
           <div className={PLANNER_MANAGE_CARD_FOOTER_CONTENT}>
             <p className="truncate text-[11px] text-muted-foreground">
               {status.budget.note}

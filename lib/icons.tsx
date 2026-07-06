@@ -33,6 +33,7 @@ import {
   sfGearshapeFill,
   sfHeartFill,
   sfInfinity,
+  sfLine3Horizontal,
   sfLine3HorizontalDecrease,
   sfMoonFill,
   sfPencil,
@@ -146,6 +147,7 @@ export const FunnelIcon = createSFIcon(
 );
 export const GearSixIcon = createSFIcon(sfGearshapeFill, "GearSixIcon");
 export const HeartIcon = createSFIcon(sfHeartFill, "HeartIcon");
+export const ListIcon = createSFIcon(sfLine3Horizontal, "ListIcon");
 export const InfinityIcon = createSFIcon(sfInfinity, "InfinityIcon");
 export const MoonIcon = createSFIcon(sfMoonFill, "MoonIcon");
 export const NotebookIcon = createSFIcon(sfBookFill, "NotebookIcon");
@@ -170,3 +172,26 @@ export const UploadSimpleIcon = createSFIcon(
 export const WalletIcon = createSFIcon(sfWalletBifoldFill, "WalletIcon");
 export const XCircleIcon = createSFIcon(sfXmarkCircleFill, "XCircleIcon");
 export const XIcon = createSFIcon(sfXmark, "XIcon");
+
+/** Filled SF Symbols for mobile bottom nav (iOS liquid glass). */
+export const MobileNavOverviewIcon = createSFIcon(
+  sfSquareGrid2x2Fill,
+  "MobileNavOverviewIcon",
+);
+export const MobileNavInboxIcon = createSFIcon(
+  sfBubbleLeftAndBubbleRightFill,
+  "MobileNavInboxIcon",
+);
+export const MobileNavJournalIcon = createSFIcon(
+  sfBookFill,
+  "MobileNavJournalIcon",
+);
+export const MobileNavPayPlanIcon = createSFIcon(
+  sfCalendar,
+  "MobileNavPayPlanIcon",
+);
+export const MobileNavWishIcon = createSFIcon(sfHeartFill, "MobileNavWishIcon");
+export const MobileNavMenuIcon = createSFIcon(
+  sfLine3Horizontal,
+  "MobileNavMenuIcon",
+);

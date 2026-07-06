@@ -7,6 +7,7 @@ import {
   PLANNER_CALENDAR_TAB_LIST,
   PLANNER_CALENDAR_TAB_TRIGGER,
 } from "@/config/planner-calendar";
+import { PAYPLAN_CALENDAR_TAB_LIST_MOBILE } from "@/config/payplan-mobile";
 import { CalendarBlankIcon, SquaresFourIcon, TableIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type { PlannerCalendarLayout } from "@/types/planner";
@@ -46,7 +47,7 @@ export function PlannerCalendarTabBar({
       onValueChange={(value) => navigate(value as PlannerCalendarLayout)}
       className={cn("w-full", className)}
     >
-      <TabsList className={PLANNER_CALENDAR_TAB_LIST}>
+      <TabsList className={cn(PLANNER_CALENDAR_TAB_LIST, PAYPLAN_CALENDAR_TAB_LIST_MOBILE)}>
         <TabsTrigger
           value="month"
           className={PLANNER_CALENDAR_TAB_TRIGGER}

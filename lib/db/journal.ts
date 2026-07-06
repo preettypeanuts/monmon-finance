@@ -1,8 +1,23 @@
 import { JOURNAL_PAGE_SIZE } from "@/config/journal";
 import { TRANSACTION_CATEGORIES } from "@/config/categories";
 import { prisma } from "@/lib/db/prisma";
-import type { JournalFilters, JournalListResult } from "@/types/journal";
+import type {
+  JournalEntry,
+  JournalEntryFormInput,
+  JournalFilters,
+  JournalListResult,
+} from "@/types/journal";
 import type { Prisma } from "@/generated/prisma/client";
+
+const JOURNAL_ENTRY_SELECT = {
+  id: true,
+  type: true,
+  amount: true,
+  category: true,
+  description: true,
+  rawInput: true,
+  occurredAt: true,
+} as const;
 
 function buildWhere(filters: JournalFilters): Prisma.TransactionWhereInput {
   const where: Prisma.TransactionWhereInput = {};
@@ -55,15 +70,7 @@ export async function listJournalTransactions(
       orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
       skip,
       take: JOURNAL_PAGE_SIZE,
-      select: {
-        id: true,
-        type: true,
-        amount: true,
-        category: true,
-        description: true,
-        rawInput: true,
-        occurredAt: true,
-      },
+      select: JOURNAL_ENTRY_SELECT,
     }),
     prisma.transaction.count({ where }),
   ]);
@@ -77,4 +84,28 @@ export async function listJournalTransactions(
     pageSize: JOURNAL_PAGE_SIZE,
     totalPages,
   };
+}
+
+export async function updateJournalTransaction(
+  id: string,
+  data: JournalEntryFormInput,
+): Promise<JournalEntry> {
+  return prisma.transaction.update({
+    where: { id },
+    data: {
+      type: data.type,
+      amount: data.amount,
+      category: data.category,
+      description: data.description,
+      rawInput: data.rawInput,
+      occurredAt: data.occurredAt,
+    },
+    select: JOURNAL_ENTRY_SELECT,
+  });
+}
+
+export async function deleteJournalTransaction(id: string): Promise<void> {
+  await prisma.transaction.delete({
+    where: { id },
+  });
 }

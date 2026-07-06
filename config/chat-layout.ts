@@ -1,15 +1,16 @@
 /** Horizontal inset for chat message thread. */
 export const CHAT_MESSAGE_INSET_X = "px-3";
 
-/** Top inset — extra room on mobile for floating back button. */
-export const CHAT_MESSAGE_INSET_TOP = "pt-3 max-md:pt-12 md:pt-0";
+/** Top inset on desktop only — mobile uses MOBILE_CHROME_SCROLL_INSET_TOP. */
+export const CHAT_MESSAGE_INSET_TOP = "md:pt-3";
 
-/** Bottom inset — clears floating input overlay. */
-export const CHAT_MESSAGE_INSET_BOTTOM = "pb-24";
+/** Bottom inset — clears floating chat input (+ chrome on mobile). */
+export const CHAT_MESSAGE_INSET_BOTTOM =
+  "pb-24 max-md:pb-[calc(6rem+var(--mobile-bottom-nav-offset))]";
 
-/** Floating input dock — transparent shell, controls keep glass styling. */
+/** Floating input dock — overlays scroll content, sits above bottom nav. */
 export const CHAT_INPUT_DOCK =
-  "absolute inset-x-0 bottom-0 z-10 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1";
+  "absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 max-md:bottom-[var(--mobile-bottom-nav-offset)]";
 
 /** Slash command menu above chat input. */
 export const CHAT_SLASH_MENU =
@@ -19,10 +20,3 @@ export const CHAT_SLASH_MENU_ITEM =
   "flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none";
 
 export const CHAT_SLASH_MENU_ITEM_ACTIVE = "bg-accent";
-
-/** Mobile back button overlay — does not consume layout height. */
-export const CHAT_MOBILE_HEADER =
-  "pointer-events-none absolute inset-x-0 top-0 z-10 md:hidden";
-
-export const CHAT_MOBILE_HEADER_INSET =
-  "pointer-events-auto px-3 pt-[max(0.75rem,env(safe-area-inset-top))]";

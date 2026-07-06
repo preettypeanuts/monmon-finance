@@ -1,20 +1,34 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { PlusIcon } from "@/lib/icons";
+import { FunnelIcon, PlusIcon } from "@/lib/icons";
 
 import {
   deletePlannedItemAction,
   savePlannedItemAction,
 } from "@/app/actions/planner";
+import { PayplanAddFab } from "@/components/planner/payplan-add-fab";
 import { PlannedItemFormDialog } from "@/components/planner/planned-item-form-dialog";
+import { PlannedItemsFilterDialog } from "@/components/planner/planned-items-filter-dialog";
 import { PlannedItemsFilterMenu } from "@/components/planner/planned-items-filter-menu";
 import { PlannedItemsSearchInput } from "@/components/planner/planned-items-search-input";
 import { PlannedItemsList } from "@/components/planner/planned-items-list";
 import { PlannedItemsTable } from "@/components/planner/planned-items-table";
 import { Button } from "@/components/ui/button";
+import {
+  PAYPLAN_FILTER_SEARCH_INPUT,
+  PAYPLAN_FILTER_TRIGGER,
+  PAYPLAN_FILTER_TRIGGER_ACTIVE,
+  PAYPLAN_FILTERS_MOBILE_ROW,
+  PAYPLAN_MANAGE_SECTION_HEADER,
+  PAYPLAN_MANAGE_TOOLBAR_DESKTOP,
+} from "@/config/payplan-mobile";
+import { SEPARATED_CONTROL } from "@/config/shape";
 import { CONTROL_GAP, STACK_GAP } from "@/config/spacing";
-import { filterPlannedItems } from "@/lib/planner/filter-planned-items";
+import {
+  countActivePlannedItemFilters,
+  filterPlannedItems,
+} from "@/lib/planner/filter-planned-items";
 import { cn } from "@/lib/utils";
 import type {
   PlannedItemRecord,
@@ -72,8 +86,10 @@ export function PlannedItemsManage({
   );
   const filteredEmpty =
     normalizedItems.length > 0 && filteredItems.length === 0;
+  const hasRichFilters = countActivePlannedItemFilters(filters) > 0;
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PlannedItemRecord | null>(
     null,
   );
@@ -122,14 +138,14 @@ export function PlannedItemsManage({
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP)}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className={cn("min-w-0", PAYPLAN_MANAGE_SECTION_HEADER)}>
           <h2 className="text-sm font-semibold">Jadwal</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Tagihan berulang, langganan, dan cicilan yang muncul di kalender.
           </p>
         </div>
 
-        <div className={cn("flex shrink-0 flex-wrap items-center", CONTROL_GAP)}>
+        <div className={cn(PAYPLAN_MANAGE_TOOLBAR_DESKTOP, CONTROL_GAP)}>
           <PlannedItemsSearchInput filters={filters} layout={layout} />
           <PlannedItemsFilterMenu filters={filters} layout={layout} />
           <Button size="sm" onClick={openCreateSheet}>
@@ -137,6 +153,29 @@ export function PlannedItemsManage({
             Tambah Pay Plan
           </Button>
         </div>
+      </div>
+
+      <div className={PAYPLAN_FILTERS_MOBILE_ROW}>
+        <PlannedItemsSearchInput
+          filters={filters}
+          layout={layout}
+          className={cn(SEPARATED_CONTROL, PAYPLAN_FILTER_SEARCH_INPUT)}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Buka filter"
+          aria-expanded={filterDialogOpen}
+          className={cn(
+            SEPARATED_CONTROL,
+            PAYPLAN_FILTER_TRIGGER,
+            hasRichFilters && PAYPLAN_FILTER_TRIGGER_ACTIVE,
+          )}
+          onClick={() => setFilterDialogOpen(true)}
+        >
+          <FunnelIcon aria-hidden className="size-4" />
+        </Button>
       </div>
 
       {error ? (
@@ -162,6 +201,15 @@ export function PlannedItemsManage({
           onDelete={handleDelete}
         />
       )}
+
+      <PayplanAddFab onClick={openCreateSheet} />
+
+      <PlannedItemsFilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        filters={filters}
+        layout={layout}
+      />
 
       <PlannedItemFormDialog
         open={sheetOpen}

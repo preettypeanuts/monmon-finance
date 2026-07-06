@@ -10,6 +10,8 @@ import {
   PLANS_CARD_DIVIDER,
   PLANS_CARD_FOOTER,
   PLANS_CARD_FOOTER_CONTENT,
+  PLANS_WISH_CARD_MOBILE,
+  PLANS_MOBILE_SOLID_DIVIDER,
   getPlanCategoryAccent,
 } from "@/config/plans";
 import { formatIdr } from "@/lib/finance/format-currency";
@@ -32,6 +34,7 @@ export function PlanCard({ plan, onClick }: PlanCardProps) {
       onClick={() => onClick(plan)}
       className={cn(
         PLANS_CARD,
+        PLANS_WISH_CARD_MOBILE,
         "w-full cursor-pointer text-left transition-opacity hover:opacity-95",
         isDone && "opacity-70",
       )}
@@ -86,7 +89,7 @@ export function PlanCard({ plan, onClick }: PlanCardProps) {
       </div>
 
       <div className={PLANS_CARD_FOOTER}>
-        <div className={PLANS_CARD_DIVIDER} />
+        <div className={cn(PLANS_CARD_DIVIDER, PLANS_MOBILE_SOLID_DIVIDER)} />
         <div className={PLANS_CARD_FOOTER_CONTENT}>
           <p className="truncate text-[11px] text-muted-foreground">
             {plan.note?.trim() || "Tanpa catatan"}

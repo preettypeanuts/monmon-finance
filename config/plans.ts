@@ -1,4 +1,5 @@
 import { GLASS_SURFACE, GLASS_TILE_BASE } from "@/config/glass";
+import { mobileOnly } from "@/config/mobile-layout";
 import {
   PLANNER_MANAGE_CARD,
   PLANNER_MANAGE_CARD_DIVIDER_LINE,
@@ -28,18 +29,23 @@ export const PLANS_WIDGET_SURFACE = {
   balance: SOLID_WIDGET_TILE_STYLES.balance,
 } as const;
 
-export const PLANS_AI_SUMMARY_SHELL =
-  "relative isolate min-h-28 overflow-hidden rounded-2xl ring-1 ring-white/20 dark:ring-white/10";
+/** Frosted glass card shell — soft float shadow like reference dashboard tiles. */
+const PLANS_AI_SUMMARY_CARD_SHADOW =
+  "shadow-[0_14px_44px_-16px_rgba(0,0,0,0.14)] dark:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.55)]";
 
-const INSIGHT_TILE_HIGHLIGHT =
-  "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.32),0_8px_24px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14),0_10px_28px_rgba(0,0,0,0.35)]";
+export const PLANS_AI_SUMMARY_SHELL = [
+  "relative isolate min-h-28 overflow-hidden rounded-[1.75rem]",
+  GLASS_SURFACE,
+  PLANS_AI_SUMMARY_CARD_SHADOW,
+].join(" ");
 
 export interface PlansInsightToneStyle {
-  surface: string;
   glowOrb: string;
   secondaryOrb: string;
   badgeSurface: string;
+  badgeText: string;
   iconSurface: string;
+  iconColor: string;
   labelColor: string;
   textColor: string;
   subtitleColor: string;
@@ -48,62 +54,74 @@ export interface PlansInsightToneStyle {
   metricRemaining: string;
 }
 
-/** AI summary surface adapts to spend-vs-balance tone. */
+/** AI summary — glass card + tone accent glow (layout unchanged). */
 export const PLAN_INSIGHT_TONE_STYLES: Record<
   PlansInsightTone,
   PlansInsightToneStyle
 > = {
   empty: {
-    surface: `bg-linear-to-br from-[#E5E5EA] via-[#C7C7CC] to-[#8E8E93] dark:from-[#48484A] dark:via-[#3A3A3C] dark:to-[#2C2C2E] ${INSIGHT_TILE_HIGHLIGHT}`,
-    glowOrb: "bg-white/40",
-    secondaryOrb: "bg-black/10 dark:bg-white/8",
-    badgeSurface: "bg-white/20 ring-1 ring-white/22 backdrop-blur-sm",
-    iconSurface: "bg-white/14 ring-1 ring-white/18 backdrop-blur-sm",
-    labelColor: "text-[#1C1C1E]/75 dark:text-white/70",
-    textColor: "text-[#1C1C1E]/95 dark:text-white/95",
-    subtitleColor: "text-[#1C1C1E]/90 dark:text-white/90",
-    metricSpend: "text-[#1C1C1E]/95 dark:text-white/95",
-    metricBalance: "text-[#1C1C1E]/95 dark:text-white/95",
-    metricRemaining: "text-[#1C1C1E]/95 dark:text-white/95",
+    glowOrb: "bg-[#8E8E93]/20",
+    secondaryOrb: "bg-[#C7C7CC]/18 dark:bg-[#48484A]/25",
+    badgeSurface:
+      "bg-[#8E8E93]/14 ring-1 ring-[#8E8E93]/38 backdrop-blur-md shadow-[0_4px_22px_-6px_rgba(142,142,147,0.38)] dark:bg-[#8E8E93]/20 dark:ring-[#8E8E93]/45",
+    badgeText: "text-[#636366] dark:text-[#AEAEB2]",
+    iconSurface:
+      "bg-[#8E8E93]/10 ring-1 ring-[#8E8E93]/42 backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.55),0_4px_16px_-8px_rgba(142,142,147,0.32)] dark:bg-[#8E8E93]/16 dark:ring-[#8E8E93]/48",
+    iconColor: "text-[#8E8E93]",
+    labelColor: "text-muted-foreground",
+    textColor: "text-foreground/90",
+    subtitleColor: "text-muted-foreground",
+    metricSpend: "text-[#FF6B6B]",
+    metricBalance: "text-[#8E5AF7]",
+    metricRemaining: "text-foreground/90",
   },
   safe: {
-    surface: `bg-linear-to-br from-[#B8F0C8] via-[#34C759] to-[#1B8F3A] dark:from-[#1F7A3A] dark:via-[#248A40] dark:to-[#0F5C28] ${INSIGHT_TILE_HIGHLIGHT}`,
-    glowOrb: "bg-[#E8FFEF]/65",
-    secondaryOrb: "bg-[#34C759]/30",
-    badgeSurface: "bg-white/24 ring-1 ring-white/30 backdrop-blur-sm",
-    iconSurface: "bg-white/18 ring-1 ring-white/25 backdrop-blur-sm",
-    labelColor: "text-[#0A3D18]/75 dark:text-white/70",
-    textColor: "text-[#06240E]/95 dark:text-white/95",
-    subtitleColor: "text-[#0A3D18]/90 dark:text-white/90",
-    metricSpend: "text-[#06240E]/95 dark:text-white/95",
-    metricBalance: "text-[#06240E]/95 dark:text-white/95",
-    metricRemaining: "text-[#06240E]/95 dark:text-white/95",
+    glowOrb: "bg-[#34C759]/22",
+    secondaryOrb: "bg-[#34C759]/14",
+    badgeSurface:
+      "bg-[#34C759]/14 ring-1 ring-[#34C759]/38 backdrop-blur-md shadow-[0_4px_22px_-6px_rgba(52,199,89,0.42)] dark:bg-[#34C759]/20 dark:ring-[#34C759]/45",
+    badgeText: "text-[#248A3D] dark:text-[#4CD964]",
+    iconSurface:
+      "bg-[#34C759]/10 ring-1 ring-[#34C759]/42 backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.55),0_4px_16px_-8px_rgba(52,199,89,0.38)] dark:bg-[#34C759]/16 dark:ring-[#34C759]/48",
+    iconColor: "text-[#34C759]",
+    labelColor: "text-muted-foreground",
+    textColor: "text-foreground/90",
+    subtitleColor: "text-muted-foreground",
+    metricSpend: "text-[#FF6B6B]",
+    metricBalance: "text-[#8E5AF7]",
+    metricRemaining: "text-[#34C759]",
   },
   tight: {
-    surface: `bg-linear-to-br from-[#FFE98A] via-[#FFD60A] to-[#F5A623] dark:from-[#D4B84A] dark:via-[#B89400] dark:to-[#8B6914] ${INSIGHT_TILE_HIGHLIGHT}`,
-    glowOrb: "bg-[#FFFBE6]/70",
-    secondaryOrb: "bg-[#FFB020]/35",
-    badgeSurface: "bg-white/28 ring-1 ring-white/35 backdrop-blur-sm",
-    iconSurface: "bg-white/22 ring-1 ring-white/30 backdrop-blur-sm",
-    labelColor: "text-[#5C4A00]/80 dark:text-white/70",
-    textColor: "text-[#2E2500]/95 dark:text-white/95",
-    subtitleColor: "text-[#5C4A00]/90 dark:text-white/90",
-    metricSpend: "text-[#2E2500]/95 dark:text-white/95",
-    metricBalance: "text-[#2E2500]/95 dark:text-white/95",
-    metricRemaining: "text-[#2E2500]/95 dark:text-white/95",
+    glowOrb: "bg-[#FFD60A]/24",
+    secondaryOrb: "bg-[#FF9500]/16",
+    badgeSurface:
+      "bg-[#FF9500]/14 ring-1 ring-[#FF9500]/38 backdrop-blur-md shadow-[0_4px_22px_-6px_rgba(255,149,0,0.42)] dark:bg-[#FF9500]/20 dark:ring-[#FF9500]/45",
+    badgeText: "text-[#C93400] dark:text-[#FF9F0A]",
+    iconSurface:
+      "bg-[#FFD60A]/10 ring-1 ring-[#FFD60A]/42 backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.55),0_4px_16px_-8px_rgba(255,214,10,0.38)] dark:bg-[#FFD60A]/16 dark:ring-[#FFD60A]/48",
+    iconColor: "text-[#FF9500]",
+    labelColor: "text-muted-foreground",
+    textColor: "text-foreground/90",
+    subtitleColor: "text-muted-foreground",
+    metricSpend: "text-[#FF6B6B]",
+    metricBalance: "text-[#8E5AF7]",
+    metricRemaining: "text-[#FF9500]",
   },
   unsafe: {
-    surface: `bg-linear-to-br from-[#FFC4C4] via-[#FF6B6B] to-[#D93838] dark:from-[#A83A3A] dark:via-[#8B2E2E] dark:to-[#5C1C1C] ${INSIGHT_TILE_HIGHLIGHT}`,
-    glowOrb: "bg-[#FFE8E8]/55",
-    secondaryOrb: "bg-[#FF3B30]/28",
-    badgeSurface: "bg-white/24 ring-1 ring-white/28 backdrop-blur-sm",
-    iconSurface: "bg-white/18 ring-1 ring-white/22 backdrop-blur-sm",
-    labelColor: "text-[#5C1010]/75 dark:text-white/70",
-    textColor: "text-[#2A0808]/95 dark:text-white/95",
-    subtitleColor: "text-[#5C1010]/90 dark:text-white/90",
-    metricSpend: "text-[#2A0808]/95 dark:text-white/95",
-    metricBalance: "text-[#2A0808]/95 dark:text-white/95",
-    metricRemaining: "text-[#2A0808]/95 dark:text-white/95",
+    glowOrb: "bg-[#FF3B30]/22",
+    secondaryOrb: "bg-[#FF6B6B]/14",
+    badgeSurface:
+      "bg-[#FF3B30]/14 ring-1 ring-[#FF3B30]/38 backdrop-blur-md shadow-[0_4px_22px_-6px_rgba(255,59,48,0.42)] dark:bg-[#FF3B30]/20 dark:ring-[#FF3B30]/45",
+    badgeText: "text-[#D70015] dark:text-[#FF453A]",
+    iconSurface:
+      "bg-[#FF3B30]/10 ring-1 ring-[#FF3B30]/42 backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.55),0_4px_16px_-8px_rgba(255,59,48,0.38)] dark:bg-[#FF3B30]/16 dark:ring-[#FF3B30]/48",
+    iconColor: "text-[#FF3B30]",
+    labelColor: "text-muted-foreground",
+    textColor: "text-foreground/90",
+    subtitleColor: "text-muted-foreground",
+    metricSpend: "text-[#FF6B6B]",
+    metricBalance: "text-[#8E5AF7]",
+    metricRemaining: "text-[#FF3B30]",
   },
 };
 
@@ -114,6 +132,37 @@ export function getPlansInsightToneStyle(
 }
 
 export const PLANS_CARD = PLANNER_MANAGE_CARD;
+
+/** Mobile wish card — solid muted fill, strips glass gradient/border. See globals.css. */
+export const PLANS_WISH_CARD_MOBILE = "plans-wish-card-mobile";
+
+/**
+ * Mobile Wish shell — solid fill, no glass border/shadow/highlight.
+ * Used by Planner Impact & empty state.
+ */
+export const PLANS_MOBILE_SOLID_CARD = [
+  mobileOnly("!border-0"),
+  mobileOnly("!ring-0"),
+  mobileOnly("!shadow-none"),
+  mobileOnly("[box-shadow:none!important]"),
+  mobileOnly("[background-image:none!important]"),
+  mobileOnly("!bg-muted"),
+  mobileOnly("[backdrop-filter:none!important]"),
+  mobileOnly("[-webkit-backdrop-filter:none!important]"),
+].join(" ");
+
+/** Hide inner hairline on mobile solid wish cards. */
+export const PLANS_MOBILE_SOLID_DIVIDER = mobileOnly("hidden");
+
+/** Floating add button — mobile Wish page, circular, flush right. */
+export const PLANS_ADD_FAB = [
+  "pointer-events-auto fixed right-3 z-30 md:hidden",
+  "bottom-[calc(var(--mobile-bottom-nav-offset)+0.625rem)]",
+  "flex size-14 items-center justify-center rounded-full",
+  "bg-primary text-primary-foreground",
+  "shadow-[0_8px_28px_rgba(0,0,0,0.22)]",
+  "transition-transform active:scale-95",
+].join(" ");
 
 export const PLANS_CARD_LIST = `grid grid-cols-1 pb-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 ${GRID_GAP}`;
 
@@ -130,6 +179,14 @@ export const PLAN_STATUS_LABEL: Record<"active" | "done", string> = {
   active: "Aktif",
   done: "Selesai",
 };
+
+/** Purchased wish marker in plan detail dialog. */
+export const PLAN_PURCHASED_NOTICE_SHELL =
+  "flex gap-2.5 rounded-2xl px-3.5 py-3 ring-1";
+
+/** Mark purchased action block in plan detail dialog. */
+export const PLAN_MARK_PURCHASED_SHELL =
+  "rounded-2xl bg-muted/60 px-3.5 py-3 ring-1 ring-black/6 dark:ring-white/8";
 
 export type PlanWidgetId = "active" | "estimated" | "balance";
 

@@ -16,15 +16,16 @@ import type { JournalEntry } from "@/types/journal";
 
 interface JournalEntryRowProps {
   item: JournalEntry;
+  onClick?: () => void;
 }
 
-export function JournalEntryRow({ item }: JournalEntryRowProps) {
+export function JournalEntryRow({ item, onClick }: JournalEntryRowProps) {
   const isIncome = item.type === "income";
   const title = item.rawInput.trim() || item.description;
   const categoryLabel = getCategoryLabel(item.category);
 
-  return (
-    <article className={JOURNAL_LIST_ROW}>
+  const content = (
+    <>
       <JournalCategoryIcon category={item.category} type={item.type} />
 
       <div className={JOURNAL_LIST_ROW_CONTENT}>
@@ -44,6 +45,24 @@ export function JournalEntryRow({ item }: JournalEntryRowProps) {
         {isIncome ? "+" : "−"}
         {formatIdr(item.amount)}
       </p>
-    </article>
+    </>
+  );
+
+  if (!onClick) {
+    return <article className={JOURNAL_LIST_ROW}>{content}</article>;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        JOURNAL_LIST_ROW,
+        "w-full text-left transition-colors",
+        "hover:bg-black/3 active:bg-black/5 dark:hover:bg-white/5 dark:active:bg-white/8",
+      )}
+    >
+      {content}
+    </button>
   );
 }

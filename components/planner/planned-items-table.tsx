@@ -1,6 +1,13 @@
 import { PlannedItemListRow } from "@/components/planner/planned-item-list-row";
 import { PLANNER_MANAGE_EMPTY } from "@/config/planner-manage";
 import {
+  PAYPLAN_LIST_CONTAINER_MOBILE,
+  PAYPLAN_LIST_FRAME_MOBILE,
+  PAYPLAN_MANAGE_EMPTY_MOBILE,
+  PAYPLAN_MOBILE_SOLID_DIVIDER,
+  PAYPLAN_MOBILE_SOLID_SURFACE,
+} from "@/config/payplan-mobile";
+import {
   PLANNER_LIST_CONTAINER,
   PLANNER_LIST_DIVIDER,
   PLANNER_LIST_FRAME,
@@ -10,6 +17,7 @@ import {
   PLANNER_LIST_SECTION_LABEL,
 } from "@/config/planner-table";
 import { groupPlannedItemsByKind } from "@/lib/planner/group-planned-items";
+import { cn } from "@/lib/utils";
 import type { PlannedItemRecord } from "@/types/planner";
 
 interface PlannedItemsTableProps {
@@ -29,7 +37,7 @@ export function PlannedItemsTable({
 }: PlannedItemsTableProps) {
   if (items.length === 0) {
     return (
-      <div className={PLANNER_MANAGE_EMPTY}>
+      <div className={cn(PLANNER_MANAGE_EMPTY, PAYPLAN_MANAGE_EMPTY_MOBILE)}>
         <p className="text-sm font-medium">
           {filteredEmpty ? "Tidak ada jadwal cocok" : "Belum ada jadwal"}
         </p>
@@ -45,13 +53,13 @@ export function PlannedItemsTable({
   const groups = groupPlannedItemsByKind(items);
 
   return (
-    <div className={PLANNER_LIST_CONTAINER}>
-      <div className={PLANNER_LIST_FRAME}>
-        <div className={PLANNER_LIST_SCROLL}>
+    <div className={cn(PLANNER_LIST_CONTAINER, PAYPLAN_LIST_CONTAINER_MOBILE)}>
+      <div className={cn(PLANNER_LIST_FRAME, PAYPLAN_LIST_FRAME_MOBILE)}>
+        <div className={cn(PLANNER_LIST_SCROLL, "max-md:overflow-visible max-md:flex-none")}>
           {groups.map((group) => (
             <section key={group.kind} className={PLANNER_LIST_SECTION}>
               <h2 className={PLANNER_LIST_SECTION_LABEL}>{group.label}</h2>
-              <div className={PLANNER_LIST_GROUP}>
+              <div className={cn(PLANNER_LIST_GROUP, PAYPLAN_MOBILE_SOLID_SURFACE)}>
                 {group.items.map((item, index) => (
                   <div key={item.id}>
                     <PlannedItemListRow
@@ -61,7 +69,10 @@ export function PlannedItemsTable({
                       onDelete={onDelete}
                     />
                     {index < group.items.length - 1 ? (
-                      <div className={PLANNER_LIST_DIVIDER} aria-hidden />
+                      <div
+                        className={cn(PLANNER_LIST_DIVIDER, PAYPLAN_MOBILE_SOLID_DIVIDER)}
+                        aria-hidden
+                      />
                     ) : null}
                   </div>
                 ))}

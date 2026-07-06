@@ -1,7 +1,11 @@
 "use client";
 
+import { AppContentSurface } from "@/components/shared/app-content-surface";
+import { DesktopAppSidebar } from "@/components/shared/desktop-app-sidebar";
+import { MobileBottomNav } from "@/components/shared/mobile-bottom-nav";
+import { MobileScrollChrome } from "@/components/shared/mobile-scroll-chrome";
+import { MobileScrollChromeProvider } from "@/components/shared/mobile-scroll-chrome-provider";
 import { AppearanceProvider } from "@/components/shared/appearance-provider";
-import { AppSidebar } from "@/components/shared/app-sidebar";
 import { PersistentSidebarProvider } from "@/components/shared/persistent-sidebar-provider";
 import { WallpaperBackground } from "@/components/shared/wallpaper-background";
 import { WallpaperProvider } from "@/components/shared/wallpaper-provider";
@@ -37,12 +41,14 @@ export function AppShell({
             } as React.CSSProperties
           }
         >
-          <AppSidebar />
+          <DesktopAppSidebar />
           <SidebarInset className="min-h-0 overflow-hidden bg-transparent">
-            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-              {children}
-            </div>
+            <MobileScrollChromeProvider>
+              <MobileScrollChrome />
+              <AppContentSurface>{children}</AppContentSurface>
+            </MobileScrollChromeProvider>
           </SidebarInset>
+          <MobileBottomNav />
         </PersistentSidebarProvider>
       </WallpaperProvider>
     </AppearanceProvider>
