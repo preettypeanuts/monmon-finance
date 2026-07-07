@@ -75,6 +75,10 @@ function isPendingMessageId(id: string): boolean {
   return id.startsWith("pending-");
 }
 
+function messageIds(messages: ChatMessage[]): Set<string> {
+  return new Set(messages.map((message) => message.id));
+}
+
 /** Keep optimistic/pending chat rows when a background bootstrap refresh returns stale data. */
 export function mergeInboxBootstrapPayload(
   current: InboxBootstrapPayload,
@@ -88,6 +92,23 @@ export function mergeInboxBootstrapPayload(
     return {
       summary: current.summary,
       messages: [...incoming.messages, ...pending],
+    };
+  }
+
+  if (incoming.messages.length === 0 && current.messages.length > 0) {
+    return current;
+  }
+
+  const currentIds = messageIds(current.messages);
+  const incomingIds = messageIds(incoming.messages);
+  const currentIsLocalDeletion = [...currentIds].every((id) =>
+    incomingIds.has(id),
+  );
+
+  if (currentIsLocalDeletion && current.messages.length < incoming.messages.length) {
+    return {
+      summary: current.summary,
+      messages: current.messages,
     };
   }
 

@@ -40,10 +40,10 @@ export function prefetchInboxBootstrap() {
   void fetchInboxBootstrap();
 }
 
-export function triggerInboxMaintenance() {
+export function triggerInboxMaintenance(force = false) {
   const now = Date.now();
 
-  if (now - lastMaintenanceAt < MAINTENANCE_COOLDOWN_MS) {
+  if (!force && now - lastMaintenanceAt < MAINTENANCE_COOLDOWN_MS) {
     return;
   }
 

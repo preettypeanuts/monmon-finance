@@ -98,7 +98,7 @@ export async function updateInboxMessage(
 
 export async function getInboxMessages(userId: string): Promise<ChatMessage[]> {
   const records = await prisma.inboxMessage.findMany({
-    where: { userId },
+    where: scopedByUser(userId, { kind: "chat" }),
     orderBy: { createdAt: "asc" },
     include: { transaction: true },
   });
@@ -145,9 +145,8 @@ export async function deleteInboxMessagePair(
     throw new Error("Pembayaran PayPlan tidak bisa dibatalkan dari chat.");
   }
 
-  const assistantRecord = await prisma.inboxMessage.findFirst({
+  const nextRecord = await prisma.inboxMessage.findFirst({
     where: scopedByUser(userId, {
-      role: "assistant",
       kind: "chat",
       createdAt: {
         gt: userRecord.createdAt,
@@ -158,9 +157,13 @@ export async function deleteInboxMessagePair(
     },
     select: {
       id: true,
+      role: true,
       transactionId: true,
     },
   });
+
+  const assistantRecord =
+    nextRecord?.role === "assistant" ? nextRecord : null;
 
   const removedIds = [userRecord.id];
   const transactionId = assistantRecord?.transactionId ?? null;

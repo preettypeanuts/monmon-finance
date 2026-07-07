@@ -27,7 +27,10 @@ export function InboxClientShell({
     slash,
     requestSlashContext,
     requestDailySummary,
+    refreshInbox,
+    isRefreshing,
     applyTransactionSummary,
+    applyMessages,
   } = useInboxBootstrap({ initialBootstrap });
 
   return (
@@ -36,6 +39,8 @@ export function InboxClientShell({
         <InboxMobileLayout
           dailySummary={dailySummary}
           onOpenSummary={requestDailySummary}
+          onRefresh={() => void refreshInbox()}
+          refreshing={isRefreshing}
           summary={summary}
         >
           {!ready && messages.length === 0 ? (
@@ -46,6 +51,7 @@ export function InboxClientShell({
               activeSavingsItems={slash.activeSavingsItems}
               fixedMobileTopBar
               initialMessages={messages}
+              onMessagesChange={applyMessages}
               onSlashMenuOpenChange={(open) => {
                 if (open) {
                   requestSlashContext();

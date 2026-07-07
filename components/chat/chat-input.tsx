@@ -146,6 +146,16 @@ export function ChatInput({
     setValue(draftText);
     setCursor(draftText.length);
     onDraftTextApplied?.();
+
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(draftText.length, draftText.length);
+    });
   }, [draftText, onDraftTextApplied]);
 
   function syncCursor() {

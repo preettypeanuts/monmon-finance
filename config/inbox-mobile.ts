@@ -42,9 +42,12 @@ export const INBOX_MOBILE_TOP_BAR_ORB = [
 ].join(" ");
 
 export const INBOX_MOBILE_TOP_BAR_TITLE = [
-  "pointer-events-none absolute inset-x-14 text-center",
+  "pointer-events-none absolute inset-x-0 text-center",
   "text-[1.0625rem] font-semibold leading-tight tracking-tight text-foreground",
 ].join(" ");
+
+export const INBOX_MOBILE_TOP_BAR_ACTIONS =
+  "pointer-events-auto flex shrink-0 items-center gap-2";
 
 /** Right drawer popup — sync with `.inbox-summary-drawer-popup` in globals.css */
 export const INBOX_SUMMARY_DRAWER_POPUP = "inbox-summary-drawer-popup";

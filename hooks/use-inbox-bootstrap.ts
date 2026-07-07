@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   EMPTY_TODAY_SUMMARY,
@@ -51,6 +51,28 @@ interface InboxBootstrapOptions {
   initialBootstrap?: InboxBootstrapPayload | null;
 }
 
+function isPendingMessageId(id: string): boolean {
+  return id.startsWith("pending-");
+}
+
+function applyForcedRefreshPayload(
+  current: InboxBootstrapPayload,
+  incoming: InboxBootstrapPayload,
+): InboxBootstrapPayload {
+  const pending = current.messages.filter((message) =>
+    isPendingMessageId(message.id),
+  );
+
+  if (pending.length === 0) {
+    return incoming;
+  }
+
+  return {
+    summary: incoming.summary,
+    messages: [...incoming.messages, ...pending],
+  };
+}
+
 function seedBootstrapCache(payload: InboxBootstrapPayload | null | undefined) {
   if (!payload) {
     return readInboxBootstrapCache();
@@ -75,6 +97,7 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
     useState<DailySummarySnapshot | null>(null);
   const [slash, setSlash] = useState(EMPTY_SLASH);
   const [slashRequested, setSlashRequested] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const cached = readInboxBootstrapCache();
@@ -171,12 +194,74 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
     });
   }
 
+  function applyMessages(messages: ChatMessage[]) {
+    setState((current) => {
+      if (
+        current.messages.length === messages.length &&
+        current.messages.every((message, index) => message.id === messages[index]?.id)
+      ) {
+        return current;
+      }
+
+      const next = {
+        messages,
+        summary: current.summary,
+      };
+
+      writeInboxBootstrapCache(next);
+
+      return {
+        ...current,
+        messages,
+        ready: true,
+      };
+    });
+  }
+
+  const refreshInbox = useCallback(async () => {
+    if (isRefreshing) {
+      return;
+    }
+
+    setIsRefreshing(true);
+
+    try {
+      triggerInboxMaintenance(true);
+      const payload = await fetchInboxBootstrap();
+
+      if (!payload) {
+        return;
+      }
+
+      setState((current) => {
+        const merged = applyForcedRefreshPayload(
+          {
+            messages: current.messages,
+            summary: current.summary,
+          },
+          payload,
+        );
+
+        writeInboxBootstrapCache(merged);
+
+        return toBootstrapState(merged, true);
+      });
+
+      setDailySummary(null);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing]);
+
   return {
     ...state,
     dailySummary,
     slash,
+    isRefreshing,
     requestSlashContext,
     requestDailySummary,
+    refreshInbox,
     applyTransactionSummary,
+    applyMessages,
   };
 }

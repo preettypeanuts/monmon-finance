@@ -15,6 +15,8 @@ interface InboxMobileLayoutProps {
   summary: TodaySummary;
   dailySummary: DailySummarySnapshot | null;
   onOpenSummary?: () => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
 export function InboxMobileLayout({
@@ -22,6 +24,8 @@ export function InboxMobileLayout({
   summary,
   dailySummary,
   onOpenSummary,
+  onRefresh,
+  refreshing = false,
 }: InboxMobileLayoutProps) {
   const [summaryOpen, setSummaryOpen] = useState(false);
 
@@ -40,7 +44,11 @@ export function InboxMobileLayout({
       <FixedViewportPortal>
         <div className="md:hidden">
           <InboxMobileEdgeBlur />
-          <InboxMobileTopBar onOpenSummary={handleOpenSummary} />
+          <InboxMobileTopBar
+            onOpenSummary={handleOpenSummary}
+            onRefresh={() => onRefresh?.()}
+            refreshing={refreshing}
+          />
         </div>
       </FixedViewportPortal>
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -54,6 +53,7 @@ interface InboxViewProps {
   fixedMobileTopBar?: boolean;
   onSlashMenuOpenChange?: (open: boolean) => void;
   onTransactionRecorded?: (transaction: ParsedTransaction) => void;
+  onMessagesChange?: (messages: ChatMessage[]) => void;
 }
 
 function createPendingId(prefix: "user" | "assistant"): string {
@@ -70,11 +70,28 @@ function mergeServerMessages(
 ): ChatMessage[] {
   const pending = current.filter((message) => isPendingMessageId(message.id));
 
-  if (pending.length === 0) {
-    return initialMessages;
+  if (pending.length > 0) {
+    return [...initialMessages, ...pending];
   }
 
-  return [...initialMessages, ...pending];
+  if (initialMessages.length === 0 && current.length > 0) {
+    return current;
+  }
+
+  const currentIds = new Set(current.map((message) => message.id));
+  const initialIds = new Set(initialMessages.map((message) => message.id));
+  const currentIsLocalDeletion = [...currentIds].every((id) =>
+    initialIds.has(id),
+  );
+
+  if (
+    currentIsLocalDeletion &&
+    current.length < initialMessages.length
+  ) {
+    return current;
+  }
+
+  return initialMessages;
 }
 
 export function InboxView({
@@ -85,8 +102,8 @@ export function InboxView({
   fixedMobileTopBar = false,
   onSlashMenuOpenChange,
   onTransactionRecorded,
+  onMessagesChange,
 }: InboxViewProps) {
-  const router = useRouter();
   const isMobileViewport = useIsMobileViewport();
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inFlightCount, setInFlightCount] = useState(0);
@@ -105,7 +122,18 @@ export function InboxView({
   const dragDepthRef = useRef(0);
 
   useEffect(() => {
-    setMessages((current) => mergeServerMessages(current, initialMessages));
+    setMessages((current) => {
+      const merged = mergeServerMessages(current, initialMessages);
+
+      if (
+        merged.length === current.length &&
+        merged.every((message, index) => message.id === current[index]?.id)
+      ) {
+        return current;
+      }
+
+      return merged;
+    });
   }, [initialMessages]);
 
   const isProcessing = inFlightCount > 0;
@@ -371,14 +399,16 @@ export function InboxView({
     }
   }
 
-  async function removeMessagePair(userMessageId: string) {
+  async function deleteMessagePair(userMessageId: string) {
     const result = await undoInboxMessageAction(userMessageId);
 
-    setMessages((current) =>
-      current.filter((message) => !result.removedIds.includes(message.id)),
-    );
-
-    router.refresh();
+    setMessages((current) => {
+      const next = current.filter(
+        (message) => !result.removedIds.includes(message.id),
+      );
+      onMessagesChange?.(next);
+      return next;
+    });
 
     return result;
   }
@@ -387,7 +417,7 @@ export function InboxView({
     beginInFlight();
 
     try {
-      await removeMessagePair(userMessageId);
+      await deleteMessagePair(userMessageId);
     } finally {
       endInFlight();
     }
@@ -397,7 +427,7 @@ export function InboxView({
     beginInFlight();
 
     try {
-      const result = await removeMessagePair(userMessageId);
+      const result = await deleteMessagePair(userMessageId);
       setDraftText(result.content);
     } finally {
       endInFlight();
