@@ -1,37 +1,69 @@
+"use client";
+
+import { useState } from "react";
+
+import { AuthErrorAlert } from "@/components/auth/auth-error-alert";
+import { AuthDivider } from "@/components/auth/auth-divider";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth/auth-client";
+import { formatAppError } from "@/lib/errors/format-app-error";
 import { cn } from "@/lib/utils";
-import { AuthDivider } from "./auth-divider";
 
 interface GoogleSignInButtonProps {
   callbackUrl?: string;
   label?: string;
   className?: string;
+  onError?: (message: string | null) => void;
 }
 
 export function GoogleSignInButton({
   callbackUrl = "/",
   label = "Lanjutkan dengan Google",
   className,
+  onError,
 }: GoogleSignInButtonProps) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function reportError(message: string) {
+    setError(message);
+    onError?.(message);
+  }
+
   async function handleGoogleSignIn() {
-    await signIn.social({
-      provider: "google",
-      callbackURL: callbackUrl,
-    });
+    setError(null);
+    onError?.(null);
+    setPending(true);
+
+    try {
+      const result = await signIn.social({
+        provider: "google",
+        callbackURL: callbackUrl,
+      });
+
+      if (result.error) {
+        reportError(result.error.message ?? "Gagal masuk dengan Google. Coba lagi.");
+      }
+    } catch (caughtError) {
+      reportError(formatAppError(caughtError));
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
     <>
       <AuthDivider />
+      {error ? <AuthErrorAlert message={error} /> : null}
       <Button
         type="button"
         variant="outline"
         className={cn("w-full gap-2", className)}
         onClick={handleGoogleSignIn}
+        disabled={pending}
       >
         <GoogleMark />
-        {label}
+        {pending ? "Mengalihkan ke Google..." : label}
       </Button>
     </>
   );

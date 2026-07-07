@@ -4,6 +4,28 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db/prisma";
 import { getGoogleAuthConfig } from "@/lib/auth/google";
 
+function resolveTrustedOrigins(): string[] | undefined {
+  const baseUrl = process.env.BETTER_AUTH_URL?.trim();
+
+  if (!baseUrl) {
+    return undefined;
+  }
+
+  const origins = new Set<string>([baseUrl]);
+
+  try {
+    const parsed = new URL(baseUrl);
+    const alternateHost = parsed.hostname.startsWith("www.")
+      ? parsed.hostname.slice(4)
+      : `www.${parsed.hostname}`;
+    origins.add(`${parsed.protocol}//${alternateHost}`);
+  } catch {
+    // Keep only the configured base URL.
+  }
+
+  return [...origins];
+}
+
 const googleAuth = getGoogleAuthConfig();
 
 export const auth = betterAuth({
@@ -27,9 +49,7 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 30,
     updateAge: 60 * 60 * 24,
   },
-  trustedOrigins: process.env.BETTER_AUTH_URL
-    ? [process.env.BETTER_AUTH_URL]
-    : undefined,
+  trustedOrigins: resolveTrustedOrigins(),
 });
 
 export type Session = typeof auth.$Infer.Session;

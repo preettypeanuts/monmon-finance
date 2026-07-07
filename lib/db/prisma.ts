@@ -1,25 +1,50 @@
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
 import { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaPool: Pool | undefined;
   prismaClientVersion?: number;
 };
 
 /** Bump when Prisma schema changes to invalidate dev hot-reload cache. */
-const PRISMA_CLIENT_VERSION = 12;
+const PRISMA_CLIENT_VERSION = 13;
+
+/** One connection per serverless instance — safe for low DB connection limits. */
+const SERVERLESS_POOL_MAX = 1;
 
 const REQUIRED_PLANNED_ITEM_FIELDS = ["paidInstallmentCount"] as const;
 const REQUIRED_CATEGORY_BUDGET_FIELDS = ["repeatNextMonth"] as const;
 
-function createPrismaClient() {
+function getConnectionPool(): Pool {
+  const cached = globalForPrisma.prismaPool;
+
+  if (cached) {
+    return cached;
+  }
+
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set");
   }
 
-  const adapter = new PrismaPg({ connectionString });
+  const pool = new Pool({
+    connectionString,
+    max: SERVERLESS_POOL_MAX,
+    idleTimeoutMillis: 20_000,
+    connectionTimeoutMillis: 10_000,
+  });
+
+  globalForPrisma.prismaPool = pool;
+
+  return pool;
+}
+
+function createPrismaClient() {
+  const adapter = new PrismaPg(getConnectionPool());
 
   return new PrismaClient({ adapter });
 }
@@ -60,10 +85,8 @@ function getPrismaClient(): PrismaClient {
 
   const client = createPrismaClient();
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-    globalForPrisma.prismaClientVersion = PRISMA_CLIENT_VERSION;
-  }
+  globalForPrisma.prisma = client;
+  globalForPrisma.prismaClientVersion = PRISMA_CLIENT_VERSION;
 
   return client;
 }

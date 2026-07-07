@@ -5,20 +5,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { AuthCard } from "@/components/auth/auth-card";
+import { AuthErrorAlert } from "@/components/auth/auth-error-alert";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/auth/auth-client";
+import { formatAuthErrorCode } from "@/lib/errors/format-app-error";
 
 export function LoginForm({ googleAuthEnabled = false }: { googleAuthEnabled?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const authErrorFromUrl =
+    formatAuthErrorCode(searchParams.get("error")) ??
+    (searchParams.get("error_description")?.trim() || null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(authErrorFromUrl);
   const [pending, setPending] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -83,11 +88,7 @@ export function LoginForm({ googleAuthEnabled = false }: { googleAuthEnabled?: b
           />
         </div>
 
-        {error ? (
-          <p className="text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        ) : null}
+        {error ? <AuthErrorAlert message={error} /> : null}
 
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Memproses..." : "Masuk"}
@@ -95,7 +96,10 @@ export function LoginForm({ googleAuthEnabled = false }: { googleAuthEnabled?: b
       </form>
 
       {googleAuthEnabled ? (
-        <GoogleSignInButton callbackUrl={callbackUrl} />
+        <GoogleSignInButton
+          callbackUrl={callbackUrl}
+          onError={setError}
+        />
       ) : null}
     </AuthCard>
   );
