@@ -13,6 +13,7 @@ import {
   MOBILE_BOTTOM_NAV_LABEL_ACTIVE,
 } from "@/config/mobile-nav";
 import type { MobileBottomNavItem } from "@/config/mobile-nav";
+import { prefetchInboxBootstrap } from "@/lib/inbox/fetch-inbox-bootstrap";
 import { cn } from "@/lib/utils";
 
 interface MobileBottomNavLinkProps {
@@ -34,6 +35,11 @@ export function MobileBottomNavLink({ item, active }: MobileBottomNavLinkProps) 
       href={item.href}
       prefetch
       scroll={false}
+      onTouchStart={() => {
+        if (item.href === "/") {
+          prefetchInboxBootstrap();
+        }
+      }}
     >
       <IconComponent
         aria-hidden

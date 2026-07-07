@@ -12,6 +12,7 @@ import type { Icon } from "@/lib/icons";
 import {
   ChartBarIcon,
   BellIcon,
+  MobileNavInboxIcon,
   MobileNavJournalIcon,
   MobileNavOverviewIcon,
   MobileNavPayPlanIcon,
@@ -47,7 +48,7 @@ export const MOBILE_BOTTOM_NAV_INSET_X = [
 /** Gap between primary pill and drawer orb — sync with GRID_GAP. */
 export const MOBILE_BOTTOM_NAV_CLUSTER_GAP = GRID_GAP;
 
-export const MOBILE_BOTTOM_NAV_ROOT = `pointer-events-none fixed inset-x-0 bottom-0 z-40 flex w-full items-center ${MOBILE_BOTTOM_NAV_CLUSTER_GAP} ${MOBILE_BOTTOM_NAV_INSET_X} pb-[var(--mobile-bottom-nav-safe-bottom)] md:hidden`;
+export const MOBILE_BOTTOM_NAV_ROOT = `pointer-events-none fixed inset-x-0 bottom-0 z-40 flex w-full ${MOBILE_BOTTOM_NAV_INSET_X} pb-[var(--mobile-bottom-nav-safe-bottom)] md:hidden`;
 
 export const MOBILE_BOTTOM_NAV_PILL =
   "pointer-events-auto flex min-h-15 min-w-0 flex-1 items-stretch rounded-full p-0.5";
@@ -150,6 +151,7 @@ const MOBILE_PRIMARY_HREFS = [
   PLANS_ROUTE,
   "/journal",
   PAYPLAN_ROUTE,
+  "/",
 ] as const;
 
 export interface MobileBottomNavItem {
@@ -163,6 +165,7 @@ const MOBILE_BOTTOM_NAV_ICON_BY_HREF: Record<string, Icon> = {
   [PLANS_ROUTE]: MobileNavWishIcon,
   "/journal": MobileNavJournalIcon,
   [PAYPLAN_ROUTE]: MobileNavPayPlanIcon,
+  "/": MobileNavInboxIcon,
 };
 
 function findNavItem(href: string): NavItem {

@@ -4,8 +4,11 @@ export const MOBILE_BOTTOM_NAV_INDICATOR_INSET_X = 1;
 /** Extra right gap when Plans is active. */
 export const MOBILE_BOTTOM_NAV_INDICATOR_PLANS_EXTRA_RIGHT = 2;
 
-/** Extra right gap when PayPlan is active — rightmost tab in the pill. */
-export const MOBILE_BOTTOM_NAV_INDICATOR_PAYPLAN_EXTRA_RIGHT = 1.5;
+/** Extra right gap when Inbox is active — rightmost tab in the pill. */
+export const MOBILE_BOTTOM_NAV_INDICATOR_INBOX_EXTRA_RIGHT = 1.5;
+
+/** @deprecated PayPlan is no longer the rightmost tab. */
+export const MOBILE_BOTTOM_NAV_INDICATOR_PAYPLAN_EXTRA_RIGHT = 0;
 
 /** Sliding active tab capsule — inset vertically so it floats inside the pill. */
 export const MOBILE_BOTTOM_NAV_INDICATOR_SURFACE =

@@ -9,7 +9,6 @@ import {
 } from "react";
 
 import { MobileBottomNavActiveIndicator } from "@/components/shared/mobile-bottom-nav-active-indicator";
-import { MobileBottomNavInboxLink } from "@/components/shared/mobile-bottom-nav-inbox-link";
 import { MobileBottomNavLink } from "@/components/shared/mobile-bottom-nav-link";
 import {
   MOBILE_BOTTOM_NAV_ITEM_WRAPPER,
@@ -19,10 +18,10 @@ import {
   isNavItemActive,
   mobileBottomNavItems,
 } from "@/config/mobile-nav";
-import { PAYPLAN_ROUTE, PLANS_ROUTE } from "@/config/navigation";
+import { PLANS_ROUTE } from "@/config/navigation";
 import {
+  MOBILE_BOTTOM_NAV_INDICATOR_INBOX_EXTRA_RIGHT,
   MOBILE_BOTTOM_NAV_INDICATOR_INSET_X,
-  MOBILE_BOTTOM_NAV_INDICATOR_PAYPLAN_EXTRA_RIGHT,
   MOBILE_BOTTOM_NAV_INDICATOR_PLANS_EXTRA_RIGHT,
 } from "@/config/mobile-bottom-nav-motion";
 import { cn } from "@/lib/utils";
@@ -47,8 +46,8 @@ function readIndicatorMetrics(
   const extraRight =
     href === PLANS_ROUTE
       ? MOBILE_BOTTOM_NAV_INDICATOR_PLANS_EXTRA_RIGHT
-      : href === PAYPLAN_ROUTE
-        ? MOBILE_BOTTOM_NAV_INDICATOR_PAYPLAN_EXTRA_RIGHT
+      : href === "/"
+        ? MOBILE_BOTTOM_NAV_INDICATOR_INBOX_EXTRA_RIGHT
         : 0;
 
   return {
@@ -147,8 +146,6 @@ export function MobileBottomNav() {
           </li>
         ))}
       </ul>
-
-      <MobileBottomNavInboxLink />
     </nav>
   );
 }
