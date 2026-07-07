@@ -27,7 +27,6 @@ import { INBOX_MESSAGE_CONTENT_INSET } from "@/config/inbox-mobile";
 import { MOBILE_CHROME_SCROLL_INSET_TOP } from "@/config/mobile-chrome";
 import { STACK_GAP } from "@/config/spacing";
 import { useMobileLargeTitleScroll } from "@/hooks/use-mobile-large-title-scroll";
-import { useMobileTopBlurScroll } from "@/hooks/use-mobile-top-blur-scroll";
 import { getInboxRetryContext } from "@/lib/chat/inbox-error";
 import { canManageSentUserMessage } from "@/lib/chat/inbox-message-actions";
 import { cn } from "@/lib/utils";
@@ -85,11 +84,7 @@ export function MessageList({
     useMobileLargeTitleScroll(() => scrollRootRef.current, titleRef, {
       enabled: !fixedMobileTopBar,
     });
-  const showFixedBarBlur = useMobileTopBlurScroll(() => scrollRootRef.current, {
-    enabled: fixedMobileTopBar && isActiveTab,
-    anchor: "bottom",
-  });
-  const showBlur = fixedMobileTopBar ? showFixedBarBlur : showLargeTitleBlur;
+  const showBlur = fixedMobileTopBar ? true : showLargeTitleBlur;
 
   useSyncMobileScrollChrome(
     fixedMobileTopBar ? undefined : "Inbox",

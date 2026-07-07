@@ -92,7 +92,16 @@ export function getMobilePageTitle(pathname: string): string | null {
 }
 
 export function shouldShowMobileDrawerButton(pathname: string): boolean {
-  return pathname !== "/" && pathname !== "/profile";
+  return (
+    pathname !== "/" &&
+    pathname !== "/profile" &&
+    pathname !== NOTIFICATIONS_ROUTE
+  );
+}
+
+/** Secondary pages — back orb on the left of fixed top bar. */
+export function shouldShowMobileTopBarBackButton(pathname: string): boolean {
+  return pathname === NOTIFICATIONS_ROUTE;
 }
 
 /** @deprecated Inbox lives on the bottom nav orb. */

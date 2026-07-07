@@ -216,3 +216,8 @@ export function isNavItemActive(pathname: string, href: string): boolean {
 
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+/** Secondary pages — no bottom pill (back via top bar / drawer). */
+export function shouldHideMobileBottomNav(pathname: string): boolean {
+  return pathname === NOTIFICATIONS_ROUTE || pathname === "/profile";
+}

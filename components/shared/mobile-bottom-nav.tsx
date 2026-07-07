@@ -17,6 +17,7 @@ import {
   MOBILE_LIQUID_GLASS_SURFACE,
   isNavItemActive,
   mobileBottomNavItems,
+  shouldHideMobileBottomNav,
 } from "@/config/mobile-nav";
 import { PLANS_ROUTE } from "@/config/navigation";
 import {
@@ -110,6 +111,10 @@ export function MobileBottomNav() {
 
     return () => observer.disconnect();
   }, [syncIndicator]);
+
+  if (shouldHideMobileBottomNav(pathname)) {
+    return null;
+  }
 
   return (
     <nav aria-label="Navigasi utama" className={MOBILE_BOTTOM_NAV_ROOT}>

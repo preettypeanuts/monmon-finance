@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { PlannerMobileTopBarTabs } from "@/components/planner/planner-mobile-top-bar-tabs";
 import { useMobileScrollChromeSnapshot } from "@/components/shared/mobile-scroll-chrome-provider";
+import { MobileTopBarBackButton } from "@/components/shared/mobile-top-bar-back-button";
 import { MobileTopBarDrawerButton } from "@/components/shared/mobile-top-bar-drawer-button";
 import {
   MOBILE_COMPACT_TITLE,
@@ -12,6 +13,7 @@ import {
   MOBILE_TOP_BAR_ROW,
   shouldHideMobileScrollChrome,
   shouldShowMobileDrawerButton,
+  shouldShowMobileTopBarBackButton,
 } from "@/config/mobile-chrome";
 import { PAYPLAN_ROUTE } from "@/config/navigation";
 import { PAYPLAN_TOP_BAR_ACTIONS } from "@/config/payplan-mobile";
@@ -20,6 +22,7 @@ import { cn } from "@/lib/utils";
 export function MobileScrollChrome() {
   const pathname = usePathname();
   const snapshot = useMobileScrollChromeSnapshot();
+  const showBack = shouldShowMobileTopBarBackButton(pathname);
   const showDrawer = shouldShowMobileDrawerButton(pathname);
   const showPayplanTabs = pathname === PAYPLAN_ROUTE || pathname.startsWith(`${PAYPLAN_ROUTE}/`);
 
@@ -27,7 +30,7 @@ export function MobileScrollChrome() {
     return null;
   }
 
-  if (!snapshot && !showDrawer && !showPayplanTabs) {
+  if (!snapshot && !showDrawer && !showPayplanTabs && !showBack) {
     return null;
   }
 
@@ -36,7 +39,13 @@ export function MobileScrollChrome() {
   return (
     <>
       <header className={MOBILE_TOP_BAR_ROOT}>
-        <div className={MOBILE_TOP_BAR_ROW}>
+        <div
+          className={cn(
+            MOBILE_TOP_BAR_ROW,
+            showBack && "justify-between",
+          )}
+        >
+          {showBack ? <MobileTopBarBackButton /> : null}
           {snapshot?.title ? (
             <p
               aria-hidden={!showCompactTitle}
@@ -57,6 +66,8 @@ export function MobileScrollChrome() {
               ) : null}
               {showDrawer ? <MobileTopBarDrawerButton /> : null}
             </div>
+          ) : showBack ? (
+            <span aria-hidden className="size-11 shrink-0" />
           ) : null}
         </div>
       </header>
