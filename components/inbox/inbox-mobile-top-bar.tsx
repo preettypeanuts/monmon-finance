@@ -19,12 +19,7 @@ export function InboxMobileTopBar({ onOpenSummary }: InboxMobileTopBarProps) {
   const router = useRouter();
 
   function handleBack() {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-
-    router.push(OVERVIEW_ROUTE);
+    router.replace(OVERVIEW_ROUTE);
   }
 
   return (
@@ -32,7 +27,7 @@ export function InboxMobileTopBar({ onOpenSummary }: InboxMobileTopBarProps) {
       <div className={INBOX_MOBILE_TOP_BAR_ROW}>
         <button
           type="button"
-          aria-label="Kembali"
+          aria-label="Ke Overview"
           className={INBOX_MOBILE_TOP_BAR_ORB}
           onClick={handleBack}
         >

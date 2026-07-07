@@ -44,7 +44,7 @@ export function LoginForm({ googleAuthEnabled = false }: { googleAuthEnabled?: b
       return;
     }
 
-    router.push(callbackUrl);
+    router.replace(callbackUrl);
     router.refresh();
   }
 
