@@ -3,9 +3,8 @@
 import { useServerInsertedHTML } from "next/navigation";
 
 import { createRootAppearanceBootstrapScript } from "@/lib/appearance/bootstrap-script";
-import { createAppleTouchIconBootstrapScript } from "@/lib/pwa/apple-touch-icon";
 
-const BOOTSTRAP_SCRIPT = `${createRootAppearanceBootstrapScript()}\n${createAppleTouchIconBootstrapScript()}`;
+const BOOTSTRAP_SCRIPT = createRootAppearanceBootstrapScript();
 
 /** Injects blocking bootstrap outside the React tree — avoids React 19 script warnings. */
 export function RootBootstrapScript() {

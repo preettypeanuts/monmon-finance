@@ -9,7 +9,7 @@ interface AppLogoProps {
   alt?: string;
 }
 
-/** In-app logo — always W.png. W-light.png is PWA-only (white-on-white, invisible on UI). */
+/** In-app logo — transparent W.png on app background. */
 export function AppLogo({
   className,
   size = 32,

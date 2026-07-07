@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Regenerate PWA icons from public/W.png
+ * Regenerate PWA icons from public/W.png (transparent — OS picks tile bg).
  * Usage: npm run pwa:icons
  */
-import { copyFileSync, existsSync } from "node:fs";
+import { copyFileSync, existsSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 
@@ -17,50 +17,33 @@ if (!existsSync(source)) {
   process.exit(1);
 }
 
-const metadata = await sharp(source).metadata();
-const size = metadata.width ?? 2000;
-
-async function createLightSource() {
-  const whiteBackground = await sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
-    },
-  })
-    .png()
-    .toBuffer();
-
-  return sharp(whiteBackground)
-    .composite([{ input: source, blend: "screen" }])
-    .png()
-    .toBuffer();
-}
-
-const lightSource = await createLightSource();
-
-await sharp(lightSource).png().toFile(join(publicDir, "W-light.png"));
-
 const outputs = [
-  { out: "icon-192.png", size: 192, input: source },
-  { out: "icon-512.png", size: 512, input: source },
-  { out: "apple-touch-icon-dark.png", size: 180, input: source },
-  { out: "apple-touch-icon-light.png", size: 180, input: lightSource },
+  { out: "icon-192.png", size: 192 },
+  { out: "icon-512.png", size: 512 },
+  { out: "apple-touch-icon.png", size: 180 },
 ];
 
-for (const { out, size: iconSize, input } of outputs) {
-  await sharp(input).resize(iconSize, iconSize).png().toFile(join(publicDir, out));
+for (const { out, size } of outputs) {
+  await sharp(source)
+    .resize(size, size)
+    .png()
+    .toFile(join(publicDir, out));
 }
 
-copyFileSync(
-  join(publicDir, "apple-touch-icon-dark.png"),
-  join(publicDir, "apple-touch-icon.png"),
-);
 copyFileSync(join(publicDir, "icon-192.png"), join(appDir, "icon.png"));
-copyFileSync(
-  join(publicDir, "apple-touch-icon-dark.png"),
-  join(appDir, "apple-icon.png"),
-);
+copyFileSync(join(publicDir, "apple-touch-icon.png"), join(appDir, "apple-icon.png"));
+
+const legacy = [
+  "W-light.png",
+  "apple-touch-icon-dark.png",
+  "apple-touch-icon-light.png",
+];
+
+for (const file of legacy) {
+  const path = join(publicDir, file);
+  if (existsSync(path)) {
+    unlinkSync(path);
+  }
+}
 
 console.log("PWA icons updated from public/W.png");

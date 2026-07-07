@@ -2,12 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import { APP_DESCRIPTION, APP_NAME } from "@/config/app";
-import {
-  PWA_APPLE_TOUCH_ICON_DARK,
-  PWA_APPLE_TOUCH_ICON_LIGHT,
-  PWA_ICON_192,
-  PWA_ICON_512,
-} from "@/config/pwa";
+import { PWA_APPLE_TOUCH_ICON, PWA_ICON_192, PWA_ICON_512 } from "@/config/pwa";
 import "./globals.css";
 import { AppThemeProvider } from "@/components/providers/app-theme-provider";
 import { AppShell } from "@/components/shared/app-shell";
@@ -37,20 +32,7 @@ export const metadata: Metadata = {
       { url: PWA_ICON_192, sizes: "192x192", type: "image/png" },
       { url: PWA_ICON_512, sizes: "512x512", type: "image/png" },
     ],
-    apple: [
-      {
-        url: PWA_APPLE_TOUCH_ICON_LIGHT,
-        sizes: "180x180",
-        type: "image/png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: PWA_APPLE_TOUCH_ICON_DARK,
-        sizes: "180x180",
-        type: "image/png",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
+    apple: [{ url: PWA_APPLE_TOUCH_ICON, sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
