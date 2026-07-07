@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db/prisma";
 import { scopedId } from "@/lib/db/user-scope";
 import { parseJournalEntryFormData } from "@/lib/validations/journal-entry";
 import type { JournalEntry } from "@/types/journal";
+import type { ParsedTransaction } from "@/types/transaction";
 
 interface JournalActionSuccess {
   ok: true;
@@ -64,7 +65,10 @@ export async function saveJournalEntryAction(
 
 export async function deleteJournalEntryAction(
   id: string,
-): Promise<{ ok: true } | JournalActionFailure> {
+): Promise<
+  | { ok: true; deleted: { inboxMessageId: string | null; transaction: ParsedTransaction } }
+  | JournalActionFailure
+> {
   const userId = await requireUserId();
   const trimmed = id.trim();
 
@@ -73,9 +77,10 @@ export async function deleteJournalEntryAction(
   }
 
   try {
-    await deleteJournalTransaction(userId, trimmed);
+    const deleted = await deleteJournalTransaction(userId, trimmed);
     revalidateJournal();
-    return { ok: true };
+    revalidatePath("/");
+    return { ok: true, deleted };
   } catch {
     return { ok: false, error: "Gagal menghapus transaksi." };
   }

@@ -111,7 +111,7 @@ export function mergeInboxBootstrapPayload(
 
   if (currentIsLocalDeletion && current.messages.length < incoming.messages.length) {
     return {
-      summary: current.summary,
+      summary: incoming.summary,
       messages: current.messages,
       hasMoreMessages: current.hasMoreMessages,
     };
@@ -119,7 +119,7 @@ export function mergeInboxBootstrapPayload(
 
   if (current.messages.length > incoming.messages.length) {
     return {
-      summary: current.summary,
+      summary: incoming.summary,
       messages: mergeInboxMessageTail(current.messages, incoming.messages),
       hasMoreMessages: current.hasMoreMessages ?? incoming.hasMoreMessages,
     };

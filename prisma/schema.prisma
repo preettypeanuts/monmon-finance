@@ -252,6 +252,8 @@ model InboxMessage {
   summaryDate   DateTime?
   transactionId String?          @unique
   transaction   Transaction?     @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  /// Snapshot when the linked transaction is removed from Journal.
+  orphanedTransaction Json?
 
   @@unique([userId, summaryDate, kind])
   @@index([userId, createdAt])

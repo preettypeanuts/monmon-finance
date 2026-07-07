@@ -7,6 +7,7 @@ import {
   deleteJournalEntryAction,
   saveJournalEntryAction,
 } from "@/app/actions/journal";
+import { patchInboxBootstrapOnTransactionDeleted } from "@/lib/inbox/patch-inbox-on-transaction-deleted";
 import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
 import { JournalTypeBadge } from "@/components/journal/journal-type-badge";
 import { AmountTextInput } from "@/components/shared/amount-text-input";
@@ -180,6 +181,10 @@ export function JournalEntryDetailDialog({
 
       if (!result.ok) {
         return;
+      }
+
+      if (result.deleted) {
+        patchInboxBootstrapOnTransactionDeleted(result.deleted);
       }
 
       onOpenChange(false);

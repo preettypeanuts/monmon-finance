@@ -8,11 +8,15 @@ import type { ParsedTransaction } from "@/types/transaction";
 
 interface TransactionPreviewProps {
   transaction: ParsedTransaction;
+  deleted?: boolean;
 }
 
 const assistantBubble = CHAT_BUBBLE_STYLES.assistant;
 
-export function TransactionPreview({ transaction }: TransactionPreviewProps) {
+export function TransactionPreview({
+  transaction,
+  deleted = false,
+}: TransactionPreviewProps) {
   const typeLabel = transaction.type === "income" ? "Pemasukan" : "Pengeluaran";
   const categoryLabel = CATEGORY_LABELS[transaction.category] ?? "Lainnya";
 
@@ -23,8 +27,14 @@ export function TransactionPreview({ transaction }: TransactionPreviewProps) {
         SEPARATED_SURFACE,
         assistantBubble.surface,
         assistantBubble.text,
+        deleted && "opacity-50",
       )}
     >
+      {deleted ? (
+        <p className="mb-2 text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+          Transaction deleted
+        </p>
+      ) : null}
       <dl className="grid gap-1.5">
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground dark:text-neutral-300">Jenis</dt>

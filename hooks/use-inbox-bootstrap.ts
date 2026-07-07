@@ -12,6 +12,10 @@ import {
 } from "@/lib/inbox/inbox-bootstrap-cache";
 import { applyTransactionToSummary } from "@/lib/inbox/apply-transaction-to-summary";
 import {
+  INBOX_BOOTSTRAP_PATCHED_EVENT,
+} from "@/lib/inbox/patch-inbox-on-transaction-deleted";
+import { removeTransactionFromSummary } from "@/lib/inbox/remove-transaction-from-summary";
+import {
   fetchInboxBootstrap,
   triggerInboxMaintenance,
 } from "@/lib/inbox/fetch-inbox-bootstrap";
@@ -152,6 +156,27 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
   }, [enabled]);
 
   useEffect(() => {
+    function handleBootstrapPatched(event: Event) {
+      const detail = (event as CustomEvent<InboxBootstrapPayload>).detail;
+
+      if (!detail) {
+        return;
+      }
+
+      setState(toBootstrapState(detail, true));
+    }
+
+    window.addEventListener(INBOX_BOOTSTRAP_PATCHED_EVENT, handleBootstrapPatched);
+
+    return () => {
+      window.removeEventListener(
+        INBOX_BOOTSTRAP_PATCHED_EVENT,
+        handleBootstrapPatched,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     if (!slashRequested) {
       return;
     }
@@ -201,6 +226,14 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
   function applyTransactionSummary(transaction: ParsedTransaction) {
     setState((current) => {
       const summary = applyTransactionToSummary(current.summary, transaction);
+      patchInboxBootstrapSummary(summary);
+      return { ...current, summary };
+    });
+  }
+
+  function applyTransactionRemoved(transaction: ParsedTransaction) {
+    setState((current) => {
+      const summary = removeTransactionFromSummary(current.summary, transaction);
       patchInboxBootstrapSummary(summary);
       return { ...current, summary };
     });
@@ -283,6 +316,7 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
     requestDailySummary,
     refreshInbox,
     applyTransactionSummary,
+    applyTransactionRemoved,
     applyMessages,
   };
 }

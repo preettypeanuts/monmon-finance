@@ -33,14 +33,62 @@ function mapTransaction(record: Transaction): ParsedTransaction {
   };
 }
 
-function mapInboxMessage(record: InboxMessageWithTransaction): ChatMessage {
+function parseOrphanedTransaction(
+  value: Prisma.JsonValue,
+): ParsedTransaction | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  if (
+    (record.type !== "income" && record.type !== "expense") ||
+    typeof record.amount !== "number" ||
+    typeof record.category !== "string" ||
+    typeof record.description !== "string" ||
+    typeof record.occurredAt !== "string"
+  ) {
+    return null;
+  }
+
   return {
+    type: record.type,
+    amount: record.amount,
+    category: normalizeCategory(record.category),
+    description: record.description,
+    occurredAt: record.occurredAt,
+  };
+}
+
+function mapInboxMessage(record: InboxMessageWithTransaction): ChatMessage {
+  const base = {
     id: record.id,
     role: record.role as MessageRole,
     content: record.content,
     createdAt: record.createdAt.toISOString(),
-    ...(record.transaction ? { transaction: mapTransaction(record.transaction) } : {}),
   };
+
+  if (record.transaction) {
+    return {
+      ...base,
+      transaction: mapTransaction(record.transaction),
+    };
+  }
+
+  const orphaned = record.orphanedTransaction
+    ? parseOrphanedTransaction(record.orphanedTransaction)
+    : null;
+
+  if (orphaned) {
+    return {
+      ...base,
+      transaction: orphaned,
+      transactionDeleted: true,
+    };
+  }
+
+  return base;
 }
 
 export async function createInboxMessage({

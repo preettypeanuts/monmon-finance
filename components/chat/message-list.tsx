@@ -288,7 +288,10 @@ export function MessageList({
                   ) : null}
                   {message.transaction ? (
                     <div className="mt-1 max-w-[85%]">
-                      <TransactionPreview transaction={message.transaction} />
+                      <TransactionPreview
+                        deleted={message.transactionDeleted}
+                        transaction={message.transaction}
+                      />
                     </div>
                   ) : null}
                 </div>

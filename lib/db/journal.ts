@@ -1,5 +1,5 @@
+import { TRANSACTION_CATEGORIES, normalizeCategory } from "@/config/categories";
 import { JOURNAL_PAGE_SIZE } from "@/config/journal";
-import { TRANSACTION_CATEGORIES } from "@/config/categories";
 import { buildJournalCategoryExpenseBreakdown } from "@/lib/finance/build-journal-category-breakdown";
 import { prisma } from "@/lib/db/prisma";
 import { scopedByUser, scopedId } from "@/lib/db/user-scope";
@@ -10,6 +10,7 @@ import type {
   JournalFilters,
   JournalListResult,
 } from "@/types/journal";
+import type { ParsedTransaction } from "@/types/transaction";
 import type { Prisma } from "@/generated/prisma/client";
 
 const JOURNAL_ENTRY_SELECT = {
@@ -145,15 +146,53 @@ export async function updateJournalTransaction(
   });
 }
 
+export interface DeleteJournalTransactionResult {
+  transaction: ParsedTransaction;
+  inboxMessageId: string | null;
+}
+
 export async function deleteJournalTransaction(
   userId: string,
   id: string,
-): Promise<void> {
-  const deleted = await prisma.transaction.deleteMany({
+): Promise<DeleteJournalTransactionResult> {
+  const record = await prisma.transaction.findFirst({
     where: scopedId(userId, id),
   });
 
-  if (deleted.count === 0) {
+  if (!record) {
     throw new Error("Transaksi tidak ditemukan.");
   }
+
+  const snapshot: ParsedTransaction = {
+    type: record.type,
+    amount: record.amount,
+    category: normalizeCategory(record.category),
+    description: record.description,
+    occurredAt: record.occurredAt.toISOString(),
+  };
+
+  const inboxMessage = await prisma.inboxMessage.findFirst({
+    where: scopedByUser(userId, { transactionId: id }),
+    select: { id: true },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    if (inboxMessage) {
+      await tx.inboxMessage.updateMany({
+        where: scopedId(userId, inboxMessage.id),
+        data: {
+          orphanedTransaction: snapshot as unknown as Prisma.InputJsonValue,
+        },
+      });
+    }
+
+    await tx.transaction.deleteMany({
+      where: scopedId(userId, id),
+    });
+  });
+
+  return {
+    transaction: snapshot,
+    inboxMessageId: inboxMessage?.id ?? null,
+  };
 }

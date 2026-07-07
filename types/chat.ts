@@ -8,6 +8,8 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   transaction?: ParsedTransaction;
+  /** True when the linked transaction was removed from Journal. */
+  transactionDeleted?: boolean;
 }
 
 export interface UnpaidPayPlanChatItem {
