@@ -2,6 +2,10 @@ import { OverviewPageShell } from "@/components/overview/overview-page-shell";
 import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
 import { OVERVIEW_DESKTOP_SCROLL_INNER } from "@/config/overview-desktop";
 import {
+  OVERVIEW_MOBILE_PAGE_TITLE,
+  OVERVIEW_MOBILE_TITLE_SCRIM,
+} from "@/config/overview-mobile";
+import {
   OVERVIEW_PAGE_ROOT,
   OVERVIEW_PAGE_SCROLL,
   OVERVIEW_PAGE_SCROLL_INNER,
@@ -17,7 +21,12 @@ export function OverviewScrollShell({ children }: OverviewScrollShellProps) {
   return (
     <OverviewPageShell>
       <div className={OVERVIEW_PAGE_ROOT}>
-        <MobileScrollSurface className={OVERVIEW_PAGE_SCROLL} title="Overview">
+        <MobileScrollSurface
+          className={OVERVIEW_PAGE_SCROLL}
+          title="Overview"
+          titleClassName={OVERVIEW_MOBILE_PAGE_TITLE}
+          titleScrimClassName={OVERVIEW_MOBILE_TITLE_SCRIM}
+        >
           <div
             className={cn(
               "flex flex-col",

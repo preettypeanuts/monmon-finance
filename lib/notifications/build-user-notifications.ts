@@ -11,12 +11,19 @@ import { scopedByUser } from "@/lib/db/user-scope";
 import { buildOverviewAlerts } from "@/lib/finance/build-overview-alerts";
 import { buildOverviewBrief } from "@/lib/finance/build-overview-brief";
 import { buildDailySummaryTitle } from "@/lib/finance/build-daily-summary-message";
+import { buildFallbackJournalCondition } from "@/lib/finance/build-journal-condition";
 import {
   buildFallbackPlansInsight,
   buildPlansOverview,
 } from "@/lib/finance/build-plans-overview";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
-import { addDays, getDayRange, toDayKey } from "@/lib/finance/day-range";
+import {
+  addDays,
+  getDayRange,
+  getYesterday,
+  startOfDay,
+  toDayKey,
+} from "@/lib/finance/day-range";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { getPlansUpcomingImpact } from "@/lib/planner/build-plans-upcoming-impact";
 import {
@@ -28,15 +35,45 @@ function firstLine(text: string): string {
   return text.split("\n").find((line) => line.trim().length > 0) ?? text;
 }
 
+interface BuildUserNotificationDraftsOptions {
+  /** Cron path — skip AI backfill/Gemini so the HTTP handler finishes quickly. */
+  cron?: boolean;
+}
+
+async function getYesterdaySummaryContentForCron(
+  userId: string,
+): Promise<{ content: string; date: Date } | null> {
+  const yesterday = getYesterday();
+
+  const message = await prisma.inboxMessage.findFirst({
+    where: {
+      userId,
+      kind: "daily_summary",
+      summaryDate: startOfDay(yesterday),
+    },
+    select: { content: true },
+  });
+
+  if (!message) {
+    return null;
+  }
+
+  return { content: message.content, date: yesterday };
+}
+
 export async function buildUserNotificationDrafts(
   userId: string,
   referenceDate: Date = new Date(),
+  options: BuildUserNotificationDraftsOptions = {},
 ): Promise<NotificationDraft[]> {
+  const isCron = options.cron === true;
   const dayKey = toDayKey(referenceDate);
   const yesterday = addDays(referenceDate, -1);
   const { start: todayStart, end: todayEnd } = getDayRange(referenceDate);
 
-  await ensurePendingDailySummaries(userId);
+  if (!isCron) {
+    await ensurePendingDailySummaries(userId);
+  }
 
   const [
     availableBalance,
@@ -61,7 +98,9 @@ export async function buildUserNotificationDrafts(
         description: true,
       },
     }),
-    getYesterdayDailySummary(userId),
+    isCron
+      ? getYesterdaySummaryContentForCron(userId)
+      : getYesterdayDailySummary(userId),
   ]);
 
   const activePlans = plans.filter((plan) => plan.status === "active");
@@ -121,11 +160,18 @@ export async function buildUserNotificationDrafts(
   }
 
   const todaySummary = buildTodaySummary(todayTransactions);
-  const condition = await generateJournalCondition(
-    referenceDate,
-    todayTransactions,
-    availableBalance,
-  );
+  const condition = isCron
+    ? buildFallbackJournalCondition(
+        todayTransactions,
+        todaySummary.totalExpense,
+        todaySummary.totalIncome,
+        availableBalance,
+      )
+    : await generateJournalCondition(
+        referenceDate,
+        todayTransactions,
+        availableBalance,
+      );
   const brief = buildOverviewBrief(condition, todaySummary, plansOverview);
 
   drafts.push({

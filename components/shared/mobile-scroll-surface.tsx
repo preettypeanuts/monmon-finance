@@ -17,6 +17,9 @@ interface MobileScrollSurfaceProps {
   children: React.ReactNode;
   className?: string;
   title?: string;
+  titleClassName?: string;
+  /** Optional wrapper behind large title — e.g. wallpaper legibility scrim. */
+  titleScrimClassName?: string;
   /** Fixed inbox-style top bar — no large title or global scroll chrome. */
   fixedMobileTopBar?: boolean;
 }
@@ -25,6 +28,8 @@ export function MobileScrollSurface({
   children,
   className,
   title,
+  titleClassName,
+  titleScrimClassName,
   fixedMobileTopBar = false,
 }: MobileScrollSurfaceProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -55,7 +60,17 @@ export function MobileScrollSurface({
       className={cn(MOBILE_PAGE_SCROLL_INSET_X, scrollInset, className)}
     >
       {showLargeTitle ? (
-        <MobilePageTitle ref={titleRef}>{title}</MobilePageTitle>
+        titleScrimClassName ? (
+          <div className={titleScrimClassName}>
+            <MobilePageTitle ref={titleRef} className={titleClassName}>
+              {title}
+            </MobilePageTitle>
+          </div>
+        ) : (
+          <MobilePageTitle ref={titleRef} className={titleClassName}>
+            {title}
+          </MobilePageTitle>
+        )
       ) : null}
       {children}
       <div aria-hidden className={MOBILE_SCROLL_BOTTOM_SPACER} />

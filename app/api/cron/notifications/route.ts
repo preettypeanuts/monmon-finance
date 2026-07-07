@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 
 import { runNotificationCron } from "@/lib/notifications/run-notification-cron";
 
+/** Vercel Pro — cron should finish in seconds; Hobby caps at 10s regardless. */
+export const maxDuration = 60;
+
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET?.trim();
 

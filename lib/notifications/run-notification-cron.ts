@@ -33,7 +33,9 @@ async function processUserNotifications(
   userId: string,
   referenceDate: Date,
 ): Promise<{ created: number; pushSent: number; pushFailed: number }> {
-  const drafts = await buildUserNotificationDrafts(userId, referenceDate);
+  const drafts = await buildUserNotificationDrafts(userId, referenceDate, {
+    cron: true,
+  });
   let created = 0;
   let pushSent = 0;
   let pushFailed = 0;

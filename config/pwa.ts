@@ -22,7 +22,7 @@ export const PWA_APPLE_TOUCH_ICON_LIGHT = "/apple-touch-icon-light.png";
  */
 export const PWA_FULLSCREEN_BLEED = "pwa-fullscreen-bleed";
 
-/** Dimming overlay — skips status bar / Dynamic Island band on mobile. */
+/** Dimming overlay — full-bleed on mobile; desktop may offset below safe area. */
 export const PWA_WALLPAPER_MASK = "pwa-wallpaper-mask";
 
 /**
