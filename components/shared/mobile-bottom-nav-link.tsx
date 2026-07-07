@@ -3,13 +3,13 @@
 import Link from "next/link";
 
 import {
-  MOBILE_BOTTOM_NAV_ACTIVE_ORB,
-  MOBILE_BOTTOM_NAV_GLYPH,
-  MOBILE_BOTTOM_NAV_GLYPH_ACTIVE,
+  MOBILE_BOTTOM_NAV_GLYPH_TRANSITION,
+  MOBILE_BOTTOM_NAV_LABEL_TRANSITION,
+} from "@/config/mobile-bottom-nav-motion";
+import {
   MOBILE_BOTTOM_NAV_ITEM,
   MOBILE_BOTTOM_NAV_ITEM_ACTIVE,
   MOBILE_BOTTOM_NAV_ITEM_IDLE,
-  MOBILE_BOTTOM_NAV_LABEL,
   MOBILE_BOTTOM_NAV_LABEL_ACTIVE,
 } from "@/config/mobile-nav";
 import type { MobileBottomNavItem } from "@/config/mobile-nav";
@@ -35,11 +35,21 @@ export function MobileBottomNavLink({ item, active }: MobileBottomNavLinkProps) 
       prefetch
       scroll={false}
     >
-      {active ? (
-        <span aria-hidden className={MOBILE_BOTTOM_NAV_ACTIVE_ORB} />
-      ) : null}
-      <IconComponent aria-hidden className={active ? MOBILE_BOTTOM_NAV_GLYPH_ACTIVE : MOBILE_BOTTOM_NAV_GLYPH} />
-      <span className={active ? MOBILE_BOTTOM_NAV_LABEL_ACTIVE : MOBILE_BOTTOM_NAV_LABEL}>{item.title}</span>
+      <IconComponent
+        aria-hidden
+        className={cn(
+          MOBILE_BOTTOM_NAV_GLYPH_TRANSITION,
+          active && "scale-[1.04] text-primary",
+        )}
+      />
+      <span
+        className={cn(
+          MOBILE_BOTTOM_NAV_LABEL_TRANSITION,
+          active && MOBILE_BOTTOM_NAV_LABEL_ACTIVE,
+        )}
+      >
+        {item.title}
+      </span>
     </Link>
   );
 }
