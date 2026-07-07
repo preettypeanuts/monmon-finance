@@ -26,6 +26,14 @@ export interface ActivePlanChatItem {
   category: string;
 }
 
+export interface ActiveSavingsChatItem {
+  id: string;
+  name: string;
+  savedAmount: number;
+  targetAmount: number;
+}
+
 export type ChatSlashEntry =
   | { kind: "payplan"; item: UnpaidPayPlanChatItem }
-  | { kind: "plan"; item: ActivePlanChatItem };
+  | { kind: "plan"; item: ActivePlanChatItem }
+  | { kind: "savings"; item: ActiveSavingsChatItem };

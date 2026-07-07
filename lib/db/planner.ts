@@ -38,6 +38,7 @@ function buildDayMarks(items: PlannedOccurrence[]): PlannerDayMark[] {
 }
 
 export async function getPlannerMonthData(
+  userId: string,
   monthKey: string = getCurrentMonthKey(),
 ): Promise<PlannerMonthData> {
   const parsed = parseMonthKey(monthKey) ?? {
@@ -46,7 +47,7 @@ export async function getPlannerMonthData(
   };
 
   const { start, end } = getMonthRange(parsed.year, parsed.month);
-  const plannedItems = await getPlannedItemsForExpansion();
+  const plannedItems = await getPlannedItemsForExpansion(userId);
   const items = expandPlannedItems(plannedItems, start, end);
 
   return {

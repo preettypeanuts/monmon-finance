@@ -19,18 +19,19 @@ import {
   serializeDailySummaryInsight,
 } from "@/lib/finance/stored-daily-summary-insight";
 import { prisma } from "@/lib/db/prisma";
+import { scopedByUser } from "@/lib/db/user-scope";
 import type { DailySummarySnapshot } from "@/types/summary";
 
-async function getTransactionsForDay(date: Date) {
+async function getTransactionsForDay(userId: string, date: Date) {
   const { start, end } = getDayRange(date);
 
   return prisma.transaction.findMany({
-    where: {
+    where: scopedByUser(userId, {
       occurredAt: {
         gte: start,
         lte: end,
       },
-    },
+    }),
     select: {
       type: true,
       amount: true,
@@ -43,33 +44,39 @@ async function getTransactionsForDay(date: Date) {
   });
 }
 
-async function getCumulativeBalance(date: Date): Promise<number> {
+async function getCumulativeBalance(
+  userId: string,
+  date: Date,
+): Promise<number> {
   const end = endOfDay(date);
 
   const [incomeAgg, expenseAgg] = await Promise.all([
     prisma.transaction.aggregate({
-      where: {
+      where: scopedByUser(userId, {
         occurredAt: { lte: end },
         type: "income",
-      },
+      }),
       _sum: { amount: true },
     }),
     prisma.transaction.aggregate({
-      where: {
+      where: scopedByUser(userId, {
         occurredAt: { lte: end },
         type: "expense",
-      },
+      }),
       _sum: { amount: true },
     }),
   ]);
 
-  return (incomeAgg._sum.amount ?? 0) - (expenseAgg._sum.amount ?? 0);
+  return (incomeAgg._sum?.amount ?? 0) - (expenseAgg._sum?.amount ?? 0);
 }
 
-async function createDailySummaryForDay(date: Date): Promise<void> {
+async function createDailySummaryForDay(
+  userId: string,
+  date: Date,
+): Promise<void> {
   const summaryDate = startOfDay(date);
-  const transactions = await getTransactionsForDay(date);
-  const cumulativeBalance = await getCumulativeBalance(date);
+  const transactions = await getTransactionsForDay(userId, date);
+  const cumulativeBalance = await getCumulativeBalance(userId, date);
   const bundle = await generateDailySummaryInsight(
     date,
     transactions,
@@ -83,12 +90,14 @@ async function createDailySummaryForDay(date: Date): Promise<void> {
 
   await prisma.inboxMessage.upsert({
     where: {
-      summaryDate_kind: {
+      userId_summaryDate_kind: {
+        userId,
         summaryDate,
         kind: "daily_summary",
       },
     },
     create: {
+      userId,
       role: "assistant",
       kind: "daily_summary",
       content,
@@ -100,9 +109,12 @@ async function createDailySummaryForDay(date: Date): Promise<void> {
   });
 }
 
-async function backfillMissingDailySummaryInsights(): Promise<void> {
+async function backfillMissingDailySummaryInsights(
+  userId: string,
+): Promise<void> {
   const messages = await prisma.inboxMessage.findMany({
     where: {
+      userId,
       kind: "daily_summary",
       insight: null,
       summaryDate: {
@@ -117,8 +129,8 @@ async function backfillMissingDailySummaryInsights(): Promise<void> {
 
   for (const message of messages) {
     const date = message.summaryDate!;
-    const transactions = await getTransactionsForDay(date);
-    const cumulativeBalance = await getCumulativeBalance(date);
+    const transactions = await getTransactionsForDay(userId, date);
+    const cumulativeBalance = await getCumulativeBalance(userId, date);
     const bundle = await generateDailySummaryInsight(
       date,
       transactions,
@@ -140,9 +152,12 @@ async function backfillMissingDailySummaryInsights(): Promise<void> {
   }
 }
 
-async function backfillLegacyDailySummaryInsights(): Promise<void> {
+async function backfillLegacyDailySummaryInsights(
+  userId: string,
+): Promise<void> {
   const messages = await prisma.inboxMessage.findMany({
     where: {
+      userId,
       kind: "daily_summary",
       insight: {
         not: null,
@@ -165,8 +180,11 @@ async function backfillLegacyDailySummaryInsights(): Promise<void> {
       continue;
     }
 
-    const transactions = await getTransactionsForDay(message.summaryDate);
-    const cumulativeBalance = await getCumulativeBalance(message.summaryDate);
+    const transactions = await getTransactionsForDay(userId, message.summaryDate);
+    const cumulativeBalance = await getCumulativeBalance(
+      userId,
+      message.summaryDate,
+    );
     const condition = buildFallbackDailySummaryCondition(
       transactions,
       cumulativeBalance,
@@ -185,31 +203,33 @@ async function backfillLegacyDailySummaryInsights(): Promise<void> {
   }
 }
 
-let ensurePendingDailySummariesInFlight: Promise<void> | null = null;
+const ensurePendingDailySummariesByUser = new Map<string, Promise<void>>();
 
-export async function ensurePendingDailySummaries(): Promise<void> {
-  if (ensurePendingDailySummariesInFlight) {
-    return ensurePendingDailySummariesInFlight;
+export async function ensurePendingDailySummaries(
+  userId: string,
+): Promise<void> {
+  const existing = ensurePendingDailySummariesByUser.get(userId);
+  if (existing) {
+    return existing;
   }
 
-  ensurePendingDailySummariesInFlight = runEnsurePendingDailySummaries().finally(
-    () => {
-      ensurePendingDailySummariesInFlight = null;
-    },
-  );
+  const promise = runEnsurePendingDailySummaries(userId).finally(() => {
+    ensurePendingDailySummariesByUser.delete(userId);
+  });
 
-  return ensurePendingDailySummariesInFlight;
+  ensurePendingDailySummariesByUser.set(userId, promise);
+  return promise;
 }
 
-async function runEnsurePendingDailySummaries(): Promise<void> {
+async function runEnsurePendingDailySummaries(userId: string): Promise<void> {
   const todayStart = startOfDay(new Date());
 
   const transactions = await prisma.transaction.findMany({
-    where: {
+    where: scopedByUser(userId, {
       occurredAt: {
         lt: todayStart,
       },
-    },
+    }),
     select: {
       occurredAt: true,
     },
@@ -223,6 +243,7 @@ async function runEnsurePendingDailySummaries(): Promise<void> {
 
     const existingSummaries = await prisma.inboxMessage.findMany({
       where: {
+        userId,
         kind: "daily_summary",
         summaryDate: {
           not: null,
@@ -242,12 +263,12 @@ async function runEnsurePendingDailySummaries(): Promise<void> {
         continue;
       }
 
-      await createDailySummaryForDay(parseDayKey(dayKey));
+      await createDailySummaryForDay(userId, parseDayKey(dayKey));
     }
   }
 
-  await backfillMissingDailySummaryInsights();
-  await backfillLegacyDailySummaryInsights();
+  await backfillMissingDailySummaryInsights(userId);
+  await backfillLegacyDailySummaryInsights(userId);
 }
 
 function resolveDailySummarySnapshot(
@@ -273,14 +294,17 @@ function resolveDailySummarySnapshot(
   );
 }
 
-export async function getYesterdayDailySummary(): Promise<DailySummarySnapshot | null> {
-  await ensurePendingDailySummaries();
+export async function getYesterdayDailySummary(
+  userId: string,
+): Promise<DailySummarySnapshot | null> {
+  await ensurePendingDailySummaries(userId);
 
   const yesterday = getYesterday();
   const summaryDate = startOfDay(yesterday);
 
   const message = await prisma.inboxMessage.findFirst({
     where: {
+      userId,
       kind: "daily_summary",
       summaryDate,
     },
@@ -295,8 +319,8 @@ export async function getYesterdayDailySummary(): Promise<DailySummarySnapshot |
   }
 
   const [transactions, cumulativeBalance] = await Promise.all([
-    getTransactionsForDay(yesterday),
-    getCumulativeBalance(yesterday),
+    getTransactionsForDay(userId, yesterday),
+    getCumulativeBalance(userId, yesterday),
   ]);
 
   return resolveDailySummarySnapshot(
@@ -309,12 +333,14 @@ export async function getYesterdayDailySummary(): Promise<DailySummarySnapshot |
 }
 
 export async function getDailySummaryForDay(
+  userId: string,
   date: Date,
 ): Promise<DailySummarySnapshot | null> {
   const summaryDate = startOfDay(date);
 
   const message = await prisma.inboxMessage.findFirst({
     where: {
+      userId,
       kind: "daily_summary",
       summaryDate,
     },
@@ -329,8 +355,8 @@ export async function getDailySummaryForDay(
   }
 
   const [transactions, cumulativeBalance] = await Promise.all([
-    getTransactionsForDay(date),
-    getCumulativeBalance(date),
+    getTransactionsForDay(userId, date),
+    getCumulativeBalance(userId, date),
   ]);
 
   return resolveDailySummarySnapshot(

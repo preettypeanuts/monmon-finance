@@ -18,23 +18,34 @@ export function DailySummaryReflection({
   const style = getFinanceConditionWeatherStyle(condition);
 
   return (
-    <div className={cn(FINANCE_REFLECTION_SHELL, style.surface)}>
+    <div className={FINANCE_REFLECTION_SHELL}>
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute -right-6 -top-8 size-28 rounded-full blur-2xl",
-          style.glowOrb,
-        )}
-      />
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute -bottom-10 -left-6 size-24 rounded-full blur-2xl",
-          style.secondaryOrb,
+          "pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]",
+          style.surface,
         )}
       />
 
-      <div className="relative flex h-full flex-col p-4">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+      >
+        <div
+          className={cn(
+            "absolute -right-4 -top-4 size-24 rounded-full blur-3xl",
+            style.glowOrb,
+          )}
+        />
+        <div
+          className={cn(
+            "absolute -bottom-4 -left-4 size-20 rounded-full blur-3xl",
+            style.secondaryOrb,
+          )}
+        />
+      </div>
+
+      <div className="relative flex flex-col p-4">
         <div className="flex items-center justify-between gap-3">
           <p
             className={cn(
@@ -57,18 +68,14 @@ export function DailySummaryReflection({
           </span>
         </div>
 
-        <div className="mt-3.5 flex min-h-0 flex-1 items-start gap-3">
-       
-
-          <p
-            className={cn(
-              "min-w-0 pt-0.5 text-[13px] leading-[1.6] tracking-[-0.01em]",
-              style.textColor,
-            )}
-          >
-            {insight}
-          </p>
-        </div>
+        <p
+          className={cn(
+            "mt-3.5 min-w-0 text-[13px] leading-[1.6] tracking-[-0.01em]",
+            style.textColor,
+          )}
+        >
+          {insight}
+        </p>
       </div>
     </div>
   );

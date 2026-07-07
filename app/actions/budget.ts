@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireUserId } from "@/lib/auth/session";
 import {
   createCategoryBudget,
   deleteCategoryBudget,
@@ -30,6 +31,7 @@ function revalidateBudgetPaths() {
 export async function saveCategoryBudgetAction(
   formData: FormData,
 ): Promise<BudgetActionResult> {
+  const userId = await requireUserId();
   const parsed = parseCategoryBudgetFormData(formData);
 
   if (!parsed.ok) {
@@ -39,8 +41,8 @@ export async function saveCategoryBudgetAction(
   const id = formData.get("id");
   const budget =
     typeof id === "string" && id.trim()
-      ? await updateCategoryBudget(id.trim(), parsed.data)
-      : await createCategoryBudget(parsed.data);
+      ? await updateCategoryBudget(userId, id.trim(), parsed.data)
+      : await createCategoryBudget(userId, parsed.data);
 
   revalidateBudgetPaths();
 
@@ -50,13 +52,14 @@ export async function saveCategoryBudgetAction(
 export async function deleteCategoryBudgetAction(
   id: string,
 ): Promise<{ ok: true } | BudgetActionFailure> {
+  const userId = await requireUserId();
   const trimmed = id.trim();
 
   if (!trimmed) {
     return { ok: false, error: "Budget tidak ditemukan." };
   }
 
-  await deleteCategoryBudget(trimmed);
+  await deleteCategoryBudget(userId, trimmed);
   revalidateBudgetPaths();
 
   return { ok: true };

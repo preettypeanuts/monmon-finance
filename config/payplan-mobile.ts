@@ -10,7 +10,7 @@ import {
   JOURNAL_MOBILE_SOLID_SURFACE,
 } from "@/config/journal-mobile";
 import { PLANS_MOBILE_SOLID_CARD, PLANS_WISH_CARD_MOBILE } from "@/config/plans";
-import { MOBILE_LIQUID_GLASS_SURFACE } from "@/config/mobile-nav";
+import { MOBILE_ADD_FAB, MOBILE_LIQUID_GLASS_SURFACE } from "@/config/mobile-nav";
 
 /** Reuse journal solid surface — same `.journal-mobile-solid-surface` in globals.css */
 export const PAYPLAN_MOBILE_SOLID_SURFACE = JOURNAL_MOBILE_SOLID_SURFACE;
@@ -50,22 +50,26 @@ export const PAYPLAN_CALENDAR_FRAME_MOBILE = PAYPLAN_MOBILE_SOLID_SURFACE;
 
 export const PAYPLAN_CALENDAR_UPCOMING_FRAME_MOBILE = PAYPLAN_MOBILE_SOLID_SURFACE;
 
-export const PAYPLAN_CALENDAR_TAB_LIST_MOBILE = [
-  PAYPLAN_MOBILE_SOLID_SURFACE,
-  mobileOnly("!shadow-none"),
-  mobileOnly("[backdrop-filter:none!important]"),
-  mobileOnly("[-webkit-backdrop-filter:none!important]"),
+/** Glass tab bar — mobile uses default glass (no solid surface override). */
+export const PAYPLAN_CALENDAR_TAB_LIST_MOBILE = "max-md:h-9";
+
+/** Payment summary widgets — above mobile calendar. */
+export const PAYPLAN_MOBILE_PAYMENT_SUMMARY = "max-md:mb-3";
+
+/** Combined calendar + list section on mobile. */
+export const PAYPLAN_MOBILE_COMBINED_LIST = "md:hidden shrink-0 pt-3";
+
+/** Extra side gutter on top of default mobile page inset. */
+export const PAYPLAN_MOBILE_PAGE_INSET_X = [
+  "max-md:pl-[calc(0.75rem+2px+var(--mobile-safe-left))]",
+  "max-md:pr-[calc(0.75rem+2px+var(--mobile-safe-right))]",
 ].join(" ");
 
+/** Budget tab — scroll end spacer (FAB + bottom nav + safe area). */
+export const PAYPLAN_BUDGET_MOBILE_END_SPACER = "payplan-budget-mobile-end-spacer";
+
 /** Floating add — same footprint as Wish FAB. */
-export const PAYPLAN_ADD_FAB = [
-  "pointer-events-auto fixed right-3 z-30 md:hidden",
-  "bottom-[calc(var(--mobile-bottom-nav-offset)+0.625rem)]",
-  "flex size-14 items-center justify-center rounded-full",
-  "bg-primary text-primary-foreground",
-  "shadow-[0_8px_28px_rgba(0,0,0,0.22)]",
-  "transition-transform active:scale-95",
-].join(" ");
+export const PAYPLAN_ADD_FAB = MOBILE_ADD_FAB;
 
 /** Segmented Kalender/Budget — fixed top bar, aligned with Inbox orb. */
 export const PAYPLAN_TOP_BAR_TABS_LIST = [

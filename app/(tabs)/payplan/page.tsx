@@ -1,11 +1,15 @@
 import { BudgetManage } from "@/components/planner/budget-manage";
+import { PayplanMobileLayoutGuard } from "@/components/planner/payplan-mobile-layout-guard";
+import { PayplanMobileSearchRow } from "@/components/planner/payplan-mobile-search-row";
 import { PlannedItemsManage } from "@/components/planner/planned-items-manage";
 import { PlannerCalendar } from "@/components/planner/planner-calendar";
 import { PlannerCalendarTabBar } from "@/components/planner/planner-calendar-tab-bar";
 import { PlannerShell } from "@/components/planner/planner-shell";
 import { PlannerTabBar } from "@/components/planner/planner-tab-bar";
 import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
-import { APP_GUTTER, STACK_GAP } from "@/config/spacing";
+import { PAYPLAN_MOBILE_COMBINED_LIST, PAYPLAN_MOBILE_PAGE_INSET_X } from "@/config/payplan-mobile";
+import { STACK_GAP } from "@/config/spacing";
+import { requireUserId } from "@/lib/auth/session";
 import { listBudgetsForMonth } from "@/lib/db/budgets";
 import { listPlannedItems } from "@/lib/db/planned-items";
 import { getPlannerMonthData } from "@/lib/db/planner";
@@ -21,44 +25,57 @@ interface PayPlanPageProps {
 }
 
 export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
+  const userId = await requireUserId();
   const params = await searchParams;
   const { monthKey, tab, calendarLayout, filters } =
     parsePlannerSearchParams(params);
-  const isManage = tab === "calendar" && isPlannerManageLayout(calendarLayout);
-  const needsMonthOccurrences = isManage && filters.paymentStatus !== "all";
+  const isCalendarTab = tab === "calendar";
+  const isManage = isCalendarTab && isPlannerManageLayout(calendarLayout);
   const [data, plannedItems, budgets] = await Promise.all([
-    tab === "calendar" && (calendarLayout === "month" || needsMonthOccurrences)
-      ? getPlannerMonthData(monthKey)
-      : null,
-    isManage ? listPlannedItems() : null,
-    tab === "budget" ? listBudgetsForMonth(monthKey) : null,
+    isCalendarTab ? getPlannerMonthData(userId, monthKey) : null,
+    isCalendarTab ? listPlannedItems(userId) : null,
+    tab === "budget" ? listBudgetsForMonth(userId, monthKey) : null,
   ]);
   const initialDayKey = data
     ? pickDefaultDayKey(data.monthKey, data.marks)
     : null;
+  const monthOccurrences =
+    data?.items.map((item) => ({
+      ...item,
+      dueAt: item.dueAt.toISOString(),
+    })) ?? [];
+  const plannedItemRecords =
+    plannedItems?.map((item) => ({
+      ...item,
+      startAt: item.startAt.toISOString(),
+      endAt: item.endAt?.toISOString() ?? null,
+    })) ?? [];
 
   const subtitle =
     tab === "budget"
       ? "Atur budget kategori — terhubung dengan Inbox."
       : "Tagihan, pemasukan terjadwal, dan budget.";
+  const pageTitle = tab === "budget" ? "Budget" : "PayPlan";
 
   return (
-    <div className={cn("flex min-h-0 flex-1 flex-col", APP_GUTTER, "max-md:p-0")}>
+    <div className={cn("flex min-h-0 flex-1 flex-col")}>
+      <PayplanMobileLayoutGuard layout={calendarLayout} monthKey={monthKey} />
       <PlannerShell className="min-h-0 flex-1">
         <MobileScrollSurface
           className={cn(
-            "flex min-h-0 flex-1 flex-col",
+            "flex min-h-0 flex-1 flex-col md:p-3",
             STACK_GAP,
-            "max-md:overflow-y-auto max-md:overscroll-y-contain",
-            "md:overflow-hidden",
+            "overflow-y-auto overscroll-y-contain",
+            "md:pb-20",
+            PAYPLAN_MOBILE_PAGE_INSET_X,
           )}
-          title="PayPlan"
+          title={pageTitle}
         >
           <header className="shrink-0 max-md:hidden">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
-                  PayPlan
+                  {pageTitle}
                 </h1>
                 <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
                   {subtitle}
@@ -72,7 +89,7 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
               />
             </div>
 
-            {tab === "calendar" ? (
+            {isCalendarTab ? (
               <div className="mt-3">
                 <PlannerCalendarTabBar
                   layout={calendarLayout}
@@ -87,11 +104,8 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
               {subtitle}
             </p>
 
-            {tab === "calendar" ? (
-              <PlannerCalendarTabBar
-                layout={calendarLayout}
-                monthKey={monthKey}
-              />
+            {isCalendarTab ? (
+              <PayplanMobileSearchRow filters={filters} layout="table" />
             ) : null}
           </div>
 
@@ -99,38 +113,40 @@ export default async function PayPlanPage({ searchParams }: PayPlanPageProps) {
             <BudgetManage monthKey={monthKey} budgets={budgets} />
           ) : null}
 
-          {isManage && plannedItems ? (
-            <PlannedItemsManage
-              layout={calendarLayout}
-              items={plannedItems.map((item) => ({
-                ...item,
-                startAt: item.startAt.toISOString(),
-                endAt: item.endAt?.toISOString() ?? null,
-              }))}
-              filters={filters}
-              monthOccurrences={
-                data?.items.map((item) => ({
-                  ...item,
-                  dueAt: item.dueAt.toISOString(),
-                })) ?? []
-              }
-            />
+          {isCalendarTab && data && initialDayKey ? (
+            <div className={cn(isManage && "max-md:hidden")}>
+              <PlannerCalendar
+                monthKey={data.monthKey}
+                year={data.year}
+                month={data.month}
+                initialDayKey={initialDayKey}
+                items={monthOccurrences}
+              />
+            </div>
           ) : null}
 
-          {tab === "calendar" &&
-          calendarLayout === "month" &&
-          data &&
-          initialDayKey ? (
-            <PlannerCalendar
-              monthKey={data.monthKey}
-              year={data.year}
-              month={data.month}
-              initialDayKey={initialDayKey}
-              items={data.items.map((item) => ({
-                ...item,
-                dueAt: item.dueAt.toISOString(),
-              }))}
-            />
+          {isManage && plannedItems ? (
+            <div className="hidden md:block">
+              <PlannedItemsManage
+                layout={calendarLayout}
+                items={plannedItemRecords}
+                filters={filters}
+                monthOccurrences={monthOccurrences}
+              />
+            </div>
+          ) : null}
+
+          {isCalendarTab && plannedItems ? (
+            <div className={PAYPLAN_MOBILE_COMBINED_LIST}>
+              <PlannedItemsManage
+                className="max-md:flex-none"
+                hideMobileSearchRow
+                layout="table"
+                items={plannedItemRecords}
+                filters={filters}
+                monthOccurrences={monthOccurrences}
+              />
+            </div>
           ) : null}
         </MobileScrollSurface>
       </PlannerShell>

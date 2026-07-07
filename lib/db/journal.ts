@@ -1,7 +1,10 @@
 import { JOURNAL_PAGE_SIZE } from "@/config/journal";
 import { TRANSACTION_CATEGORIES } from "@/config/categories";
+import { buildJournalCategoryExpenseBreakdown } from "@/lib/finance/build-journal-category-breakdown";
 import { prisma } from "@/lib/db/prisma";
+import { scopedByUser, scopedId } from "@/lib/db/user-scope";
 import type {
+  JournalCategoryExpenseBreakdown,
   JournalEntry,
   JournalEntryFormInput,
   JournalFilters,
@@ -19,8 +22,11 @@ const JOURNAL_ENTRY_SELECT = {
   occurredAt: true,
 } as const;
 
-function buildWhere(filters: JournalFilters): Prisma.TransactionWhereInput {
-  const where: Prisma.TransactionWhereInput = {};
+function buildWhere(
+  userId: string,
+  filters: JournalFilters,
+): Prisma.TransactionWhereInput {
+  const where: Prisma.TransactionWhereInput = { userId };
 
   if (filters.type !== "all") {
     where.type = filters.type;
@@ -58,9 +64,10 @@ function buildWhere(filters: JournalFilters): Prisma.TransactionWhereInput {
 }
 
 export async function listJournalTransactions(
+  userId: string,
   filters: JournalFilters,
 ): Promise<JournalListResult> {
-  const where = buildWhere(filters);
+  const where = buildWhere(userId, filters);
   const page = filters.page;
   const skip = (page - 1) * JOURNAL_PAGE_SIZE;
 
@@ -86,12 +93,38 @@ export async function listJournalTransactions(
   };
 }
 
+export async function getJournalCategoryExpenseBreakdown(
+  userId: string,
+  filters: JournalFilters,
+): Promise<JournalCategoryExpenseBreakdown> {
+  if (filters.type === "income") {
+    return { totalExpense: 0, categories: [] };
+  }
+
+  const grouped = await prisma.transaction.groupBy({
+    by: ["category"],
+    where: {
+      ...buildWhere(userId, filters),
+      type: "expense",
+    },
+    _sum: { amount: true },
+  });
+
+  return buildJournalCategoryExpenseBreakdown(
+    grouped.map((row) => ({
+      category: row.category,
+      amount: row._sum.amount ?? 0,
+    })),
+  );
+}
+
 export async function updateJournalTransaction(
+  userId: string,
   id: string,
   data: JournalEntryFormInput,
 ): Promise<JournalEntry> {
   return prisma.transaction.update({
-    where: { id },
+    where: scopedId(userId, id),
     data: {
       type: data.type,
       amount: data.amount,
@@ -104,8 +137,11 @@ export async function updateJournalTransaction(
   });
 }
 
-export async function deleteJournalTransaction(id: string): Promise<void> {
+export async function deleteJournalTransaction(
+  userId: string,
+  id: string,
+): Promise<void> {
   await prisma.transaction.delete({
-    where: { id },
+    where: scopedId(userId, id),
   });
 }

@@ -48,3 +48,15 @@ export interface JournalDaySummary {
   balanceDelta: number;
   condition: JournalCondition;
 }
+
+export interface JournalCategoryExpenseShare {
+  category: string;
+  label: string;
+  amount: number;
+  percent: number;
+}
+
+export interface JournalCategoryExpenseBreakdown {
+  totalExpense: number;
+  categories: JournalCategoryExpenseShare[];
+}

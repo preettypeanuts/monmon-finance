@@ -14,8 +14,15 @@ import {
 import { listPlannedItems, markInstallmentPaid } from "@/lib/db/planned-items";
 import { listPlans, markPlanDone } from "@/lib/db/plans";
 import { prisma } from "@/lib/db/prisma";
+import { listSavingsGoals } from "@/lib/db/savings-goals";
 import { createTransaction } from "@/lib/db/transactions";
+import { scopedByUser, scopedId } from "@/lib/db/user-scope";
+import { requireUserId } from "@/lib/auth/session";
 import { formatIdr } from "@/lib/finance/format-currency";
+import { executeSavingsInboxCommand } from "@/lib/savings/execute-savings-inbox-command";
+import { findSavingsGoalByQuery } from "@/lib/savings/find-savings-goal";
+import { formatSavingsGoalDetail } from "@/lib/savings/format-savings-reply";
+import { parseSavingsInboxCommand } from "@/lib/savings/parse-savings-inbox-command";
 import {
   canMarkPlannedItemPaid,
   getPlannedItemPaymentIndex,
@@ -26,7 +33,7 @@ import type { ParsedTransaction } from "@/types/transaction";
 interface SubmitInboxMessageSuccess {
   ok: true;
   content: string;
-  transaction: ParsedTransaction;
+  transaction?: ParsedTransaction;
   userMessage: ChatMessage;
   assistantMessage: ChatMessage;
 }
@@ -45,13 +52,31 @@ export type SubmitInboxMessageResult =
 export async function submitInboxMessage(
   text: string,
 ): Promise<SubmitInboxMessageResult> {
+  const userId = await requireUserId();
   const trimmed = text.trim();
 
   if (!trimmed) {
     throw new Error("Pesan tidak boleh kosong.");
   }
 
+  const savingsCommand = parseSavingsInboxCommand(trimmed);
+  if (savingsCommand) {
+    const result = await executeSavingsInboxCommand(
+      userId,
+      trimmed,
+      savingsCommand,
+    );
+
+    return {
+      ok: result.ok,
+      content: result.content,
+      userMessage: result.userMessage,
+      assistantMessage: result.assistantMessage,
+    };
+  }
+
   const userMessage = await createInboxMessage({
+    userId,
     role: "user",
     content: trimmed,
   });
@@ -60,16 +85,19 @@ export async function submitInboxMessage(
     const transaction = await parseTransaction(trimmed);
 
     const savedTransaction = await createTransaction({
+      userId,
       rawInput: trimmed,
       transaction,
     });
 
     const content = await buildInboxTransactionReplyForParsed(
+      userId,
       trimmed,
       transaction,
     );
 
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content,
       transactionId: savedTransaction.id,
@@ -90,6 +118,7 @@ export async function submitInboxMessage(
     const content = formatInboxProcessingError(error);
 
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content,
     });
@@ -106,8 +135,10 @@ export async function submitInboxMessage(
 export async function retryInboxMessageAction(
   assistantMessageId: string,
 ): Promise<SubmitInboxMessageResult> {
+  const userId = await requireUserId();
+
   const assistantRecord = await prisma.inboxMessage.findUnique({
-    where: { id: assistantMessageId },
+    where: scopedId(userId, assistantMessageId),
     select: {
       id: true,
       role: true,
@@ -120,13 +151,13 @@ export async function retryInboxMessageAction(
   }
 
   const userRecord = await prisma.inboxMessage.findFirst({
-    where: {
+    where: scopedByUser(userId, {
       role: "user",
       kind: "chat",
       createdAt: {
         lt: assistantRecord.createdAt,
       },
-    },
+    }),
     orderBy: {
       createdAt: "desc",
     },
@@ -148,16 +179,18 @@ export async function retryInboxMessageAction(
     const transaction = await parseTransaction(trimmed);
 
     const savedTransaction = await createTransaction({
+      userId,
       rawInput: trimmed,
       transaction,
     });
 
     const content = await buildInboxTransactionReplyForParsed(
+      userId,
       trimmed,
       transaction,
     );
 
-    const assistantMessage = await updateInboxMessage(assistantMessageId, {
+    const assistantMessage = await updateInboxMessage(userId, assistantMessageId, {
       content,
       transactionId: savedTransaction.id,
     });
@@ -176,7 +209,7 @@ export async function retryInboxMessageAction(
   } catch (error) {
     const content = formatInboxProcessingError(error);
 
-    const assistantMessage = await updateInboxMessage(assistantMessageId, {
+    const assistantMessage = await updateInboxMessage(userId, assistantMessageId, {
       content,
       transactionId: null,
     });
@@ -193,7 +226,8 @@ export async function retryInboxMessageAction(
 export async function undoInboxMessageAction(
   userMessageId: string,
 ): Promise<DeleteInboxMessagePairResult> {
-  const result = await deleteInboxMessagePair(userMessageId);
+  const userId = await requireUserId();
+  const result = await deleteInboxMessagePair(userId, userMessageId);
 
   revalidatePath("/");
   revalidatePath("/journal");
@@ -221,8 +255,9 @@ export async function payPayPlanFromInboxAction(
   plannedItemId: string,
   installmentIndex?: number,
 ): Promise<PayPayPlanFromInboxResult> {
+  const userId = await requireUserId();
   const trimmedId = plannedItemId.trim();
-  const items = await listPlannedItems();
+  const items = await listPlannedItems(userId);
   const item = items.find((entry) => entry.id === trimmedId);
 
   if (!item) {
@@ -231,12 +266,14 @@ export async function payPayPlanFromInboxAction(
 
   const userContent = `Bayar ${item.name}`;
   const userMessage = await createInboxMessage({
+    userId,
     role: "user",
     content: userContent,
   });
 
   if (!canMarkPlannedItemPaid(item)) {
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content: `${item.name} sudah dibayar atau tidak bisa ditandai dari chat.`,
     });
@@ -251,9 +288,10 @@ export async function payPayPlanFromInboxAction(
   const paymentIndex = installmentIndex ?? getPlannedItemPaymentIndex(item);
 
   try {
-    await markInstallmentPaid(trimmedId, paymentIndex);
+    await markInstallmentPaid(userId, trimmedId, paymentIndex);
 
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content: `${item.name} (${formatIdr(item.amount)}) ditandai sudah dibayar.`,
     });
@@ -268,6 +306,7 @@ export async function payPayPlanFromInboxAction(
     };
   } catch {
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content: `Gagal menandai ${item.name} sudah dibayar. Coba lagi.`,
     });
@@ -296,11 +335,84 @@ export type MarkPlanDoneFromInboxResult =
   | MarkPlanDoneFromInboxSuccess
   | MarkPlanDoneFromInboxFailure;
 
+interface CheckSavingsGoalFromInboxSuccess {
+  ok: true;
+  userMessage: ChatMessage;
+  assistantMessage: ChatMessage;
+}
+
+interface CheckSavingsGoalFromInboxFailure {
+  ok: false;
+  userMessage: ChatMessage;
+  assistantMessage: ChatMessage;
+}
+
+export type CheckSavingsGoalFromInboxResult =
+  | CheckSavingsGoalFromInboxSuccess
+  | CheckSavingsGoalFromInboxFailure;
+
+export async function checkSavingsGoalFromInboxAction(
+  goalId: string,
+): Promise<CheckSavingsGoalFromInboxResult> {
+  const userId = await requireUserId();
+  const trimmedId = goalId.trim();
+  const goals = await listSavingsGoals(userId);
+  const goal = goals.find((entry) => entry.id === trimmedId);
+
+  if (!goal) {
+    throw new Error("Tabungan tidak ditemukan.");
+  }
+
+  const userContent = `cek tabungan ${goal.name}`;
+  const userMessage = await createInboxMessage({
+    userId,
+    role: "user",
+    content: userContent,
+  });
+
+  try {
+    const resolved = findSavingsGoalByQuery(goals, goal.name);
+    if (!resolved) {
+      throw new Error(`Tabungan "${goal.name}" tidak ditemukan.`);
+    }
+
+    const assistantMessage = await createInboxMessage({
+      userId,
+      role: "assistant",
+      content: formatSavingsGoalDetail(resolved),
+    });
+
+    return {
+      ok: true,
+      userMessage,
+      assistantMessage,
+    };
+  } catch (error) {
+    const content =
+      error instanceof Error
+        ? error.message
+        : "Gagal menampilkan tabungan.";
+
+    const assistantMessage = await createInboxMessage({
+      userId,
+      role: "assistant",
+      content,
+    });
+
+    return {
+      ok: false,
+      userMessage,
+      assistantMessage,
+    };
+  }
+}
+
 export async function markPlanDoneFromInboxAction(
   planId: string,
 ): Promise<MarkPlanDoneFromInboxResult> {
+  const userId = await requireUserId();
   const trimmedId = planId.trim();
-  const plans = await listPlans();
+  const plans = await listPlans(userId);
   const plan = plans.find((entry) => entry.id === trimmedId);
 
   if (!plan) {
@@ -309,12 +421,14 @@ export async function markPlanDoneFromInboxAction(
 
   const userContent = `Beli ${plan.name}`;
   const userMessage = await createInboxMessage({
+    userId,
     role: "user",
     content: userContent,
   });
 
   if (plan.status !== "active") {
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content: `${plan.name} sudah ditandai selesai atau tidak bisa diupdate dari chat.`,
     });
@@ -327,9 +441,10 @@ export async function markPlanDoneFromInboxAction(
   }
 
   try {
-    await markPlanDone(trimmedId);
+    await markPlanDone(userId, trimmedId);
 
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content: `${plan.name} (${formatIdr(plan.amount)}) ditandai sudah dibeli.`,
     });
@@ -346,6 +461,7 @@ export async function markPlanDoneFromInboxAction(
     };
   } catch {
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content: `Gagal menandai ${plan.name} sudah dibeli. Coba lagi.`,
     });

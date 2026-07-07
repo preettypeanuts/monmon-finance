@@ -8,7 +8,12 @@ import {
   PLANNER_CALENDAR_TAB_TRIGGER,
 } from "@/config/planner-calendar";
 import { PAYPLAN_CALENDAR_TAB_LIST_MOBILE } from "@/config/payplan-mobile";
-import { CalendarBlankIcon, SquaresFourIcon, TableIcon } from "@/lib/icons";
+import {
+  CalendarBlankIcon,
+  ListIcon,
+  SquaresFourIcon,
+  TableIcon,
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type { PlannerCalendarLayout } from "@/types/planner";
 
@@ -47,18 +52,21 @@ export function PlannerCalendarTabBar({
       onValueChange={(value) => navigate(value as PlannerCalendarLayout)}
       className={cn("w-full", className)}
     >
-      <TabsList className={cn(PLANNER_CALENDAR_TAB_LIST, PAYPLAN_CALENDAR_TAB_LIST_MOBILE)}>
+      <TabsList
+        className={cn(PLANNER_CALENDAR_TAB_LIST, PAYPLAN_CALENDAR_TAB_LIST_MOBILE)}
+      >
         <TabsTrigger
           value="month"
           className={PLANNER_CALENDAR_TAB_TRIGGER}
           aria-label="Kalender bulan"
         >
           <CalendarBlankIcon className="size-3.5" />
-          <span className="hidden sm:inline">Kalender</span>
+          <span className="inline md:hidden">Kalender</span>
+          <span className="hidden sm:inline md:inline">Kalender</span>
         </TabsTrigger>
         <TabsTrigger
           value="cards"
-          className={PLANNER_CALENDAR_TAB_TRIGGER}
+          className={cn(PLANNER_CALENDAR_TAB_TRIGGER, "max-md:hidden")}
           aria-label="Card"
         >
           <SquaresFourIcon className="size-3.5" />
@@ -67,10 +75,12 @@ export function PlannerCalendarTabBar({
         <TabsTrigger
           value="table"
           className={PLANNER_CALENDAR_TAB_TRIGGER}
-          aria-label="Table"
+          aria-label="List"
         >
-          <TableIcon className="size-3.5" />
-          <span className="hidden sm:inline">Table</span>
+          <ListIcon className="size-3.5 md:hidden" />
+          <TableIcon className="hidden size-3.5 md:block" />
+          <span className="inline md:hidden">List</span>
+          <span className="hidden sm:inline md:inline">Table</span>
         </TabsTrigger>
       </TabsList>
     </Tabs>

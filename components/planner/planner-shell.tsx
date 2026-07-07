@@ -24,7 +24,6 @@ export function PlannerShell({ children, className }: PlannerShellProps) {
       <div
         className={cn(
           "flex min-h-0 flex-1 flex-col overflow-hidden",
-          SHELL_PADDING,
           "max-md:contents max-md:p-0",
         )}
       >

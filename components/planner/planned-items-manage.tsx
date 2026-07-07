@@ -47,6 +47,8 @@ interface PlannedItemsManageProps {
   >;
   filters: PlannedItemsFilters;
   monthOccurrences?: Array<Omit<PlannedOccurrence, "dueAt"> & { dueAt: string }>;
+  className?: string;
+  hideMobileSearchRow?: boolean;
 }
 
 function normalizeItems(
@@ -64,6 +66,8 @@ export function PlannedItemsManage({
   items,
   filters,
   monthOccurrences = [],
+  className,
+  hideMobileSearchRow = false,
 }: PlannedItemsManageProps) {
   const normalizedItems = useMemo(() => normalizeItems(items), [items]);
   const normalizedMonthOccurrences = useMemo(
@@ -136,7 +140,7 @@ export function PlannedItemsManage({
   }
 
   return (
-    <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP)}>
+    <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP, className)}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className={cn("min-w-0", PAYPLAN_MANAGE_SECTION_HEADER)}>
           <h2 className="text-sm font-semibold">Jadwal</h2>
@@ -155,28 +159,30 @@ export function PlannedItemsManage({
         </div>
       </div>
 
-      <div className={PAYPLAN_FILTERS_MOBILE_ROW}>
-        <PlannedItemsSearchInput
-          filters={filters}
-          layout={layout}
-          className={cn(SEPARATED_CONTROL, PAYPLAN_FILTER_SEARCH_INPUT)}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label="Buka filter"
-          aria-expanded={filterDialogOpen}
-          className={cn(
-            SEPARATED_CONTROL,
-            PAYPLAN_FILTER_TRIGGER,
-            hasRichFilters && PAYPLAN_FILTER_TRIGGER_ACTIVE,
-          )}
-          onClick={() => setFilterDialogOpen(true)}
-        >
-          <FunnelIcon aria-hidden className="size-4" />
-        </Button>
-      </div>
+      {hideMobileSearchRow ? null : (
+        <div className={PAYPLAN_FILTERS_MOBILE_ROW}>
+          <PlannedItemsSearchInput
+            filters={filters}
+            layout={layout}
+            className={cn(SEPARATED_CONTROL, PAYPLAN_FILTER_SEARCH_INPUT)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Buka filter"
+            aria-expanded={filterDialogOpen}
+            className={cn(
+              SEPARATED_CONTROL,
+              PAYPLAN_FILTER_TRIGGER,
+              hasRichFilters && PAYPLAN_FILTER_TRIGGER_ACTIVE,
+            )}
+            onClick={() => setFilterDialogOpen(true)}
+          >
+            <FunnelIcon aria-hidden className="size-4" />
+          </Button>
+        </div>
+      )}
 
       {error ? (
         <p className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">

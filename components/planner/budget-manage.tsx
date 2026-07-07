@@ -11,7 +11,7 @@ import { BudgetMonthHeader } from "@/components/planner/budget-month-header";
 import { PayplanAddFab } from "@/components/planner/payplan-add-fab";
 import { Button } from "@/components/ui/button";
 import { BUDGET_CARD_GRID } from "@/config/budget";
-import { PAYPLAN_MANAGE_EMPTY_MOBILE } from "@/config/payplan-mobile";
+import { PAYPLAN_BUDGET_MOBILE_END_SPACER, PAYPLAN_MANAGE_EMPTY_MOBILE } from "@/config/payplan-mobile";
 import { CONTROL_GAP, STACK_GAP } from "@/config/spacing";
 import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -64,7 +64,12 @@ export function BudgetManage({ monthKey, budgets }: BudgetManageProps) {
   }
 
   return (
-    <div className={cn("flex min-h-0 flex-1 flex-col", STACK_GAP)}>
+    <div
+      className={cn(
+        "flex min-h-0 flex-1 flex-col max-md:flex-none",
+        STACK_GAP,
+      )}
+    >
       <div
         className={cn(
           "flex shrink-0 items-center justify-between gap-3",
@@ -121,6 +126,8 @@ export function BudgetManage({ monthKey, budgets }: BudgetManageProps) {
           ))}
         </div>
       )}
+
+      <div aria-hidden className={PAYPLAN_BUDGET_MOBILE_END_SPACER} />
 
       <PayplanAddFab onClick={openCreate} label="Tambah budget" />
 

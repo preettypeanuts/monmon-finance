@@ -2,6 +2,7 @@ import { CHAT_BUBBLE_STYLES } from "@/config/chat-bubbles";
 import { SEPARATED_SURFACE } from "@/config/shape";
 import { CATEGORY_LABELS } from "@/lib/finance/categories";
 import { formatIdr } from "@/lib/finance/format-currency";
+import { formatJournalTime } from "@/lib/finance/format-datetime";
 import { cn } from "@/lib/utils";
 import type { ParsedTransaction } from "@/types/transaction";
 
@@ -10,13 +11,6 @@ interface TransactionPreviewProps {
 }
 
 const assistantBubble = CHAT_BUBBLE_STYLES.assistant;
-
-function formatTime(iso: string): string {
-  return new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(iso));
-}
 
 export function TransactionPreview({ transaction }: TransactionPreviewProps) {
   const typeLabel = transaction.type === "income" ? "Pemasukan" : "Pengeluaran";
@@ -46,7 +40,7 @@ export function TransactionPreview({ transaction }: TransactionPreviewProps) {
         </div>
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground dark:text-neutral-300">Waktu</dt>
-          <dd className="font-medium">{formatTime(transaction.occurredAt)}</dd>
+          <dd className="font-medium">{formatJournalTime(transaction.occurredAt)}</dd>
         </div>
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground dark:text-neutral-300">Catatan</dt>

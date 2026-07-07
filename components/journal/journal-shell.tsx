@@ -23,8 +23,7 @@ export function JournalShell({ children, className }: JournalShellProps) {
     >
       <div
         className={cn(
-          "flex min-h-0 flex-1 flex-col overflow-hidden",
-          SHELL_PADDING,
+          "flex min-h-0 flex-1 flex-col overflow-hidden px-3",
           "max-md:contents max-md:p-0",
         )}
       >

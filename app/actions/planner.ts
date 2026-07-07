@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireUserId } from "@/lib/auth/session";
 import {
   createPlannedItem,
   deletePlannedItem,
@@ -32,6 +33,7 @@ function revalidatePayPlan() {
 export async function savePlannedItemAction(
   formData: FormData,
 ): Promise<PlannedItemActionResult> {
+  const userId = await requireUserId();
   const parsed = parsePlannedItemFormData(formData);
 
   if (!parsed.ok) {
@@ -41,8 +43,8 @@ export async function savePlannedItemAction(
   const id = formData.get("id");
   const item =
     typeof id === "string" && id.trim()
-      ? await updatePlannedItem(id.trim(), parsed.data)
-      : await createPlannedItem(parsed.data);
+      ? await updatePlannedItem(userId, id.trim(), parsed.data)
+      : await createPlannedItem(userId, parsed.data);
 
   revalidatePayPlan();
 
@@ -55,6 +57,7 @@ export async function markInstallmentPaidAction(
 ): Promise<
   { ok: true; paidCount: number } | PlannedItemActionFailure
 > {
+  const userId = await requireUserId();
   const trimmed = plannedItemId.trim();
 
   if (!trimmed || !Number.isInteger(installmentIndex) || installmentIndex < 0) {
@@ -62,7 +65,7 @@ export async function markInstallmentPaidAction(
   }
 
   try {
-    const item = await markInstallmentPaid(trimmed, installmentIndex);
+    const item = await markInstallmentPaid(userId, trimmed, installmentIndex);
     revalidatePayPlan();
     return { ok: true, paidCount: item.paidInstallmentCount };
   } catch {
@@ -73,6 +76,7 @@ export async function markInstallmentPaidAction(
 export async function deletePlannedItemAction(
   id: string,
 ): Promise<{ ok: true } | PlannedItemActionFailure> {
+  const userId = await requireUserId();
   const trimmed = id.trim();
 
   if (!trimmed) {
@@ -80,7 +84,7 @@ export async function deletePlannedItemAction(
   }
 
   try {
-    await deletePlannedItem(trimmed);
+    await deletePlannedItem(userId, trimmed);
     revalidatePayPlan();
     return { ok: true };
   } catch {

@@ -1,0 +1,17 @@
+{
+  "version": 1.1,
+  "properties": [
+    {
+      "name": "corner-shape",
+      "description": "CSS Borders and Box Decorations Level 4 — shapes box corners (e.g. squircle). Used behind @supports for iOS-style drawer rounding.",
+      "browsers": ["C125", "S18.2"],
+      "values": [
+        { "name": "round" },
+        { "name": "squircle" },
+        { "name": "bevel" },
+        { "name": "scoop" },
+        { "name": "notch" }
+      ]
+    }
+  ]
+}

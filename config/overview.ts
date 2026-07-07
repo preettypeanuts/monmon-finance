@@ -4,14 +4,15 @@ import { SEPARATED_CONTROL, SEPARATED_SURFACE } from "@/config/shape";
 
 export const OVERVIEW_BENTO_GRID = `grid grid-cols-1 ${GRID_GAP} md:grid-cols-2 xl:grid-cols-3`;
 
-/** Page shell — top/right inset at rest; scroll bleeds to viewport edges. */
-export const OVERVIEW_PAGE_ROOT =
-  "relative flex min-h-0 flex-1 flex-col overflow-hidden pr-3";
+/** Mobile page shell — desktop right gutter stays on SidebarInset. */
+export const OVERVIEW_PAGE_ROOT = [
+  "relative flex h-full min-h-0 flex-1 flex-col overflow-hidden",
+  "max-md:pr-3",
+].join(" ");
 
 export const OVERVIEW_PAGE_SCROLL = [
   "min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
-  "-mr-3 pr-3 pl-3 md:pl-0",
-  "md:pb-20",
+  "max-md:-mr-3 max-md:pr-3 max-md:pl-3",
 ].join(" ");
 
 export const OVERVIEW_PAGE_SCROLL_INNER = "pb-3";
@@ -34,6 +35,9 @@ export const OVERVIEW_SPAN_WIDE = "md:col-span-2 xl:col-span-2";
 
 /** Greeting + AI Brief side-by-side row. */
 export const OVERVIEW_TOP_PAIR = `grid grid-cols-1 ${GRID_GAP} md:grid-cols-2 ${OVERVIEW_SPAN_FULL}`;
+
+/** Tabungan + Monthly Snapshot side-by-side on desktop. */
+export const OVERVIEW_SAVINGS_SNAPSHOT_PAIR = `grid grid-cols-1 ${GRID_GAP} md:grid-cols-2 ${OVERVIEW_SPAN_FULL}`;
 
 export const OVERVIEW_BALANCE_METRICS = `mt-4 grid grid-cols-1 ${GRID_GAP} sm:grid-cols-3`;
 

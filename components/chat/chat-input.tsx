@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatCalculatorSheet } from "@/components/chat/chat-calculator-sheet";
 import { ChatCategoryMentionMenu } from "@/components/chat/chat-category-mention-menu";
+import { ChatInputHintBadges } from "@/components/chat/chat-input-hint-badges";
 import { ChatSlashMenu } from "@/components/chat/chat-slash-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import type { CategoryMentionOption } from "@/config/category-mentions";
+import {
+  CHAT_INPUT_CONTROL_MIN_HEIGHT,
+  CHAT_INPUT_FIELD,
+  CHAT_INPUT_MENU_BUTTON,
+  CHAT_INPUT_SEND_BUTTON,
+  CHAT_INPUT_TEXTAREA,
+} from "@/config/chat-input-mobile";
 import { GLASS_SURFACE } from "@/config/glass";
 import { RECEIPT_ACCEPT_ATTRIBUTE } from "@/config/receipt";
 import { CONTROL_GAP } from "@/config/spacing";
@@ -29,23 +37,27 @@ import {
 } from "@/lib/icons";
 import { filterUnpaidPayPlanChatItems } from "@/lib/planner/unpaid-payplan-chat";
 import { filterActivePlanChatItems } from "@/lib/plans/active-plan-chat";
+import { filterActiveSavingsChatItems } from "@/lib/savings/active-savings-chat";
 import { cn } from "@/lib/utils";
 import type {
   ActivePlanChatItem,
+  ActiveSavingsChatItem,
   ChatSlashEntry,
   UnpaidPayPlanChatItem,
 } from "@/types/chat";
 
-/** Min height shared by menu btn & input — keep in sync. */
-const CONTROL_MIN_HEIGHT = "min-h-9";
+/** Min height shared by menu btn & input — keep in sync with config/chat-input-mobile.ts */
+const CONTROL_MIN_HEIGHT = CHAT_INPUT_CONTROL_MIN_HEIGHT;
 
 interface ChatInputProps {
   onSubmit: (text: string) => Promise<void>;
   onReceiptFile?: (file: File) => Promise<void>;
   onPayPlan?: (item: UnpaidPayPlanChatItem) => Promise<void>;
   onMarkPlanDone?: (item: ActivePlanChatItem) => Promise<void>;
+  onCheckSavings?: (item: ActiveSavingsChatItem) => Promise<void>;
   unpaidPayPlanItems?: UnpaidPayPlanChatItem[];
   activePlanItems?: ActivePlanChatItem[];
+  activeSavingsItems?: ActiveSavingsChatItem[];
   disabled?: boolean;
   draftText?: string | null;
   onDraftTextApplied?: () => void;
@@ -56,8 +68,10 @@ export function ChatInput({
   onReceiptFile,
   onPayPlan,
   onMarkPlanDone,
+  onCheckSavings,
   unpaidPayPlanItems = [],
   activePlanItems = [],
+  activeSavingsItems = [],
   disabled = false,
   draftText = null,
   onDraftTextApplied,
@@ -72,7 +86,9 @@ export function ChatInput({
   const hasText = value.trim().length > 0;
   const isInputDisabled = disabled || isSubmitting;
   const slashMatch = value.match(/^\/(.*)$/);
-  const hasSlashActions = Boolean(onPayPlan || onMarkPlanDone);
+  const hasSlashActions = Boolean(
+    onPayPlan || onMarkPlanDone || onCheckSavings,
+  );
   const isSlashOpen = slashMatch !== null && hasSlashActions;
   const slashQuery = slashMatch?.[1]?.trim() ?? "";
   const mentionRange = useMemo(() => {
@@ -92,6 +108,10 @@ export function ChatInput({
     () => filterActivePlanChatItems(activePlanItems, slashQuery),
     [activePlanItems, slashQuery],
   );
+  const filteredSavingsItems = useMemo(
+    () => filterActiveSavingsChatItems(activeSavingsItems, slashQuery),
+    [activeSavingsItems, slashQuery],
+  );
   const slashEntries = useMemo<ChatSlashEntry[]>(
     () => [
       ...filteredPayPlanItems.map(
@@ -100,8 +120,11 @@ export function ChatInput({
       ...filteredPlanItems.map(
         (item): ChatSlashEntry => ({ kind: "plan", item }),
       ),
+      ...filteredSavingsItems.map(
+        (item): ChatSlashEntry => ({ kind: "savings", item }),
+      ),
     ],
-    [filteredPayPlanItems, filteredPlanItems],
+    [filteredPayPlanItems, filteredPlanItems, filteredSavingsItems],
   );
   const mentionOptions = useMemo(
     () => filterCategoryMentionOptions(mentionQuery),
@@ -162,11 +185,20 @@ export function ChatInput({
         return;
       }
 
-      if (!onMarkPlanDone) {
+      if (entry.kind === "plan") {
+        if (!onMarkPlanDone) {
+          return;
+        }
+
+        await onMarkPlanDone(entry.item);
         return;
       }
 
-      await onMarkPlanDone(entry.item);
+      if (!onCheckSavings) {
+        return;
+      }
+
+      await onCheckSavings(entry.item);
     } finally {
       setIsSubmitting(false);
     }
@@ -257,6 +289,28 @@ export function ChatInput({
     );
   }
 
+  function handleInsertHint(token: string) {
+    if (isInputDisabled) {
+      return;
+    }
+
+    const nextText = `${value}${token}`;
+    const nextCursor = nextText.length;
+    setValue(nextText);
+    setCursor(nextCursor);
+    setHighlightedIndex(0);
+
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(nextCursor, nextCursor);
+    });
+  }
+
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (isPickerOpen) {
       if (event.key === "ArrowDown") {
@@ -305,6 +359,7 @@ export function ChatInput({
         <ChatSlashMenu
           payPlanItems={filteredPayPlanItems}
           planItems={filteredPlanItems}
+          savingsItems={filteredSavingsItems}
           entries={slashEntries}
           highlightedIndex={highlightedIndex}
           onHighlight={setHighlightedIndex}
@@ -333,8 +388,9 @@ export function ChatInput({
                 aria-label="Menu"
                 className={cn(
                   CONTROL_MIN_HEIGHT,
+                  CHAT_INPUT_MENU_BUTTON,
                   GLASS_SURFACE,
-                  "size-9 shrink-0 rounded-full p-0",
+                  "shrink-0 rounded-full p-0",
                 )}
               />
             }
@@ -366,8 +422,9 @@ export function ChatInput({
         <div
           className={cn(
             CONTROL_MIN_HEIGHT,
+            CHAT_INPUT_FIELD,
             GLASS_SURFACE,
-            "flex max-h-28 min-w-0 flex-1 items-center overflow-hidden rounded-full py-0 pl-3 pr-1",
+            "flex max-h-28 min-w-0 flex-1 items-center overflow-hidden rounded-full py-0",
           )}
         >
           <Textarea
@@ -382,12 +439,13 @@ export function ChatInput({
             onClick={syncCursor}
             onKeyUp={syncCursor}
             onKeyDown={handleKeyDown}
-            placeholder="Ketik transaksi... / PayPlan · @ kategori"
+            placeholder="Catat transaksi..."
             disabled={isInputDisabled}
             rows={1}
             className={cn(
               CONTROL_MIN_HEIGHT,
-              "max-h-24 flex-1 resize-none overflow-y-auto rounded-full border-0 bg-transparent px-0 py-0 text-sm leading-9 shadow-none focus-visible:border-0 focus-visible:ring-0",
+              CHAT_INPUT_TEXTAREA,
+              "max-h-24 flex-1 resize-none overflow-y-auto rounded-full border-0 bg-transparent px-0 py-0 shadow-none focus-visible:border-0 focus-visible:ring-0",
             )}
           />
 
@@ -398,10 +456,19 @@ export function ChatInput({
               onClick={() => void handleSubmit()}
               disabled={isInputDisabled}
               aria-label="Kirim pesan"
-              className="mr-0.5 size-7 shrink-0 rounded-full"
+              className={cn(
+                CHAT_INPUT_SEND_BUTTON,
+                "mr-0.5 shrink-0 rounded-full",
+              )}
             >
-              <ArrowUpIcon className="size-3.5" />
+              <ArrowUpIcon aria-hidden="true" />
             </Button>
+          ) : !isPickerOpen ? (
+            <ChatInputHintBadges
+              disabled={isInputDisabled}
+              showSlash={hasSlashActions}
+              onInsert={handleInsertHint}
+            />
           ) : null}
         </div>
       </div>

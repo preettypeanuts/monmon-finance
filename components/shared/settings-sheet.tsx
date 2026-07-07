@@ -38,7 +38,7 @@ interface SettingsSheetProps {
 function SettingsChromeHeader({ onClose }: { onClose: () => void }) {
   return (
     <header className={SETTINGS_IOS_NAV_HEADER}>
-      <div className="min-w-[4.5rem]" />
+      <div className="min-w-18" />
       <p className="sr-only">Pengaturan</p>
       <Button
         type="button"
@@ -55,14 +55,16 @@ function SettingsChromeHeader({ onClose }: { onClose: () => void }) {
 function SettingsSheetBody({
   open,
   onClose,
+  isMobile,
 }: {
   open: boolean;
   onClose: () => void;
+  isMobile: boolean;
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <SettingsChromeHeader onClose={onClose} />
-      <SettingsPanelContent open={open} />
+      {isMobile ? null : <SettingsChromeHeader onClose={onClose} />}
+      <SettingsPanelContent mobileDrawer={isMobile} open={open} />
     </div>
   );
 }
@@ -110,7 +112,7 @@ export function SettingsSheet({
         {trigger ? <DrawerTrigger render={trigger} /> : null}
         <DrawerContent className={SETTINGS_IOS_DRAWER_SURFACE}>
           <DrawerTitle className="sr-only">Pengaturan</DrawerTitle>
-          <SettingsSheetBody open={open} onClose={handleClose} />
+          <SettingsSheetBody isMobile onClose={handleClose} open={open} />
         </DrawerContent>
       </Drawer>
     );
@@ -124,7 +126,7 @@ export function SettingsSheet({
         showCloseButton={false}
         className={SETTINGS_IOS_SHEET}
       >
-        <SettingsSheetBody open={open} onClose={handleClose} />
+        <SettingsSheetBody isMobile={false} onClose={handleClose} open={open} />
         <SheetClose className="sr-only">Tutup pengaturan</SheetClose>
       </SheetContent>
     </Sheet>

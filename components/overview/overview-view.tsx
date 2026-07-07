@@ -4,12 +4,13 @@ import { OverviewBalanceHero } from "@/components/overview/overview-balance-hero
 import { OverviewGreetingCard } from "@/components/overview/overview-greeting-card";
 import { OverviewMonthlySnapshotCard } from "@/components/overview/overview-monthly-snapshot-card";
 import { OverviewPlansProgressCard } from "@/components/overview/overview-plans-progress-card";
+import { OverviewSavingsProgressCard } from "@/components/overview/overview-savings-progress-card";
 import { OverviewTodayActivityCard } from "@/components/overview/overview-today-activity-card";
 import { OverviewUpcomingCard } from "@/components/overview/overview-upcoming-card";
 import {
   OVERVIEW_BENTO_GRID,
+  OVERVIEW_SAVINGS_SNAPSHOT_PAIR,
   OVERVIEW_SPAN_FULL,
-  OVERVIEW_SPAN_WIDE,
   OVERVIEW_TOP_PAIR,
 } from "@/config/overview";
 import type { OverviewPageData } from "@/types/overview";
@@ -40,11 +41,20 @@ export function OverviewView({ data }: OverviewViewProps) {
 
       <OverviewPlansProgressCard overview={data.plansOverview} />
 
-      <OverviewMonthlySnapshotCard snapshot={data.monthlySnapshot} />
+      <div className={OVERVIEW_SAVINGS_SNAPSHOT_PAIR}>
+        <OverviewSavingsProgressCard
+          className="h-full"
+          overview={data.savingsOverview}
+        />
+        <OverviewMonthlySnapshotCard
+          className="h-full"
+          snapshot={data.monthlySnapshot}
+        />
+      </div>
 
       <OverviewTodayActivityCard
+        className={OVERVIEW_SPAN_FULL}
         items={data.todayActivity}
-        className={OVERVIEW_SPAN_WIDE}
       />
     </div>
   );

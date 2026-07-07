@@ -10,18 +10,21 @@ import { formatIdr } from "@/lib/finance/format-currency";
 import { getCalendarPaymentSummary } from "@/lib/planner/calendar-payment-summary";
 import { buildPlannedItemsManageParams } from "@/lib/validations/planned-items-manage";
 import { cn } from "@/lib/utils";
-import type { PlannedOccurrence } from "@/types/planner";
+import type { PlannedOccurrence, PlannerManageLayout } from "@/types/planner";
 
 interface PlannerCalendarSummaryProps {
   items: PlannedOccurrence[];
   monthKey: string;
   className?: string;
+  /** Manage layout for payment filter deep-link — table on mobile PayPlan. */
+  manageLayout?: PlannerManageLayout;
 }
 
 export function PlannerCalendarSummary({
   items,
   monthKey,
   className,
+  manageLayout = "cards",
 }: PlannerCalendarSummaryProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -37,7 +40,7 @@ export function PlannerCalendarSummary({
         paymentStatus,
         flowType: "expense",
       },
-      "cards",
+      manageLayout,
       new URLSearchParams(searchParams.toString()),
     );
 

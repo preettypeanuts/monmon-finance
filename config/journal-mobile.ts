@@ -66,3 +66,15 @@ export const JOURNAL_PAGINATION_BUTTON_MOBILE = "max-md:h-10 max-md:flex-1";
 
 export const JOURNAL_PAGINATION_PAGE_MOBILE =
   "max-md:min-w-0 max-md:w-full max-md:text-center max-md:text-[11px]";
+
+export const JOURNAL_CATEGORY_BREAKDOWN_SHELL = [
+  JOURNAL_MOBILE_SOLID_SURFACE,
+  "rounded-2xl p-4",
+  mobileOnly("!border-0"),
+  mobileOnly("shadow-none"),
+  "md:border md:border-border/60 md:bg-card/50",
+].join(" ");
+
+export const JOURNAL_CATEGORY_BREAKDOWN_TRACK =
+  "h-2 overflow-hidden rounded-full bg-black/8 dark:bg-white/10";
+

@@ -3,12 +3,15 @@ import { getCategoryLabel } from "@/config/categories";
 import { getAvailableBalance } from "@/lib/db/balance";
 import { listPlans } from "@/lib/db/plans";
 import { prisma } from "@/lib/db/prisma";
+import { listSavingsGoals } from "@/lib/db/savings-goals";
+import { scopedByUser } from "@/lib/db/user-scope";
 import { buildOverviewAlerts } from "@/lib/finance/build-overview-alerts";
 import { buildOverviewBrief } from "@/lib/finance/build-overview-brief";
 import {
   buildFallbackPlansInsight,
   buildPlansOverview,
 } from "@/lib/finance/build-plans-overview";
+import { buildSavingsOverview } from "@/lib/finance/build-savings-overview";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
 import { addDays, getDayRange } from "@/lib/finance/day-range";
 import { formatJournalTime } from "@/lib/finance/format-datetime";
@@ -22,7 +25,9 @@ import {
 import { getPlansUpcomingImpact } from "@/lib/planner/build-plans-upcoming-impact";
 import type { OverviewPageData } from "@/types/overview";
 
-export async function getOverviewPageData(): Promise<OverviewPageData> {
+export async function getOverviewPageData(
+  userId: string,
+): Promise<OverviewPageData> {
   const now = new Date();
   const yesterday = addDays(now, -1);
   const monthKey = getCurrentMonthKey(now);
@@ -34,6 +39,7 @@ export async function getOverviewPageData(): Promise<OverviewPageData> {
     availableBalance,
     yesterdayBalance,
     plans,
+    savingsGoals,
     upcomingImpact,
     todayFlow,
     yesterdayFlow,
@@ -41,19 +47,20 @@ export async function getOverviewPageData(): Promise<OverviewPageData> {
     todayActivityRows,
     monthTransactions,
   ] = await Promise.all([
-    getAvailableBalance(now),
-    getAvailableBalance(yesterday),
-    listPlans(),
-    getPlansUpcomingImpact(now),
-    getDayFlowTotals(todayStart, todayEnd),
-    getDayFlowTotals(yesterdayStart, yesterdayEnd),
+    getAvailableBalance(userId, now),
+    getAvailableBalance(userId, yesterday),
+    listPlans(userId),
+    listSavingsGoals(userId),
+    getPlansUpcomingImpact(userId, now),
+    getDayFlowTotals(userId, todayStart, todayEnd),
+    getDayFlowTotals(userId, yesterdayStart, yesterdayEnd),
     prisma.transaction.findMany({
-      where: {
+      where: scopedByUser(userId, {
         occurredAt: {
           gte: todayStart,
           lte: todayEnd,
         },
-      },
+      }),
       select: {
         type: true,
         amount: true,
@@ -65,12 +72,12 @@ export async function getOverviewPageData(): Promise<OverviewPageData> {
       },
     }),
     prisma.transaction.findMany({
-      where: {
+      where: scopedByUser(userId, {
         occurredAt: {
           gte: todayStart,
           lte: todayEnd,
         },
-      },
+      }),
       select: {
         id: true,
         type: true,
@@ -86,12 +93,12 @@ export async function getOverviewPageData(): Promise<OverviewPageData> {
       take: 6,
     }),
     prisma.transaction.findMany({
-      where: {
+      where: scopedByUser(userId, {
         occurredAt: {
           gte: parsedMonth.start,
           lte: parsedMonth.end,
         },
-      },
+      }),
       select: {
         type: true,
         amount: true,
@@ -127,6 +134,11 @@ export async function getOverviewPageData(): Promise<OverviewPageData> {
     ),
   );
 
+  const savingsOverview = buildSavingsOverview(
+    savingsGoals,
+    availableBalance,
+  );
+
   return {
     greeting: formatOverviewGreeting(now),
     balance: availableBalance,
@@ -143,6 +155,7 @@ export async function getOverviewPageData(): Promise<OverviewPageData> {
     }),
     upcoming: upcomingImpact,
     plansOverview,
+    savingsOverview,
     monthlySnapshot: {
       monthLabel: formatPlannerMonthLabel(monthKey),
       totalIncome: monthSummary.totalIncome,

@@ -1,10 +1,13 @@
+/** Deterministic IDR formatting — avoids Intl currency spacing mismatch between Node and browser. */
+function formatIdrDigits(amount: number): string {
+  return Math.abs(Math.round(amount))
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 export function formatIdr(amount: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  const sign = amount < 0 ? "−" : "";
+  return `${sign}Rp${formatIdrDigits(amount)}`;
 }
 
 /** Signed delta for day-over-day comparisons, e.g. +Rp285.000 or −Rp50.000. */
@@ -14,5 +17,5 @@ export function formatSignedIdrDelta(delta: number): string {
   }
 
   const sign = delta > 0 ? "+" : "−";
-  return `${sign}${formatIdr(Math.abs(delta))}`;
+  return `${sign}Rp${formatIdrDigits(delta)}`;
 }

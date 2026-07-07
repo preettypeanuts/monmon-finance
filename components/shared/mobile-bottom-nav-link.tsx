@@ -32,6 +32,8 @@ export function MobileBottomNavLink({ item, active }: MobileBottomNavLinkProps) 
         active ? MOBILE_BOTTOM_NAV_ITEM_ACTIVE : MOBILE_BOTTOM_NAV_ITEM_IDLE,
       )}
       href={item.href}
+      prefetch
+      scroll={false}
     >
       {active ? (
         <span aria-hidden className={MOBILE_BOTTOM_NAV_ACTIVE_ORB} />

@@ -58,6 +58,36 @@ export function getDefaultWallpaperId(): WallpaperId {
   return DEFAULT_WALLPAPER_ID;
 }
 
+const WALLPAPER_FILL: CSSProperties = {
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+};
+
+const GRADIENT_BACKGROUND_COLOR_SUFFIX = ", var(--background)";
+
+function getGradientWallpaperStyle(background: string): CSSProperties {
+  if (background === "var(--background)") {
+    return { backgroundColor: background };
+  }
+
+  if (background.endsWith(GRADIENT_BACKGROUND_COLOR_SUFFIX)) {
+    return {
+      backgroundColor: "var(--background)",
+      backgroundImage: background.slice(
+        0,
+        -GRADIENT_BACKGROUND_COLOR_SUFFIX.length,
+      ),
+      ...WALLPAPER_FILL,
+    };
+  }
+
+  return {
+    backgroundImage: background,
+    ...WALLPAPER_FILL,
+  };
+}
+
 export function getWallpaperBackgroundStyle(
   wallpaper: Wallpaper,
 ): CSSProperties {
@@ -65,13 +95,16 @@ export function getWallpaperBackgroundStyle(
     return {
       backgroundColor: "var(--background)",
       backgroundImage: `url("${wallpaper.background}")`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
+      ...WALLPAPER_FILL,
     };
   }
 
-  return { background: wallpaper.background };
+  return getGradientWallpaperStyle(wallpaper.background);
+}
+
+/** Full-screen wallpaper layer — longhand only (avoids React shorthand conflicts). */
+export function getWallpaperLayerStyle(wallpaper: Wallpaper): CSSProperties {
+  return getWallpaperBackgroundStyle(wallpaper);
 }
 
 export function getWallpaperPreviewStyle(
@@ -86,7 +119,7 @@ export function getWallpaperPreviewStyle(
     };
   }
 
-  return { background: wallpaper.preview };
+  return getGradientWallpaperStyle(wallpaper.preview);
 }
 
 export { isCustomWallpaperId, LEGACY_CUSTOM_WALLPAPER_ID };

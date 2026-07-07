@@ -1,10 +1,12 @@
 import { buildTodaySummary } from "@/lib/finance/build-summary";
 import { getDayRange } from "@/lib/finance/day-range";
 import { prisma } from "@/lib/db/prisma";
+import { scopedByUser } from "@/lib/db/user-scope";
 import type { ParsedTransaction } from "@/types/transaction";
 import type { TodaySummary } from "@/types/summary";
 
 interface CreateTransactionInput {
+  userId: string;
   rawInput: string;
   transaction: ParsedTransaction;
 }
@@ -14,11 +16,13 @@ function getTodayRange() {
 }
 
 export async function createTransaction({
+  userId,
   rawInput,
   transaction,
 }: CreateTransactionInput) {
   return prisma.transaction.create({
     data: {
+      userId,
       type: transaction.type,
       amount: transaction.amount,
       category: transaction.category,
@@ -29,16 +33,16 @@ export async function createTransaction({
   });
 }
 
-export async function getTodaySummary(): Promise<TodaySummary> {
+export async function getTodaySummary(userId: string): Promise<TodaySummary> {
   const { start, end } = getTodayRange();
 
   const transactions = await prisma.transaction.findMany({
-    where: {
+    where: scopedByUser(userId, {
       occurredAt: {
         gte: start,
         lte: end,
       },
-    },
+    }),
     select: {
       type: true,
       amount: true,

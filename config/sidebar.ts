@@ -1,6 +1,5 @@
 import { GLASS_SURFACE } from "@/config/glass";
 import { SEPARATED_SHELL, SEPARATED_CONTROL } from "@/config/shape";
-import { APP_GUTTER } from "@/config/spacing";
 
 /** Separated UI shape tokens — colors stay from theme. */
 export const SEPARATED_SIDEBAR_CLASS = "app-sidebar";
@@ -8,8 +7,8 @@ export const SEPARATED_SIDEBAR_CLASS = "app-sidebar";
 /** Collapsed (icon) rail width — overrides shadcn default 3rem via SidebarProvider. */
 export const SEPARATED_SIDEBAR_ICON_WIDTH = "3.75rem";
 
-/** Viewport inset for floating sidebar container — sync with globals.css. */
-export const SEPARATED_SIDEBAR_GUTTER = APP_GUTTER;
+/** Viewport inset for floating sidebar — synced with globals.css `.app-sidebar` padding. */
+export const SEPARATED_SIDEBAR_GUTTER = "";
 
 /** Outer radius — sync with globals.css and SEPARATED_SHELL. */
 export const SEPARATED_SIDEBAR_RADIUS = SEPARATED_SHELL;
@@ -28,6 +27,10 @@ export const SIDEBAR_COLLAPSED_ITEM_GAP = "0.375rem";
 /** Apple-style app icon shell (collapsed sidebar). */
 export const SIDEBAR_APP_ICON_SHELL =
   "flex size-9 shrink-0 items-center justify-center rounded-[0.7rem] bg-linear-to-b shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.14)]";
+
+/** Wang logo tile in sidebar — matches W.png matte background per theme. */
+export const SIDEBAR_APP_LOGO_SHELL =
+  "flex shrink-0 items-center justify-center overflow-hidden rounded-[0.7rem] bg-white p-1 dark:bg-black shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07),0_1px_2px_rgba(0,0,0,0.4)]";
 
 export const SIDEBAR_APP_ICON_GLYPH = "size-4 text-white drop-shadow-sm";
 

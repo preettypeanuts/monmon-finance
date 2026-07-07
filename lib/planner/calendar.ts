@@ -14,15 +14,27 @@ const MONTH_SHORT_FORMAT = new Intl.DateTimeFormat("id-ID", {
   month: "short",
 });
 
-const WEEKDAY_LABELS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"] as const;
+const WEEKDAY_LABELS = [
+  "Min",
+  "Sen",
+  "Sel",
+  "Rab",
+  "Kam",
+  "Jum",
+  "Sab",
+] as const;
 
-export { WEEKDAY_LABELS };
+const WEEKDAY_INITIALS = WEEKDAY_LABELS.map((label) => label.charAt(0));
+
+export { WEEKDAY_INITIALS, WEEKDAY_LABELS };
 
 export function toMonthKey(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
-export function parseMonthKey(monthKey: string): { year: number; month: number } | null {
+export function parseMonthKey(
+  monthKey: string,
+): { year: number; month: number } | null {
   const match = /^(\d{4})-(\d{2})$/.exec(monthKey);
   if (!match) {
     return null;
@@ -70,6 +82,17 @@ export function formatPlannerMonthLabel(monthKey: string): string {
   }
 
   return MONTH_YEAR_FORMAT.format(new Date(parsed.year, parsed.month, 1));
+}
+
+/** Month-only title for Apple-style mobile calendar (e.g. "Juli"). */
+export function formatAppleMonthTitle(monthKey: string): string {
+  const parsed = parseMonthKey(monthKey);
+  const date = parsed ? new Date(parsed.year, parsed.month, 1) : new Date();
+  const label = new Intl.DateTimeFormat("id-ID", { month: "long" }).format(
+    date,
+  );
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 /** Sunday-start calendar grid (42 days) for the given month. */

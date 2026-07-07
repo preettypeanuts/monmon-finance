@@ -8,6 +8,83 @@ datasource db {
   schemas  = ["monmon_whethertie"]
 }
 
+// ——— Better Auth (sync with lib/auth/auth.ts) ———
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  transactions    Transaction[]
+  inboxMessages   InboxMessage[]
+  categoryBudgets CategoryBudget[]
+  plannedItems    PlannedItem[]
+  plans           Plan[]
+  savingsGoals    SavingsGoal[]
+
+  @@unique([email])
+  @@map("user")
+  @@schema("monmon_whethertie")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+  @@schema("monmon_whethertie")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+  @@schema("monmon_whethertie")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+  @@schema("monmon_whethertie")
+}
+
+// ——— App data ———
+
 enum TransactionType {
   income
   expense
@@ -30,18 +107,20 @@ enum InboxMessageKind {
 }
 
 model Transaction {
-  id          String          @id @default(cuid())
-  type        TransactionType
-  amount      Int
-  category    String
-  description String
-  occurredAt  DateTime
-  rawInput    String
-  createdAt   DateTime        @default(now())
+  id           String          @id @default(cuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         TransactionType
+  amount       Int
+  category     String
+  description  String
+  occurredAt   DateTime
+  rawInput     String
+  createdAt    DateTime        @default(now())
   inboxMessage InboxMessage?
 
-  @@index([occurredAt])
-  @@index([type])
+  @@index([userId, occurredAt])
+  @@index([userId, type])
   @@schema("monmon_whethertie")
 }
 
@@ -70,40 +149,45 @@ enum BudgetLimitMode {
 }
 
 model CategoryBudget {
-  id          String          @id @default(cuid())
-  category    String
-  periodMonth String
-  limitMode   BudgetLimitMode @default(daily)
-  dailyAmount Int?
-  fixedLimit  Int?
-  dayCount    Int?
-  note        String?
-  repeatNextMonth Boolean @default(false)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        String
+  periodMonth     String
+  limitMode       BudgetLimitMode @default(daily)
+  dailyAmount     Int?
+  fixedLimit      Int?
+  dayCount        Int?
+  note            String?
+  repeatNextMonth Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  @@unique([category, periodMonth])
-  @@index([periodMonth])
+  @@unique([userId, category, periodMonth])
+  @@index([userId, periodMonth])
   @@schema("monmon_whethertie")
 }
 
 model PlannedItem {
-  id               String                 @id @default(cuid())
-  name             String
-  kind             PlannedItemKind
-  repeat           PlannedRepeatInterval  @default(monthly)
-  amount           Int
-  flowType         TransactionType        @default(expense)
-  category         String                 @default("other")
-  startAt          DateTime
-  endAt            DateTime?
-  installmentCount Int?
-  paidInstallmentCount Int @default(0)
-  note             String?
-  repeatNextMonth  Boolean                @default(false)
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
+  id                   String                @id @default(cuid())
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                 String
+  kind                 PlannedItemKind
+  repeat               PlannedRepeatInterval @default(monthly)
+  amount               Int
+  flowType             TransactionType       @default(expense)
+  category             String                @default("other")
+  startAt              DateTime
+  endAt                DateTime?
+  installmentCount     Int?
+  paidInstallmentCount Int                   @default(0)
+  note                 String?
+  repeatNextMonth      Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
+  @@index([userId])
   @@schema("monmon_whethertie")
 }
 
@@ -116,6 +200,8 @@ enum PlanStatus {
 
 model Plan {
   id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   amount    Int
   category  String     @default("shopping")
@@ -124,12 +210,38 @@ model Plan {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  @@index([status])
+  @@index([userId, status])
+  @@schema("monmon_whethertie")
+}
+
+enum SavingsGoalStatus {
+  active
+  completed
+  paused
+
+  @@schema("monmon_whethertie")
+}
+
+model SavingsGoal {
+  id           String            @id @default(cuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  targetAmount Int
+  savedAmount  Int               @default(0)
+  status       SavingsGoalStatus @default(active)
+  note         String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([userId, status])
   @@schema("monmon_whethertie")
 }
 
 model InboxMessage {
   id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   role          InboxMessageRole
   kind          InboxMessageKind @default(chat)
   content       String
@@ -139,8 +251,8 @@ model InboxMessage {
   transactionId String?          @unique
   transaction   Transaction?     @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
-  @@unique([summaryDate, kind])
-  @@index([createdAt])
-  @@index([kind])
+  @@unique([userId, summaryDate, kind])
+  @@index([userId, createdAt])
+  @@index([userId, kind])
   @@schema("monmon_whethertie")
 }

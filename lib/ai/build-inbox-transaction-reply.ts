@@ -106,6 +106,7 @@ export async function buildInboxTransactionReply(
 }
 
 export async function buildInboxTransactionReplyForParsed(
+  userId: string,
   rawInput: string,
   transaction: ParsedTransaction,
 ): Promise<string> {
@@ -114,6 +115,7 @@ export async function buildInboxTransactionReplyForParsed(
   if (transaction.type === "expense") {
     try {
       budgetStatus = await getBudgetStatusForExpense(
+        userId,
         transaction.category,
         transaction.occurredAt,
         transaction.amount,

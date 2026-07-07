@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-import { isWallpaperRoute, SOLID_PAGE_ROOT } from "@/config/page-surface";
+import { isWallpaperRoute, MOBILE_SOLID_PAGE_ROOT } from "@/config/page-surface";
 import { cn } from "@/lib/utils";
 
 interface AppContentSurfaceProps {
@@ -16,7 +16,7 @@ export function AppContentSurface({ children }: AppContentSurfaceProps) {
     <div
       className={cn(
         "relative flex min-h-0 flex-1 flex-col overflow-hidden",
-        !isWallpaperRoute(pathname) && SOLID_PAGE_ROOT,
+        !isWallpaperRoute(pathname) && MOBILE_SOLID_PAGE_ROOT,
       )}
     >
       {children}

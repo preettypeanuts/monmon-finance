@@ -5,6 +5,7 @@ import type { SubmitInboxMessageResult } from "@/app/actions/inbox";
 import { buildInboxTransactionReplyForParsed } from "@/lib/ai/build-inbox-transaction-reply";
 import { isGeminiConfigured } from "@/lib/ai/gemini-client";
 import { parseReceiptWithGemini } from "@/lib/ai/parse-receipt-gemini";
+import { requireUserId } from "@/lib/auth/session";
 import { formatInboxProcessingError } from "@/lib/chat/inbox-error";
 import { createInboxMessage } from "@/lib/db/inbox-messages";
 import { createTransaction } from "@/lib/db/transactions";
@@ -54,6 +55,7 @@ export async function submitInboxMessageFromReceipt(input: {
   merchant: string;
   occurredAt: string;
 }): Promise<SubmitInboxMessageResult> {
+  const userId = await requireUserId();
   const parsed = parseConfirmedReceiptTransaction(input);
 
   if (!parsed.ok) {
@@ -67,6 +69,7 @@ export async function submitInboxMessageFromReceipt(input: {
   );
 
   const userMessage = await createInboxMessage({
+    userId,
     role: "user",
     content: userContent,
   });
@@ -81,16 +84,19 @@ export async function submitInboxMessageFromReceipt(input: {
     };
 
     const savedTransaction = await createTransaction({
+      userId,
       rawInput: data.rawInput,
       transaction,
     });
 
     const content = await buildInboxTransactionReplyForParsed(
+      userId,
       data.rawInput,
       transaction,
     );
 
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content,
       transactionId: savedTransaction.id,
@@ -111,6 +117,7 @@ export async function submitInboxMessageFromReceipt(input: {
     const content = formatInboxProcessingError(error);
 
     const assistantMessage = await createInboxMessage({
+      userId,
       role: "assistant",
       content,
     });

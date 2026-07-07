@@ -6,6 +6,7 @@ import { MobilePageTitle } from "@/components/shared/mobile-page-title";
 import { useSyncMobileScrollChrome } from "@/components/shared/mobile-scroll-chrome-provider";
 import {
   MOBILE_CHROME_SCROLL_INSET,
+  MOBILE_FIXED_TOP_BAR_SCROLL_INSET,
   MOBILE_PAGE_SCROLL_INSET_X,
   MOBILE_SCROLL_BOTTOM_SPACER,
 } from "@/config/mobile-chrome";
@@ -16,32 +17,46 @@ interface MobileScrollSurfaceProps {
   children: React.ReactNode;
   className?: string;
   title?: string;
+  /** Fixed inbox-style top bar — no large title or global scroll chrome. */
+  fixedMobileTopBar?: boolean;
 }
 
 export function MobileScrollSurface({
   children,
   className,
   title,
+  fixedMobileTopBar = false,
 }: MobileScrollSurfaceProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const syncGlobalChrome = Boolean(title) && !fixedMobileTopBar;
+  const showLargeTitle = Boolean(title);
   const { showBlur, showCompactTitle } = useMobileLargeTitleScroll(
     () => scrollRef.current,
     titleRef,
+    { enabled: syncGlobalChrome },
   );
 
-  useSyncMobileScrollChrome(title, showBlur, showCompactTitle);
+  useSyncMobileScrollChrome(
+    syncGlobalChrome ? title : undefined,
+    showBlur,
+    showCompactTitle,
+  );
+
+  const scrollInset = fixedMobileTopBar
+    ? showLargeTitle
+      ? MOBILE_CHROME_SCROLL_INSET
+      : MOBILE_FIXED_TOP_BAR_SCROLL_INSET
+    : MOBILE_CHROME_SCROLL_INSET;
 
   return (
     <div
       ref={scrollRef}
-      className={cn(
-        MOBILE_PAGE_SCROLL_INSET_X,
-        MOBILE_CHROME_SCROLL_INSET,
-        className,
-      )}
+      className={cn(MOBILE_PAGE_SCROLL_INSET_X, scrollInset, className)}
     >
-      {title ? <MobilePageTitle ref={titleRef}>{title}</MobilePageTitle> : null}
+      {showLargeTitle ? (
+        <MobilePageTitle ref={titleRef}>{title}</MobilePageTitle>
+      ) : null}
       {children}
       <div aria-hidden className={MOBILE_SCROLL_BOTTOM_SPACER} />
     </div>

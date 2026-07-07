@@ -5,6 +5,7 @@ import {
   toNextMonthBudgetInput,
 } from "@/lib/db/budget-repeat";
 import { prisma } from "@/lib/db/prisma";
+import { scopedByUser, scopedId } from "@/lib/db/user-scope";
 import { buildBudgetStatus } from "@/lib/finance/compute-budget-status";
 import {
   getMonthRange,
@@ -53,12 +54,13 @@ function mapBudget(record: {
   };
 }
 
-/** Only manual Inbox chat expenses reduce budget spent. */
 function buildInboxManualExpenseWhere(
+  userId: string,
   start: Date,
   end: Date,
 ): Prisma.TransactionWhereInput {
   return {
+    userId,
     type: "expense",
     occurredAt: {
       gte: start,
@@ -71,6 +73,7 @@ function buildInboxManualExpenseWhere(
 }
 
 async function getCategorySpentMap(
+  userId: string,
   periodMonth: string,
 ): Promise<Map<string, number>> {
   const parsed = parseMonthKey(periodMonth);
@@ -81,7 +84,7 @@ async function getCategorySpentMap(
   const { start, end } = getMonthRange(parsed.year, parsed.month);
   const rows = await prisma.transaction.groupBy({
     by: ["category"],
-    where: buildInboxManualExpenseWhere(start, end),
+    where: buildInboxManualExpenseWhere(userId, start, end),
     _sum: {
       amount: true,
     },
@@ -97,11 +100,13 @@ async function getCategorySpentMap(
 }
 
 async function provisionRepeatingBudgetsFromPreviousMonth(
+  userId: string,
   periodMonth: string,
 ): Promise<void> {
   const previousMonth = shiftMonthKey(periodMonth, -1);
   const repeating = await prisma.categoryBudget.findMany({
     where: {
+      userId,
       periodMonth: previousMonth,
       repeatNextMonth: true,
     },
@@ -115,12 +120,14 @@ async function provisionRepeatingBudgetsFromPreviousMonth(
   for (const source of repeating) {
     await prisma.categoryBudget.upsert({
       where: {
-        category_periodMonth: {
+        userId_category_periodMonth: {
+          userId,
           category: source.category,
           periodMonth,
         },
       },
       create: {
+        userId,
         category: source.category,
         periodMonth,
         limitMode: source.limitMode,
@@ -136,6 +143,7 @@ async function provisionRepeatingBudgetsFromPreviousMonth(
 }
 
 async function syncNextMonthBudget(
+  userId: string,
   input: CategoryBudgetFormInput,
 ): Promise<void> {
   const nextPeriodMonth = shiftMonthKey(input.periodMonth, 1);
@@ -144,12 +152,16 @@ async function syncNextMonthBudget(
     const nextInput = toNextMonthBudgetInput(input, nextPeriodMonth);
     await prisma.categoryBudget.upsert({
       where: {
-        category_periodMonth: {
+        userId_category_periodMonth: {
+          userId,
           category: input.category,
           periodMonth: nextPeriodMonth,
         },
       },
-      create: toBudgetWriteData(nextInput),
+      create: {
+        userId,
+        ...toBudgetWriteData(nextInput),
+      },
       update: toBudgetWriteData(nextInput),
     });
     return;
@@ -157,6 +169,7 @@ async function syncNextMonthBudget(
 
   await prisma.categoryBudget.updateMany({
     where: {
+      userId,
       category: input.category,
       periodMonth: nextPeriodMonth,
     },
@@ -167,17 +180,18 @@ async function syncNextMonthBudget(
 }
 
 export async function listBudgetsForMonth(
+  userId: string,
   periodMonth: string,
 ): Promise<BudgetStatus[]> {
-  await provisionRepeatingBudgetsFromPreviousMonth(periodMonth);
+  await provisionRepeatingBudgetsFromPreviousMonth(userId, periodMonth);
 
   const [budgets, spentMap] = await Promise.all([
     prisma.categoryBudget.findMany({
-      where: { periodMonth },
+      where: { userId, periodMonth },
       select: BUDGET_SELECT,
       orderBy: { category: "asc" },
     }),
-    getCategorySpentMap(periodMonth),
+    getCategorySpentMap(userId, periodMonth),
   ]);
 
   return budgets.map((budget) =>
@@ -186,13 +200,15 @@ export async function listBudgetsForMonth(
 }
 
 export async function getBudgetForCategory(
+  userId: string,
   category: string,
   periodMonth: string,
   additionalSpent = 0,
 ): Promise<{ budget: CategoryBudgetRecord; status: BudgetStatus } | null> {
   const budget = await prisma.categoryBudget.findUnique({
     where: {
-      category_periodMonth: {
+      userId_category_periodMonth: {
+        userId,
         category,
         periodMonth,
       },
@@ -212,7 +228,7 @@ export async function getBudgetForCategory(
   const { start, end } = getMonthRange(parsed.year, parsed.month);
   const rows = await prisma.transaction.groupBy({
     by: ["category"],
-    where: buildInboxManualExpenseWhere(start, end),
+    where: buildInboxManualExpenseWhere(userId, start, end),
     _sum: {
       amount: true,
     },
@@ -234,35 +250,43 @@ export async function getBudgetForCategory(
 }
 
 export async function createCategoryBudget(
+  userId: string,
   input: CategoryBudgetFormInput,
 ): Promise<CategoryBudgetRecord> {
   const created = await prisma.categoryBudget.create({
-    data: toBudgetWriteData(input),
+    data: {
+      userId,
+      ...toBudgetWriteData(input),
+    },
     select: BUDGET_SELECT,
   });
 
-  await syncNextMonthBudget(input);
+  await syncNextMonthBudget(userId, input);
 
   return mapBudget(created);
 }
 
 export async function updateCategoryBudget(
+  userId: string,
   id: string,
   input: CategoryBudgetFormInput,
 ): Promise<CategoryBudgetRecord> {
   const updated = await prisma.categoryBudget.update({
-    where: { id },
+    where: scopedId(userId, id),
     data: toBudgetWriteData(input),
     select: BUDGET_SELECT,
   });
 
-  await syncNextMonthBudget(input);
+  await syncNextMonthBudget(userId, input);
 
   return mapBudget(updated);
 }
 
-export async function deleteCategoryBudget(id: string): Promise<void> {
+export async function deleteCategoryBudget(
+  userId: string,
+  id: string,
+): Promise<void> {
   await prisma.categoryBudget.delete({
-    where: { id },
+    where: scopedId(userId, id),
   });
 }

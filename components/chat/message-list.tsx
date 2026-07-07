@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ChatMessageMenu } from "@/components/chat/chat-message-menu";
 import { ChatMessageRetryButton } from "@/components/chat/chat-message-retry-button";
@@ -9,12 +9,17 @@ import { MessageTimestamp } from "@/components/chat/message-timestamp";
 import { TransactionPreview } from "@/components/chat/transaction-preview";
 import { MobilePageTitle } from "@/components/shared/mobile-page-title";
 import { useSyncMobileScrollChrome } from "@/components/shared/mobile-scroll-chrome-provider";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   CHAT_MESSAGE_INSET_BOTTOM,
   CHAT_MESSAGE_INSET_TOP,
   CHAT_MESSAGE_INSET_X,
+  INBOX_MESSAGE_SCROLL_AREA,
 } from "@/config/chat-layout";
+import {
+  INBOX_DESKTOP_MESSAGE_PB,
+  INBOX_DESKTOP_MESSAGE_PT,
+  INBOX_DESKTOP_MESSAGE_SCROLL_PADDING,
+} from "@/config/inbox-desktop";
 import { INBOX_MESSAGE_CONTENT_INSET } from "@/config/inbox-mobile";
 import { MOBILE_CHROME_SCROLL_INSET_TOP } from "@/config/mobile-chrome";
 import { STACK_GAP } from "@/config/spacing";
@@ -31,13 +36,10 @@ interface MessageListProps {
   onUndoMessage?: (userMessageId: string) => Promise<void>;
   actionsDisabled?: boolean;
   fixedMobileTopBar?: boolean;
+  className?: string;
 }
 
-function resolveScrollViewport(
-  root: HTMLDivElement | null,
-): HTMLElement | null {
-  return root?.querySelector('[data-slot="scroll-area-viewport"]') ?? null;
-}
+const SCROLLBAR_IDLE_MS = 700;
 
 export function MessageList({
   messages,
@@ -46,12 +48,15 @@ export function MessageList({
   onUndoMessage,
   actionsDisabled = false,
   fixedMobileTopBar = false,
+  className,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRootRef = useRef<HTMLDivElement>(null);
+  const scrollIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const { showBlur, showCompactTitle } = useMobileLargeTitleScroll(
-    () => resolveScrollViewport(scrollRootRef.current),
+    () => scrollRootRef.current,
     titleRef,
     { enabled: !fixedMobileTopBar },
   );
@@ -66,8 +71,38 @@ export function MessageList({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    const element = scrollRootRef.current;
+    if (!element) {
+      return;
+    }
+
+    function handleScroll() {
+      setIsScrolling(true);
+      if (scrollIdleRef.current) {
+        clearTimeout(scrollIdleRef.current);
+      }
+      scrollIdleRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, SCROLLBAR_IDLE_MS);
+    }
+
+    element.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      element.removeEventListener("scroll", handleScroll);
+      if (scrollIdleRef.current) {
+        clearTimeout(scrollIdleRef.current);
+      }
+    };
+  }, []);
+
   const contentClassName = fixedMobileTopBar
-    ? INBOX_MESSAGE_CONTENT_INSET
+    ? cn(
+        INBOX_MESSAGE_CONTENT_INSET,
+        INBOX_DESKTOP_MESSAGE_PT,
+        INBOX_DESKTOP_MESSAGE_PB,
+      )
     : cn(
         CHAT_MESSAGE_INSET_X,
         MOBILE_CHROME_SCROLL_INSET_TOP,
@@ -76,9 +111,17 @@ export function MessageList({
       );
 
   return (
-    <div ref={scrollRootRef} className="h-full min-h-0">
-      <ScrollArea className="h-full min-h-0">
-        {messages.length === 0 ? (
+    <div
+      ref={scrollRootRef}
+      className={cn(
+        INBOX_MESSAGE_SCROLL_AREA,
+        "h-full min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
+        INBOX_DESKTOP_MESSAGE_SCROLL_PADDING,
+        isScrolling && "is-scrolling",
+        className,
+      )}
+    >
+      {messages.length === 0 ? (
           <div
             className={cn(
               "flex min-h-full flex-col text-center",
@@ -158,7 +201,6 @@ export function MessageList({
             <div ref={bottomRef} />
           </div>
         )}
-      </ScrollArea>
     </div>
   );
 }

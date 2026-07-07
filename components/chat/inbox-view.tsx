@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 
 import {
+  checkSavingsGoalFromInboxAction,
   markPlanDoneFromInboxAction,
   payPayPlanFromInboxAction,
   retryInboxMessageAction,
@@ -19,10 +20,13 @@ import { ChatReceiptDropOverlay } from "@/components/chat/chat-receipt-drop-over
 import { ChatReceiptProcessingOverlay } from "@/components/chat/chat-receipt-processing-overlay";
 import { MessageList } from "@/components/chat/message-list";
 import { ReceiptConfirmDialog } from "@/components/chat/receipt-confirm-dialog";
+import { FixedViewportPortal } from "@/components/shared/fixed-viewport-portal";
 import type { TransactionCategoryId } from "@/config/categories";
 import { CHAT_INPUT_DOCK } from "@/config/chat-layout";
+import { INBOX_CHAT_VIEW_ROOT } from "@/config/inbox-desktop";
 import { INBOX_CHAT_INPUT_DOCK } from "@/config/inbox-mobile";
 import { buildReceiptManualFallbackNotice } from "@/lib/ai/format-gemini-api-error";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import {
   getReceiptImageFromDataTransfer,
   hasReceiptImageInDataTransfer,
@@ -34,6 +38,7 @@ import {
 } from "@/lib/receipt/process-receipt-image";
 import type {
   ActivePlanChatItem,
+  ActiveSavingsChatItem,
   ChatMessage,
   UnpaidPayPlanChatItem,
 } from "@/types/chat";
@@ -44,6 +49,7 @@ interface InboxViewProps {
   initialMessages: ChatMessage[];
   unpaidPayPlanItems: UnpaidPayPlanChatItem[];
   activePlanItems: ActivePlanChatItem[];
+  activeSavingsItems: ActiveSavingsChatItem[];
   fixedMobileTopBar?: boolean;
 }
 
@@ -55,9 +61,11 @@ export function InboxView({
   initialMessages,
   unpaidPayPlanItems,
   activePlanItems,
+  activeSavingsItems,
   fixedMobileTopBar = false,
 }: InboxViewProps) {
   const router = useRouter();
+  const isMobileViewport = useIsMobileViewport();
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isProcessing, setIsProcessing] = useState(false);
   const [draftText, setDraftText] = useState<string | null>(null);
@@ -430,16 +438,89 @@ export function InboxView({
     }
   }
 
+  async function handleCheckSavings(item: ActiveSavingsChatItem) {
+    const pendingUserId = createPendingId();
+    const pendingAssistantId = createPendingId();
+    const optimisticUser: ChatMessage = {
+      id: pendingUserId,
+      role: "user",
+      content: `cek tabungan ${item.name}`,
+      createdAt: new Date().toISOString(),
+    };
+    const optimisticAssistant: ChatMessage = {
+      id: pendingAssistantId,
+      role: "assistant",
+      content: "Memuat tabungan...",
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((current) => [...current, optimisticUser, optimisticAssistant]);
+    setIsProcessing(true);
+
+    try {
+      const result = await checkSavingsGoalFromInboxAction(item.id);
+
+      setMessages((current) => [
+        ...current.filter(
+          (message) =>
+            message.id !== pendingUserId && message.id !== pendingAssistantId,
+        ),
+        result.userMessage,
+        result.assistantMessage,
+      ]);
+
+      router.refresh();
+    } catch {
+      setMessages((current) =>
+        current.filter(
+          (message) =>
+            message.id !== pendingUserId && message.id !== pendingAssistantId,
+        ),
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  const chatInputDockClass = fixedMobileTopBar
+    ? INBOX_CHAT_INPUT_DOCK
+    : CHAT_INPUT_DOCK;
+  const pinInputToViewport = fixedMobileTopBar && isMobileViewport;
+
+  const chatInputDock = (
+    <div className={chatInputDockClass}>
+      {receiptError ? (
+        <p className="mb-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {receiptError}
+        </p>
+      ) : null}
+      <ChatInput
+        onSubmit={handleSubmit}
+        onReceiptFile={handleReceiptFile}
+        onPayPlan={handlePayPlan}
+        onMarkPlanDone={handleMarkPlanDone}
+        onCheckSavings={handleCheckSavings}
+        unpaidPayPlanItems={unpaidPayPlanItems}
+        activePlanItems={activePlanItems}
+        activeSavingsItems={activeSavingsItems}
+        disabled={isProcessing || isParsingReceipt}
+        draftText={draftText}
+        onDraftTextApplied={handleDraftTextApplied}
+      />
+    </div>
+  );
+
   return (
     <section
       aria-label="Inbox chat"
-      className="relative h-full min-h-0 w-full flex-1 overflow-hidden"
+      className={INBOX_CHAT_VIEW_ROOT}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={(event) => void handleDrop(event)}
     >
       <MessageList
+        className="min-h-0 flex-1"
         fixedMobileTopBar={fixedMobileTopBar}
         messages={messages}
         onRetry={handleRetry}
@@ -449,26 +530,11 @@ export function InboxView({
       />
       <ChatReceiptDropOverlay visible={isDraggingReceipt} />
       <ChatReceiptProcessingOverlay visible={isParsingReceipt} />
-      <div
-        className={fixedMobileTopBar ? INBOX_CHAT_INPUT_DOCK : CHAT_INPUT_DOCK}
-      >
-        {receiptError ? (
-          <p className="mb-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            {receiptError}
-          </p>
-        ) : null}
-        <ChatInput
-          onSubmit={handleSubmit}
-          onReceiptFile={handleReceiptFile}
-          onPayPlan={handlePayPlan}
-          onMarkPlanDone={handleMarkPlanDone}
-          unpaidPayPlanItems={unpaidPayPlanItems}
-          activePlanItems={activePlanItems}
-          disabled={isProcessing || isParsingReceipt}
-          draftText={draftText}
-          onDraftTextApplied={handleDraftTextApplied}
-        />
-      </div>
+      {pinInputToViewport ? (
+        <FixedViewportPortal>{chatInputDock}</FixedViewportPortal>
+      ) : (
+        chatInputDock
+      )}
 
       <ReceiptConfirmDialog
         open={isReceiptConfirmOpen}

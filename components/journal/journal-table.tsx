@@ -5,6 +5,11 @@ import { useState } from "react";
 import { JournalEntryDetailDialog } from "@/components/journal/journal-entry-detail-dialog";
 import { JournalEntryRow } from "@/components/journal/journal-entry-row";
 import {
+  JOURNAL_DESKTOP_LIST_CONTAINER,
+  JOURNAL_DESKTOP_LIST_FRAME,
+  JOURNAL_DESKTOP_LIST_SCROLL,
+} from "@/config/journal-desktop";
+import {
   JOURNAL_EMPTY_STATE_MOBILE,
   JOURNAL_LIST_CONTAINER_MOBILE,
   JOURNAL_LIST_FRAME_MOBILE,
@@ -53,9 +58,21 @@ export function JournalTable({ items }: JournalTableProps) {
 
   return (
     <>
-      <div className={cn(JOURNAL_LIST_CONTAINER, JOURNAL_LIST_CONTAINER_MOBILE)}>
-        <div className={cn(JOURNAL_LIST_FRAME, JOURNAL_LIST_FRAME_MOBILE)}>
-          <div className={JOURNAL_LIST_SCROLL}>
+      <div
+        className={cn(
+          JOURNAL_LIST_CONTAINER,
+          JOURNAL_LIST_CONTAINER_MOBILE,
+          JOURNAL_DESKTOP_LIST_CONTAINER,
+        )}
+      >
+        <div
+          className={cn(
+            JOURNAL_LIST_FRAME,
+            JOURNAL_LIST_FRAME_MOBILE,
+            JOURNAL_DESKTOP_LIST_FRAME,
+          )}
+        >
+          <div className={cn(JOURNAL_LIST_SCROLL, JOURNAL_DESKTOP_LIST_SCROLL)}>
             {groups.map((group) => (
               <section key={group.dayKey} className={JOURNAL_LIST_SECTION}>
                 <h2 className={JOURNAL_LIST_SECTION_LABEL}>{group.label}</h2>

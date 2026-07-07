@@ -1,21 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { PlannerCalendarDay } from "@/components/planner/planner-calendar-day";
 import { PlannerCalendarDayDialog } from "@/components/planner/planner-calendar-day-dialog";
 import { PlannerCalendarHeader } from "@/components/planner/planner-calendar-header";
+import { PlannerCalendarMobile } from "@/components/planner/planner-calendar-mobile";
 import { PlannerCalendarSummary } from "@/components/planner/planner-calendar-summary";
 import { PlannerCalendarUpcoming } from "@/components/planner/planner-calendar-upcoming";
+import {
+  PAYPLAN_CALENDAR_FRAME_MOBILE,
+  PAYPLAN_MOBILE_PAYMENT_SUMMARY,
+} from "@/config/payplan-mobile";
 import {
   PLANNER_CALENDAR_FRAME,
   PLANNER_CALENDAR_GRID,
   PLANNER_CALENDAR_WEEKDAY,
   PLANNER_CALENDAR_WEEKDAY_HEADER,
 } from "@/config/planner-calendar";
-import { PAYPLAN_CALENDAR_FRAME_MOBILE } from "@/config/payplan-mobile";
 import { STACK_GAP } from "@/config/spacing";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { toDayKey } from "@/lib/finance/day-range";
 import {
   getCalendarGridDays,
@@ -54,6 +59,7 @@ export function PlannerCalendar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isMobile = useIsMobileViewport();
   const [selectedDayKey, setSelectedDayKey] = useState(initialDayKey);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -139,17 +145,45 @@ export function PlannerCalendar({
   }
 
   return (
-    <div className={cn("flex flex-col pb-3", STACK_GAP)}>
-      <PlannerCalendarHeader
+    <div className={cn("flex flex-col", STACK_GAP, "max-md:gap-0 md:pb-3")}>
+      <div className="hidden md:block">
+        <PlannerCalendarHeader
+          monthKey={monthKey}
+          onPrevious={() => navigateMonth(shiftMonthKey(monthKey, -1))}
+          onToday={goToToday}
+          onNext={() => navigateMonth(shiftMonthKey(monthKey, 1))}
+        />
+      </div>
+
+      <PlannerCalendarSummary
+        className={cn(isMobile && PAYPLAN_MOBILE_PAYMENT_SUMMARY)}
+        items={normalizedItems}
+        manageLayout={isMobile ? "table" : "cards"}
         monthKey={monthKey}
-        onPrevious={() => navigateMonth(shiftMonthKey(monthKey, -1))}
-        onToday={goToToday}
-        onNext={() => navigateMonth(shiftMonthKey(monthKey, 1))}
       />
 
-      <PlannerCalendarSummary items={normalizedItems} monthKey={monthKey} />
+      <div className="md:hidden">
+        <PlannerCalendarMobile
+          monthKey={monthKey}
+          year={year}
+          month={month}
+          gridDays={gridDays}
+          itemsByDay={itemsByDay}
+          selectedDayKey={selectedDayKey}
+          onSelectDay={selectDay}
+          onPreviousMonth={() => navigateMonth(shiftMonthKey(monthKey, -1))}
+          onNextMonth={() => navigateMonth(shiftMonthKey(monthKey, 1))}
+          onToday={goToToday}
+        />
+      </div>
 
-      <section className={cn(PLANNER_CALENDAR_FRAME, PAYPLAN_CALENDAR_FRAME_MOBILE)}>
+      <section
+        className={cn(
+          PLANNER_CALENDAR_FRAME,
+          PAYPLAN_CALENDAR_FRAME_MOBILE,
+          "hidden md:block",
+        )}
+      >
         <div className="grid grid-cols-7 border-b border-black/8 dark:border-white/10">
           {WEEKDAY_LABELS.map((label) => (
             <div key={label} className={PLANNER_CALENDAR_WEEKDAY_HEADER}>
@@ -184,11 +218,13 @@ export function PlannerCalendar({
         totalAmount={selectedTotal}
       />
 
-      <PlannerCalendarUpcoming
-        date={selectedDate}
-        items={selectedItems}
-        totalAmount={selectedTotal}
-      />
+      <div className="hidden md:block">
+        <PlannerCalendarUpcoming
+          date={selectedDate}
+          items={selectedItems}
+          totalAmount={selectedTotal}
+        />
+      </div>
     </div>
   );
 }

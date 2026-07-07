@@ -1,27 +1,44 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { useWallpaper } from "@/components/shared/wallpaper-provider";
-import { getWallpaperBackgroundStyle } from "@/lib/wallpaper/resolve-wallpaper";
+import { isWallpaperRoute } from "@/config/page-surface";
+import { PWA_FULLSCREEN_BLEED, PWA_WALLPAPER_MASK } from "@/config/pwa";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
+import { cn } from "@/lib/utils";
+import { getWallpaperLayerStyle } from "@/lib/wallpaper/resolve-wallpaper";
 
 export function WallpaperBackground() {
+  const pathname = usePathname();
+  const isMobile = useIsMobileViewport();
   const { wallpaper, maskOpacity, maskColor } = useWallpaper();
+
+  if (isMobile && !isWallpaperRoute(pathname)) {
+    return null;
+  }
 
   return (
     <>
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10 transition-[background,background-image] duration-500 ease-out"
-        style={getWallpaperBackgroundStyle(wallpaper)}
+        className={cn(
+          "pointer-events-none transition-[background-color,background-image] duration-500 ease-out",
+          PWA_FULLSCREEN_BLEED,
+        )}
+        style={getWallpaperLayerStyle(wallpaper)}
       />
-      <div
-        aria-hidden
-        className={
-          maskColor === "black"
-            ? "pointer-events-none fixed inset-0 -z-10 bg-black transition-opacity duration-300"
-            : "pointer-events-none fixed inset-0 -z-10 bg-white transition-opacity duration-300"
-        }
-        style={{ opacity: maskOpacity / 100 }}
-      />
+      {maskOpacity > 0 ? (
+        <div
+          aria-hidden
+          className={cn(
+            maskColor === "black" ? "bg-black" : "bg-white",
+            PWA_WALLPAPER_MASK,
+            "pointer-events-none transition-opacity duration-300",
+          )}
+          style={{ opacity: maskOpacity / 100 }}
+        />
+      ) : null}
     </>
   );
 }

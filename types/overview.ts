@@ -1,4 +1,5 @@
 import type { PlansOverview, PlansUpcomingImpactItem } from "@/types/plan";
+import type { SavingsOverview } from "@/types/savings-goal";
 import type { TodaySummary } from "@/types/summary";
 
 export type OverviewAlertTone = "warning" | "danger" | "info";
@@ -51,6 +52,7 @@ export interface OverviewPageData {
   alerts: OverviewAlert[];
   upcoming: PlansUpcomingImpactItem[];
   plansOverview: PlansOverview;
+  savingsOverview: SavingsOverview;
   monthlySnapshot: OverviewMonthlySnapshot;
   todaySummary: TodaySummary;
   todayActivity: OverviewActivityItem[];

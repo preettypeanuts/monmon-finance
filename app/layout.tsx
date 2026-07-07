@@ -1,47 +1,111 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import Script from "next/script";
 import { cookies } from "next/headers";
-import { APP_NAME } from "@/config/app";
+import { APP_DESCRIPTION, APP_NAME } from "@/config/app";
+import {
+  PWA_APPLE_TOUCH_ICON_DARK,
+  PWA_APPLE_TOUCH_ICON_LIGHT,
+  PWA_ICON_192,
+  PWA_ICON_512,
+} from "@/config/pwa";
+import { createAppleTouchIconBootstrapScript } from "@/lib/pwa/apple-touch-icon";
 import "./globals.css";
+import { AppThemeProvider } from "@/components/providers/app-theme-provider";
 import { AppShell } from "@/components/shared/app-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { createRootAppearanceBootstrapScript } from "@/lib/appearance/bootstrap-script";
 import { readServerAppearance } from "@/lib/appearance/cookies";
 import { readServerSidebarOpen } from "@/lib/sidebar/cookies";
 import { cn } from "@/lib/utils";
 
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
+});
+
+function resolveMetadataBase(): URL | undefined {
+  const url = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
+  return url ? new URL(url) : undefined;
+}
+
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: "AI-powered finance tracking with chat input",
+  description: APP_DESCRIPTION,
+  metadataBase: resolveMetadataBase(),
+  icons: {
+    icon: [
+      { url: PWA_ICON_192, sizes: "192x192", type: "image/png" },
+      { url: PWA_ICON_512, sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      {
+        url: PWA_APPLE_TOUCH_ICON_LIGHT,
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: PWA_APPLE_TOUCH_ICON_DARK,
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: APP_NAME,
+    statusBarStyle: "black-translucent",
+  },
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+interface RootLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default async function RootLayout({ children }: RootLayoutProps) {
   const cookieStore = await cookies();
   const appearance = readServerAppearance(cookieStore);
   const sidebarOpen = readServerSidebarOpen(cookieStore);
 
   return (
     <html
-      lang="en"
-      suppressHydrationWarning
-      data-accent={appearance.accentId}
-      data-wallpaper="default"
+      lang="id"
       className={cn(
-        "h-full font-sans antialiased",
+        "h-full antialiased",
+        inter.variable,
         appearance.resolvedDark && "dark",
       )}
+      data-accent={appearance.accentId}
+      data-wallpaper="default"
+      suppressHydrationWarning
     >
-      <body className="h-svh overflow-hidden bg-transparent">
-        <TooltipProvider>
-          <AppShell
-            initialAppearance={appearance}
-            initialSidebarOpen={sidebarOpen}
-          >
-            {children}
-          </AppShell>
-        </TooltipProvider>
+      <body
+        className="flex h-svh max-h-svh flex-col overflow-hidden font-sans"
+        suppressHydrationWarning
+      >
+        <Script
+          id="monmon-bootstrap"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `${createRootAppearanceBootstrapScript()}\n${createAppleTouchIconBootstrapScript()}`,
+          }}
+        />
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <AppThemeProvider initialAppearance={appearance}>
+            <TooltipProvider>
+              <AppShell initialSidebarOpen={sidebarOpen}>{children}</AppShell>
+            </TooltipProvider>
+          </AppThemeProvider>
+        </div>
       </body>
     </html>
   );

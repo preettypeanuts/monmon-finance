@@ -1,5 +1,5 @@
 {
-  "name": "monmon-app",
+  "name": "wang-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,10 +8,12 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
+    "pwa:icons": "node scripts/generate-pwa-icons.mjs",
     "postinstall": "prisma generate",
     "db:init": "node scripts/init-db.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:seed-demo": "npx tsx scripts/seed-demo-user.ts",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio"
   },
@@ -22,6 +24,7 @@
     "@google/genai": "^2.10.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
@@ -43,6 +46,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "prisma": "^7.8.0",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

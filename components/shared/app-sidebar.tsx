@@ -7,6 +7,7 @@ import { SidebarAppIcon } from "@/components/shared/sidebar-app-icon";
 import { SidebarBrandButton } from "@/components/shared/sidebar-brand-button";
 import { SidebarCollapsedDock } from "@/components/shared/sidebar-collapsed-dock";
 import { SidebarCollapseTrigger } from "@/components/shared/sidebar-collapse-trigger";
+import { SidebarProfileButton } from "@/components/shared/sidebar-profile-button";
 import { SidebarSettingsButton } from "@/components/shared/sidebar-settings-button";
 import {
   SEPARATED_MENU_ITEM,
@@ -78,13 +79,14 @@ export function AppSidebar() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+                  <SidebarSettingsButton />
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="gap-0 p-0">
             <SidebarMenu>
-              <SidebarSettingsButton />
+              <SidebarProfileButton />
             </SidebarMenu>
           </SidebarFooter>
         </>

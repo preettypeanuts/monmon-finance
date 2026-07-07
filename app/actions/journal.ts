@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireUserId } from "@/lib/auth/session";
 import {
   deleteJournalTransaction,
   updateJournalTransaction,
 } from "@/lib/db/journal";
 import { prisma } from "@/lib/db/prisma";
+import { scopedId } from "@/lib/db/user-scope";
 import { parseJournalEntryFormData } from "@/lib/validations/journal-entry";
 import type { JournalEntry } from "@/types/journal";
 
@@ -31,6 +33,7 @@ function revalidateJournal() {
 export async function saveJournalEntryAction(
   formData: FormData,
 ): Promise<JournalActionResult> {
+  const userId = await requireUserId();
   const idValue = formData.get("id");
   const id = typeof idValue === "string" ? idValue.trim() : "";
 
@@ -39,7 +42,7 @@ export async function saveJournalEntryAction(
   }
 
   const existing = await prisma.transaction.findUnique({
-    where: { id },
+    where: scopedId(userId, id),
     select: { occurredAt: true },
   });
 
@@ -53,7 +56,7 @@ export async function saveJournalEntryAction(
     return parsed;
   }
 
-  const entry = await updateJournalTransaction(id, parsed.data);
+  const entry = await updateJournalTransaction(userId, id, parsed.data);
   revalidateJournal();
 
   return { ok: true, entry };
@@ -62,6 +65,7 @@ export async function saveJournalEntryAction(
 export async function deleteJournalEntryAction(
   id: string,
 ): Promise<{ ok: true } | JournalActionFailure> {
+  const userId = await requireUserId();
   const trimmed = id.trim();
 
   if (!trimmed) {
@@ -69,7 +73,7 @@ export async function deleteJournalEntryAction(
   }
 
   try {
-    await deleteJournalTransaction(trimmed);
+    await deleteJournalTransaction(userId, trimmed);
     revalidateJournal();
     return { ok: true };
   } catch {

@@ -12,6 +12,7 @@ import {
   MOBILE_TOP_BAR_INBOX_BUTTON,
   MOBILE_TOP_BAR_ROOT,
   MOBILE_TOP_BAR_ROW,
+  shouldHideMobileScrollChrome,
   shouldShowMobileInboxButton,
 } from "@/config/mobile-chrome";
 import { PAYPLAN_ROUTE } from "@/config/navigation";
@@ -24,6 +25,10 @@ export function MobileScrollChrome() {
   const snapshot = useMobileScrollChromeSnapshot();
   const showInbox = shouldShowMobileInboxButton(pathname);
   const showPayplanTabs = pathname === PAYPLAN_ROUTE || pathname.startsWith(`${PAYPLAN_ROUTE}/`);
+
+  if (shouldHideMobileScrollChrome(pathname)) {
+    return null;
+  }
 
   if (!snapshot && !showInbox && !showPayplanTabs) {
     return null;

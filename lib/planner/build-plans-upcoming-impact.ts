@@ -23,12 +23,13 @@ function formatDaysUntilLabel(daysUntil: number): string {
 }
 
 export async function getPlansUpcomingImpact(
+  userId: string,
   referenceDate: Date = new Date(),
   horizonDays = DEFAULT_HORIZON_DAYS,
 ): Promise<PlansUpcomingImpactItem[]> {
   const today = startOfDay(referenceDate);
   const rangeEnd = addDays(today, horizonDays);
-  const plannedItems = await getPlannedItemsForExpansion();
+  const plannedItems = await getPlannedItemsForExpansion(userId);
 
   return plannedItems
     .filter((item) => item.flowType === "expense")

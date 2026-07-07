@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { HeartIcon, ReceiptIcon } from "@/lib/icons";
+import { HeartIcon, ReceiptIcon, WalletIcon } from "@/lib/icons";
 
 import {
   CHAT_SLASH_MENU,
@@ -12,6 +12,7 @@ import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
 import type {
   ActivePlanChatItem,
+  ActiveSavingsChatItem,
   ChatSlashEntry,
   UnpaidPayPlanChatItem,
 } from "@/types/chat";
@@ -19,6 +20,7 @@ import type {
 interface ChatSlashMenuProps {
   payPlanItems: UnpaidPayPlanChatItem[];
   planItems: ActivePlanChatItem[];
+  savingsItems: ActiveSavingsChatItem[];
   entries: ChatSlashEntry[];
   highlightedIndex: number;
   onHighlight: (index: number) => void;
@@ -48,6 +50,7 @@ function SlashMenuSection({
 export function ChatSlashMenu({
   payPlanItems,
   planItems,
+  savingsItems,
   entries,
   highlightedIndex,
   onHighlight,
@@ -155,9 +158,58 @@ export function ChatSlashMenu({
         </SlashMenuSection>
       ) : null}
 
+      {savingsItems.length > 0 ? (
+        <SlashMenuSection
+          title="Tabungan aktif"
+          description="Cek detail tabungan."
+        >
+          {savingsItems.map((item) => {
+            const entryIndex = entries.findIndex(
+              (entry) => entry.kind === "savings" && entry.item.id === item.id,
+            );
+
+            if (entryIndex === -1) {
+              return null;
+            }
+
+            return (
+              <button
+                key={`savings-${item.id}`}
+                type="button"
+                role="option"
+                aria-selected={entryIndex === highlightedIndex}
+                className={cn(
+                  CHAT_SLASH_MENU_ITEM,
+                  entryIndex === highlightedIndex && CHAT_SLASH_MENU_ITEM_ACTIVE,
+                )}
+                onMouseEnter={() => onHighlight(entryIndex)}
+                onClick={() => onSelect({ kind: "savings", item })}
+              >
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#007AFF]/15 text-[#007AFF] dark:bg-[#007AFF]/20">
+                  <WalletIcon className="size-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="truncate text-sm font-semibold text-foreground/90">
+                      {item.name}
+                    </span>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                      {formatIdr(item.savedAmount)}
+                    </span>
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                    Target {formatIdr(item.targetAmount)} · Aktif
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </SlashMenuSection>
+      ) : null}
+
       {!hasItems ? (
         <p className="px-3 py-4 text-center text-xs text-muted-foreground">
-          Tidak ada PayPlan atau Wish yang bisa dieksekusi.
+          Tidak ada PayPlan, Wish, atau Tabungan yang bisa dieksekusi.
         </p>
       ) : null}
     </div>

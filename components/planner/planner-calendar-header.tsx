@@ -22,7 +22,7 @@ export function PlannerCalendarHeader({
   onNext,
 }: PlannerCalendarHeaderProps) {
   return (
-    <div className="flex shrink-0 items-center justify-between gap-2">
+    <div className="flex w-full items-center justify-between gap-2">
       <h2 className="truncate text-base font-semibold capitalize tracking-tight text-foreground/95 sm:text-lg">
         {formatPlannerMonthLabel(monthKey)}
       </h2>

@@ -1,14 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
-import { APP_NAME, APP_NAME_INITIAL, APP_TAGLINE } from "@/config/app";
-import { SEPARATED_CONTROL } from "@/config/shape";
-import {
-  SEPARATED_MENU_ITEM,
-  SIDEBAR_APP_ICON_GRADIENTS,
-  SIDEBAR_APP_ICON_SHELL,
-} from "@/config/sidebar";
+import { SidebarAppLogo } from "@/components/shared/sidebar-app-logo";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { APP_NAME, APP_TAGLINE } from "@/config/app";
+import { SEPARATED_MENU_ITEM } from "@/config/sidebar";
 import { cn } from "@/lib/utils";
 
 interface SidebarBrandButtonProps {
@@ -16,9 +12,6 @@ interface SidebarBrandButtonProps {
 }
 
 export function SidebarBrandButton({ className }: SidebarBrandButtonProps) {
-  const { state } = useSidebar();
-  const isCollapsed = state === "collapsed";
-
   return (
     <SidebarMenuButton
       size="lg"
@@ -29,27 +22,7 @@ export function SidebarBrandButton({ className }: SidebarBrandButtonProps) {
       )}
       render={<Link href="/" />}
     >
-      <div
-        className={cn(
-          "flex aspect-square size-8 shrink-0 items-center justify-center",
-          isCollapsed
-            ? cn(
-                SIDEBAR_APP_ICON_SHELL,
-                "bg-linear-to-b",
-                SIDEBAR_APP_ICON_GRADIENTS.brand,
-              )
-            : cn("bg-primary text-primary-foreground", SEPARATED_CONTROL),
-        )}
-      >
-        <span
-          className={cn(
-            "text-sm font-semibold",
-            isCollapsed && "text-white drop-shadow-sm",
-          )}
-        >
-          {APP_NAME_INITIAL}
-        </span>
-      </div>
+      <SidebarAppLogo className="size-8" size={32} />
       <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
         <span className="truncate font-semibold">{APP_NAME}</span>
         <span className="truncate text-xs text-muted-foreground">

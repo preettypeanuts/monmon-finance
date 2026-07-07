@@ -281,38 +281,91 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  button:not(:disabled),
-  [role="button"]:not(:disabled) {
-    cursor: pointer;
-  }
-  html {
-    @apply font-sans;
-  }
-
-  /* Mobile chrome — keep in sync with config/mobile-nav.ts & mobile-chrome.ts */
   :root {
-    --mobile-safe-top: max(0.75rem, env(safe-area-inset-top));
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+
+    /* Browser: dvh. Standalone PWA overrides to 100vh via bootstrap script. */
+    --app-height: 100dvh;
+
+    /* Aliases — keep in sync with config/ios-safe-area.ts */
+    --mobile-safe-top: var(--safe-area-top);
+    --mobile-safe-bottom: var(--safe-area-bottom);
+    --mobile-safe-left: var(--safe-area-left);
+    --mobile-safe-right: var(--safe-area-right);
+
     --mobile-top-bar-height: 2.75rem;
     --mobile-top-bar-offset: calc(
-      var(--mobile-safe-top) + var(--mobile-top-bar-height)
+      var(--mobile-safe-top) +
+      var(--mobile-top-bar-height)
     );
-    --mobile-bottom-nav-safe-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    --mobile-bottom-nav-safe-bottom: max(
+      0px,
+      calc(var(--mobile-safe-bottom) - 12px)
+    );
     --mobile-nav-bar-height: 3.75rem;
-    --mobile-drawer-bottom: var(--mobile-bottom-nav-safe-bottom);
+    /* Drawer anchored above screen bottom — sync with MOBILE_DRAWER_POPUP */
+    --mobile-drawer-bottom: 0.5rem;
+    --mobile-drawer-top-radius: 2rem;
+    --mobile-drawer-bottom-radius: 3.5rem;
+    --mobile-drawer-inner-padding-bottom: 1.25rem;
+    /* iPhone 16 Pro / 17 Pro Max display corner — kylebshr/ScreenCorners */
+    --mobile-chrome-gutter: calc(0.75rem + 8px);
+    --mobile-display-corner-radius: 62px;
     --mobile-bottom-nav-offset: calc(
-      var(--mobile-nav-bar-height) + var(--mobile-bottom-nav-safe-bottom)
+      var(--mobile-nav-bar-height) +
+      var(--mobile-bottom-nav-safe-bottom)
     );
     /* Keep in sync with MOBILE_CHROME_SCROLL_BOTTOM_BLEED in config/mobile-chrome.ts */
     --mobile-chrome-scroll-bottom-bleed: 15rem;
     --mobile-scroll-inset-bottom: calc(
-      var(--mobile-bottom-nav-offset) + var(--mobile-chrome-scroll-bottom-bleed)
+      var(--mobile-bottom-nav-offset) +
+      var(--mobile-chrome-scroll-bottom-bleed)
     );
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply text-foreground;
+    height: var(--app-height, 100dvh);
+    max-height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
+    overflow: hidden;
+    background-color: transparent;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    height: var(--app-height, 100dvh);
+    max-height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
+    overflow: hidden;
+    background-color: transparent;
+  }
+
+  html[data-standalone="true"] {
+    --app-height: 100vh;
+    height: 100vh;
+    max-height: 100vh;
+    min-height: 100vh;
+  }
+
+  html[data-standalone="true"] body {
+    height: 100vh;
+    max-height: 100vh;
+    min-height: 100vh;
   }
 }
 
@@ -333,40 +386,25 @@
     backdrop-filter: none;
   }
 
-  /* Keep in sync with MOBILE_SCROLL_TOP_BLUR in config/mobile-chrome.ts */
-  .mobile-scroll-top-blur {
-    height: calc(var(--mobile-safe-top) + var(--mobile-top-bar-height) + 0.5rem);
-    -webkit-mask-image: linear-gradient(to bottom, black 35%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 35%, transparent 100%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    backdrop-filter: blur(28px) saturate(180%);
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--background) 78%, transparent) 0%,
-      color-mix(in srgb, var(--background) 40%, transparent) 55%,
-      transparent 100%
-    );
-  }
-
-  /* Keep in sync with INBOX_MOBILE_TOP_BLUR in config/inbox-mobile.ts */
+  /* Shared mobile top blur — sync with INBOX_MOBILE_TOP_BLUR in config/inbox-mobile.ts */
   .inbox-mobile-top-blur {
     height: calc(var(--mobile-top-bar-offset) + 1.25rem);
     -webkit-mask-image: linear-gradient(to bottom, black 15%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 15%, transparent 100%);
-    /* Blur lebih soft, saturasi & brightness lebih rendah */
     -webkit-backdrop-filter: blur(4px) saturate(110%) brightness(1.02);
     backdrop-filter: blur(4px) saturate(110%) brightness(1.02);
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--background) 78%, transparent) 0%,
-      color-mix(in srgb, var(--background) 35%, transparent) 55%,
+      transparent 0%,
+      transparent var(--mobile-safe-top),
+      color-mix(in srgb, var(--background) 35%, transparent) 65%,
       transparent 100%
     );
   }
 
   /* Keep in sync with INBOX_MOBILE_BOTTOM_BLUR in config/inbox-mobile.ts */
   .inbox-mobile-bottom-blur {
-    height: calc(5rem + max(0.75rem, env(safe-area-inset-bottom)));
+    height: calc(5rem + var(--mobile-safe-bottom));
     -webkit-mask-image: linear-gradient(to top, black 6%, transparent 70%);
     mask-image: linear-gradient(to top, black 6%, transparent 70%);
     -webkit-backdrop-filter: blur(3px) saturate(105%) brightness(1.01);
@@ -377,6 +415,34 @@
       color-mix(in srgb, var(--background) 18%, transparent) 40%,
       transparent 100%
     );
+  }
+
+  /* Keep in sync with INBOX_MESSAGE_SCROLL_AREA in config/chat-layout.ts */
+  .inbox-message-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .inbox-message-scroll.is-scrolling {
+    scrollbar-color: color-mix(in srgb, var(--foreground) 28%, transparent)
+      transparent;
+  }
+
+  .inbox-message-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .inbox-message-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .inbox-message-scroll::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 9999px;
+  }
+
+  .inbox-message-scroll.is-scrolling::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--foreground) 28%, transparent);
   }
 
   /* Keep in sync with CHAT_BUBBLE_USER in config/chat-bubbles.ts */
@@ -393,18 +459,52 @@
   /* Keep in sync with INBOX_SUMMARY_DRAWER_POPUP in config/inbox-mobile.ts */
   .inbox-summary-drawer-popup {
     --drawer-inset: 0;
-    --drawer-content-width: min(22rem, 92vw);
+    --drawer-content-width: min(22rem, calc(92vw - var(--safe-area-right)));
   }
 
   .inbox-summary-drawer-popup[data-swipe-axis="x"] {
-    height: 100dvh;
-    max-height: 100dvh;
+    top: var(--safe-area-top);
+    right: var(--safe-area-right);
+    bottom: var(--safe-area-bottom);
+    height: auto;
+    max-height: calc(
+      var(--app-height, 100dvh) - var(--safe-area-top) - var(--safe-area-bottom)
+    );
+  }
+
+  html[data-standalone="true"] .inbox-summary-drawer-popup[data-swipe-axis="x"] {
+    max-height: calc(
+      100vh - var(--safe-area-top) - var(--safe-area-bottom)
+    );
   }
 
   @media (min-width: 640px) {
     .inbox-summary-drawer-popup {
       --drawer-content-width: 20rem;
     }
+  }
+
+  /* Keep in sync with PWA_FULLSCREEN_BLEED + PWA_WALLPAPER_MASK in config/pwa.ts */
+  .pwa-fullscreen-bleed {
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: var(--app-height, 100dvh);
+  }
+
+  html[data-standalone="true"] .pwa-fullscreen-bleed {
+    min-height: 100vh;
+  }
+
+  .pwa-wallpaper-mask {
+    position: fixed;
+    z-index: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    top: var(--safe-area-top);
   }
 
   /* Keep in sync with MOBILE_SCROLL_BOTTOM_SPACER in config/mobile-chrome.ts */
@@ -418,6 +518,22 @@
     .mobile-scroll-bottom-spacer {
       display: block;
       height: var(--mobile-scroll-inset-bottom);
+    }
+  }
+
+  /* Keep in sync with PAYPLAN_BUDGET_MOBILE_END_SPACER in config/payplan-mobile.ts */
+  .payplan-budget-mobile-end-spacer {
+    display: none;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 767px) {
+    .payplan-budget-mobile-end-spacer {
+      display: block;
+      height: calc(
+        var(--mobile-bottom-nav-offset) + 4.5rem + var(--mobile-safe-bottom)
+      );
     }
   }
 
@@ -463,11 +579,83 @@
   /* Keep in sync with MOBILE_DRAWER_POPUP in config/mobile-nav.ts */
   @media (max-width: 767px) {
     .mobile-nav-drawer-popup {
-      /* Same visual inset as inset-x-3 + bottom safe-area — do not override bottom/inset-x. */
-      margin: 0 0.75rem var(--mobile-drawer-bottom) !important;
+      inset-inline: 0.5rem !important;
+      bottom: var(--mobile-drawer-bottom) !important;
+      top: auto !important;
+      margin: 0 !important;
+      width: auto !important;
+      overflow: hidden !important;
+      max-height: min(
+        82dvh,
+        calc(100dvh - var(--mobile-drawer-bottom) - 0.75rem)
+      ) !important;
+      border-radius: var(--mobile-drawer-top-radius)
+        var(--mobile-drawer-top-radius) var(--mobile-drawer-bottom-radius)
+        var(--mobile-drawer-bottom-radius) !important;
+    }
+
+    .mobile-nav-drawer-popup [data-slot="drawer-content"] {
+      overflow: visible !important;
+      padding-bottom: var(--mobile-drawer-inner-padding-bottom);
+    }
+
+    .mobile-nav-drawer-popup [data-slot="drawer-swipe-handle"] {
+      flex-shrink: 0;
+      padding-top: 0.625rem;
+      padding-bottom: 0.125rem;
+    }
+
+    @supports (corner-shape: squircle) {
+      .mobile-nav-drawer-popup {
+        corner-shape: squircle;
+      }
     }
 
     .mobile-nav-drawer-popup[data-swipe-direction="down"] {
+      --closed-transform: translate3d(
+        0,
+        calc(100% + var(--mobile-drawer-bottom) + 2px),
+        0
+      );
+    }
+  }
+
+  /* Keep in sync with SETTINGS_IOS_DRAWER_POPUP in config/settings-ios.ts */
+  @media (max-width: 767px) {
+    .settings-drawer-popup {
+      inset-inline: 0.5rem !important;
+      bottom: var(--mobile-drawer-bottom) !important;
+      top: auto !important;
+      margin: 0 !important;
+      width: auto !important;
+      overflow: hidden !important;
+      max-height: min(
+        82dvh,
+        calc(100dvh - var(--mobile-drawer-bottom) - 0.75rem)
+      ) !important;
+      border-radius: var(--mobile-drawer-top-radius)
+        var(--mobile-drawer-top-radius) var(--mobile-drawer-bottom-radius)
+        var(--mobile-drawer-bottom-radius) !important;
+    }
+
+    .settings-drawer-popup [data-slot="drawer-content"] {
+      overflow: visible !important;
+      padding-bottom: var(--mobile-drawer-inner-padding-bottom);
+    }
+
+    .settings-drawer-popup [data-slot="drawer-swipe-handle"] {
+      flex-shrink: 0;
+      padding-top: 0.625rem;
+      padding-bottom: 0.125rem;
+    }
+
+    @supports (corner-shape: squircle) {
+      .settings-drawer-popup {
+        corner-shape: squircle;
+      }
+    }
+
+    .settings-drawer-popup[data-swipe-direction="down"] {
       --closed-transform: translate3d(
         0,
         calc(100% + var(--mobile-drawer-bottom) + 2px),
@@ -527,8 +715,8 @@
     height: fit-content !important;
     width: fit-content !important;
     min-width: 0;
-    padding-top: 0.70rem !important;
-    padding-bottom: 0.70rem !important;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
     padding-left: 1.75rem !important;
     padding-right: 1.75rem !important;
     gap: 0;

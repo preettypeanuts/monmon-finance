@@ -1,3 +1,4 @@
+import { MOBILE_SAFE_HORIZONTAL_INSET } from "@/config/ios-safe-area";
 import { mobileOnly } from "@/config/mobile-layout";
 import { MOBILE_LIQUID_GLASS_SURFACE } from "@/config/mobile-nav";
 import {
@@ -22,8 +23,11 @@ export const MOBILE_CHROME_SCROLL_INSET_TOP = [
   "max-md:scroll-pt-[calc(var(--mobile-safe-top)+1.75rem)]",
 ].join(" ");
 
-/** Horizontal inset for mobile page scroll — aligns large title with Overview. */
-export const MOBILE_PAGE_SCROLL_INSET_X = "max-md:px-3";
+/** Horizontal inset for mobile page scroll — gutter + landscape notch. */
+export const MOBILE_PAGE_SCROLL_INSET_X = [
+  "max-md:pl-[calc(0.75rem+var(--mobile-safe-left))]",
+  "max-md:pr-[calc(0.75rem+var(--mobile-safe-right))]",
+].join(" ");
 
 /**
  * Extra gap above floating bottom nav — value lives in globals.css
@@ -45,11 +49,18 @@ export const MOBILE_CHROME_SCROLL_INSET = [
   MOBILE_CHROME_SCROLL_INSET_BOTTOM,
 ].join(" ");
 
-/** Strip glass shell on mobile solid pages — desktop glass unchanged. */
+/** Scroll inset for fixed top bar without in-content large title (Inbox-style). */
+export const MOBILE_FIXED_TOP_BAR_SCROLL_INSET = [
+  "max-md:scroll-pt-[var(--mobile-top-bar-offset)]",
+  "max-md:pt-[var(--mobile-top-bar-offset)]",
+  MOBILE_CHROME_SCROLL_INSET_BOTTOM,
+].join(" ");
+
+/** Strip glass shell on mobile — transparent root so wallpaper shows under Dynamic Island. */
 export const MOBILE_NATIVE_SHELL = [
   mobileOnly("rounded-none"),
   mobileOnly("border-0"),
-  mobileOnly("bg-background"),
+  mobileOnly("bg-transparent"),
   mobileOnly("shadow-none"),
   mobileOnly("[backdrop-filter:none]"),
   mobileOnly("[-webkit-backdrop-filter:none]"),
@@ -79,7 +90,12 @@ export function getMobilePageTitle(pathname: string): string | null {
 }
 
 export function shouldShowMobileInboxButton(pathname: string): boolean {
-  return pathname !== "/";
+  return pathname !== "/" && pathname !== "/profile";
+}
+
+/** Routes with dedicated fixed mobile chrome (Inbox, Profile). */
+export function shouldHideMobileScrollChrome(pathname: string): boolean {
+  return pathname === "/" || pathname === "/profile";
 }
 
 /** iOS large title — left-aligned, scrolls away on mobile. */
@@ -100,11 +116,11 @@ export const MOBILE_COMPACT_TITLE = [
   "transition-opacity duration-200",
 ].join(" ");
 
-/** Linear blur fade — visible when scroll surface is scrolled. */
+/** Linear blur fade — inbox strength; visible when scroll surface is scrolled. */
 export const MOBILE_SCROLL_TOP_BLUR = [
   "pointer-events-none fixed inset-x-0 top-0 z-[29]",
   "opacity-0 transition-opacity duration-200",
-  "mobile-scroll-top-blur",
+  "inbox-mobile-top-blur",
   "md:hidden",
 ].join(" ");
 
@@ -119,7 +135,7 @@ export const MOBILE_TOP_BAR_ROOT = [
 
 export const MOBILE_TOP_BAR_ROW = [
   "relative flex w-full items-center justify-end",
-  "px-3",
+  MOBILE_SAFE_HORIZONTAL_INSET,
   "pt-[var(--mobile-safe-top)]",
   "h-[calc(var(--mobile-safe-top)+var(--mobile-top-bar-height))]",
 ].join(" ");

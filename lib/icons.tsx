@@ -37,6 +37,7 @@ import {
   sfLine3HorizontalDecrease,
   sfMoonFill,
   sfPencil,
+  sfPersonCircleFill,
   sfPlus,
   sfReceiptFill,
   sfSidebarLeft,
@@ -168,6 +169,10 @@ export const TrashIcon = createSFIcon(sfTrashFill, "TrashIcon");
 export const UploadSimpleIcon = createSFIcon(
   sfSquareAndArrowUpFill,
   "UploadSimpleIcon",
+);
+export const UserCircleIcon = createSFIcon(
+  sfPersonCircleFill,
+  "UserCircleIcon",
 );
 export const WalletIcon = createSFIcon(sfWalletBifoldFill, "WalletIcon");
 export const XCircleIcon = createSFIcon(sfXmarkCircleFill, "XCircleIcon");

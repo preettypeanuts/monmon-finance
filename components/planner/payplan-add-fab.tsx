@@ -1,5 +1,6 @@
 "use client";
 
+import { MOBILE_ADD_FAB_ICON } from "@/config/mobile-nav";
 import { PAYPLAN_ADD_FAB } from "@/config/payplan-mobile";
 import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,7 @@ export function PayplanAddFab({
       onClick={onClick}
       className={cn(PAYPLAN_ADD_FAB, className)}
     >
-      <PlusIcon aria-hidden className="size-6" />
+      <PlusIcon aria-hidden className={MOBILE_ADD_FAB_ICON} />
     </button>
   );
 }

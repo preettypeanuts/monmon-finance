@@ -14,9 +14,11 @@ function toParsedTransaction(record: Transaction): ParsedTransaction {
   };
 }
 
-export async function backfillInboxMessagesFromTransactions(): Promise<number> {
+export async function backfillInboxMessagesFromTransactions(
+  userId: string,
+): Promise<number> {
   const orphans = await prisma.transaction.findMany({
-    where: { inboxMessage: null },
+    where: { userId, inboxMessage: null },
     orderBy: { createdAt: "asc" },
   });
 
@@ -32,6 +34,7 @@ export async function backfillInboxMessagesFromTransactions(): Promise<number> {
     await prisma.$transaction([
       prisma.inboxMessage.create({
         data: {
+          userId,
           role: "user",
           kind: "chat",
           content: transaction.rawInput,
@@ -40,6 +43,7 @@ export async function backfillInboxMessagesFromTransactions(): Promise<number> {
       }),
       prisma.inboxMessage.create({
         data: {
+          userId,
           role: "assistant",
           kind: "chat",
           content: reply,

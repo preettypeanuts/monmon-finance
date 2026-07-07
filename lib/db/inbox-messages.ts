@@ -2,6 +2,7 @@ import { normalizeCategory } from "@/config/categories";
 import { backfillInboxMessagesFromTransactions } from "@/lib/db/backfill-inbox-messages";
 import { ensurePendingDailySummaries } from "@/lib/db/daily-summary";
 import { prisma } from "@/lib/db/prisma";
+import { scopedByUser, scopedId } from "@/lib/db/user-scope";
 import type { ChatMessage, MessageRole } from "@/types/chat";
 import type { ParsedTransaction } from "@/types/transaction";
 import type {
@@ -11,6 +12,7 @@ import type {
 } from "@/generated/prisma/client";
 
 interface CreateInboxMessageInput {
+  userId: string;
   role: MessageRole;
   content: string;
   transactionId?: string;
@@ -41,12 +43,14 @@ function mapInboxMessage(record: InboxMessageWithTransaction): ChatMessage {
 }
 
 export async function createInboxMessage({
+  userId,
   role,
   content,
   transactionId,
 }: CreateInboxMessageInput): Promise<ChatMessage> {
   const record = await prisma.inboxMessage.create({
     data: {
+      userId,
       role: role as InboxMessageRole,
       kind: "chat",
       content,
@@ -66,11 +70,12 @@ interface UpdateInboxMessageInput {
 }
 
 export async function updateInboxMessage(
+  userId: string,
   id: string,
   { content, transactionId }: UpdateInboxMessageInput,
 ): Promise<ChatMessage> {
   const record = await prisma.inboxMessage.update({
-    where: { id },
+    where: scopedId(userId, id),
     data: {
       content,
       transactionId: transactionId ?? null,
@@ -83,11 +88,12 @@ export async function updateInboxMessage(
   return mapInboxMessage(record);
 }
 
-export async function getInboxMessages(): Promise<ChatMessage[]> {
-  await backfillInboxMessagesFromTransactions();
-  await ensurePendingDailySummaries();
+export async function getInboxMessages(userId: string): Promise<ChatMessage[]> {
+  await backfillInboxMessagesFromTransactions(userId);
+  await ensurePendingDailySummaries(userId);
 
   const records = await prisma.inboxMessage.findMany({
+    where: { userId },
     orderBy: { createdAt: "asc" },
     include: { transaction: true },
   });
@@ -102,10 +108,11 @@ export interface DeleteInboxMessagePairResult {
 
 /** Removes a user chat message, its assistant reply, and linked transaction. */
 export async function deleteInboxMessagePair(
+  userId: string,
   userMessageId: string,
 ): Promise<DeleteInboxMessagePairResult> {
   const userRecord = await prisma.inboxMessage.findUnique({
-    where: { id: userMessageId },
+    where: scopedId(userId, userMessageId),
     select: {
       id: true,
       role: true,
@@ -128,13 +135,13 @@ export async function deleteInboxMessagePair(
   }
 
   const assistantRecord = await prisma.inboxMessage.findFirst({
-    where: {
+    where: scopedByUser(userId, {
       role: "assistant",
       kind: "chat",
       createdAt: {
         gt: userRecord.createdAt,
       },
-    },
+    }),
     orderBy: {
       createdAt: "asc",
     },
@@ -154,17 +161,17 @@ export async function deleteInboxMessagePair(
   await prisma.$transaction(async (tx) => {
     if (assistantRecord) {
       await tx.inboxMessage.delete({
-        where: { id: assistantRecord.id },
+        where: scopedId(userId, assistantRecord.id),
       });
     }
 
     await tx.inboxMessage.delete({
-      where: { id: userRecord.id },
+      where: scopedId(userId, userRecord.id),
     });
 
     if (transactionId) {
       await tx.transaction.delete({
-        where: { id: transactionId },
+        where: scopedId(userId, transactionId),
       });
     }
   });

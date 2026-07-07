@@ -1,5 +1,14 @@
-/** Outer gutter between viewport edge and floating shells. */
-export const APP_GUTTER = "pr-3 py-3 max-md:py-0";
+/** Desktop-only viewport inset for the main content column. */
+export const DESKTOP_OUTER_GUTTER = "md:py-3 md:pr-3";
+
+/** Desktop-only right inset — used when page shell owns vertical gutter. */
+export const DESKTOP_OUTER_GUTTER_X = "md:pr-3";
+
+/**
+ * Outer gutter for nested desktop panels (e.g. inbox summary column).
+ * Main shell inset uses DESKTOP_OUTER_GUTTER on SidebarInset.
+ */
+export const APP_GUTTER = DESKTOP_OUTER_GUTTER;
 
 /** Gap between major layout columns. */
 export const APP_GAP = "gap-3";

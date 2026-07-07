@@ -10,6 +10,7 @@ import { SettingsGlassPanel } from "@/components/settings/settings-glass-panel";
 import { SettingsIosProfileCard } from "@/components/settings/settings-ios-profile-card";
 import { SettingsIosRow } from "@/components/settings/settings-ios-row";
 import { SettingsIosSection } from "@/components/settings/settings-ios-section";
+import { SettingsSignOutRow } from "@/components/settings/settings-sign-out-row";
 import { SettingsWallpaperPanel } from "@/components/settings/settings-wallpaper-panel";
 import { ACCENT_COLORS } from "@/config/accent-colors";
 import { GLASS_BLUR_LEVELS } from "@/config/glass-blur";
@@ -18,6 +19,7 @@ import {
   SETTINGS_IOS_ICON_GLASS,
   SETTINGS_IOS_ICON_THEME,
   SETTINGS_IOS_ICON_WALLPAPER,
+  SETTINGS_IOS_DRAWER_LARGE_TITLE,
   SETTINGS_IOS_LARGE_TITLE,
   SETTINGS_IOS_SCROLL,
 } from "@/config/settings-ios";
@@ -34,9 +36,13 @@ type SettingsPanel = "root" | "appearance" | "accent" | "glass" | "wallpaper";
 
 interface SettingsPanelContentProps {
   open: boolean;
+  mobileDrawer?: boolean;
 }
 
-export function SettingsPanelContent({ open }: SettingsPanelContentProps) {
+export function SettingsPanelContent({
+  open,
+  mobileDrawer = false,
+}: SettingsPanelContentProps) {
   const [panel, setPanel] = useState<SettingsPanel>("root");
   const { themeMode, accentId, glassBlurLevel } = useAppearance();
   const { wallpaperId, customWallpaperSlots } = useWallpaper();
@@ -77,7 +83,13 @@ export function SettingsPanelContent({ open }: SettingsPanelContentProps) {
 
   return (
     <section className={SETTINGS_IOS_SCROLL}>
-      <h2 className={SETTINGS_IOS_LARGE_TITLE}>Pengaturan</h2>
+      <h2
+        className={
+          mobileDrawer ? SETTINGS_IOS_DRAWER_LARGE_TITLE : SETTINGS_IOS_LARGE_TITLE
+        }
+      >
+        Pengaturan
+      </h2>
 
       <SettingsIosProfileCard />
 
@@ -116,6 +128,10 @@ export function SettingsPanelContent({ open }: SettingsPanelContentProps) {
           value={wallpaperLabel}
           onClick={() => setPanel("wallpaper")}
         />
+      </SettingsIosSection>
+
+      <SettingsIosSection label="Akun">
+        <SettingsSignOutRow />
       </SettingsIosSection>
     </section>
   );

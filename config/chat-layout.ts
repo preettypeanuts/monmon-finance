@@ -1,16 +1,29 @@
+import {
+  MOBILE_INPUT_DOCK_SAFE_BOTTOM,
+  MOBILE_SAFE_HORIZONTAL_INSET,
+} from "@/config/ios-safe-area";
+
 /** Horizontal inset for chat message thread. */
 export const CHAT_MESSAGE_INSET_X = "px-3";
 
-/** Top inset on desktop only — mobile uses MOBILE_CHROME_SCROLL_INSET_TOP. */
-export const CHAT_MESSAGE_INSET_TOP = "md:pt-3";
+/** Top inset — mobile only; desktop thread is edge-to-edge vertically. */
+export const CHAT_MESSAGE_INSET_TOP = "";
 
-/** Bottom inset — clears floating chat input (+ chrome on mobile). */
+/** Bottom inset — mobile only; desktop uses INBOX_DESKTOP_MESSAGE_SCROLL_PADDING. */
 export const CHAT_MESSAGE_INSET_BOTTOM =
-  "pb-24 max-md:pb-[calc(6rem+var(--mobile-bottom-nav-offset))]";
+  "max-md:pb-[calc(6rem+var(--mobile-bottom-nav-offset))]";
+
+/** Message thread scroll — thumb visible only while scrolling (see globals.css). */
+export const INBOX_MESSAGE_SCROLL_AREA = "inbox-message-scroll";
 
 /** Floating input dock — overlays scroll content, sits above bottom nav. */
-export const CHAT_INPUT_DOCK =
-  "absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 max-md:bottom-[var(--mobile-bottom-nav-offset)]";
+export const CHAT_INPUT_DOCK = [
+  "absolute inset-x-0 bottom-0 z-20",
+  MOBILE_SAFE_HORIZONTAL_INSET,
+  MOBILE_INPUT_DOCK_SAFE_BOTTOM,
+  "pt-1",
+  "max-md:bottom-[var(--mobile-bottom-nav-offset)]",
+].join(" ");
 
 /** Slash command menu above chat input. */
 export const CHAT_SLASH_MENU =

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireUserId } from "@/lib/auth/session";
 import {
   createPlan,
   deletePlan,
@@ -32,6 +33,7 @@ function revalidatePlans() {
 export async function savePlanAction(
   formData: FormData,
 ): Promise<PlanActionResult> {
+  const userId = await requireUserId();
   const parsed = parsePlanFormData(formData);
 
   if (!parsed.ok) {
@@ -41,8 +43,8 @@ export async function savePlanAction(
   const id = formData.get("id");
   const plan =
     typeof id === "string" && id.trim()
-      ? await updatePlan(id.trim(), parsed.data)
-      : await createPlan(parsed.data);
+      ? await updatePlan(userId, id.trim(), parsed.data)
+      : await createPlan(userId, parsed.data);
 
   revalidatePlans();
 
@@ -52,6 +54,7 @@ export async function savePlanAction(
 export async function deletePlanAction(
   id: string,
 ): Promise<{ ok: true } | PlanActionFailure> {
+  const userId = await requireUserId();
   const trimmed = id.trim();
 
   if (!trimmed) {
@@ -59,7 +62,7 @@ export async function deletePlanAction(
   }
 
   try {
-    await deletePlan(trimmed);
+    await deletePlan(userId, trimmed);
     revalidatePlans();
     return { ok: true };
   } catch {
@@ -70,6 +73,7 @@ export async function deletePlanAction(
 export async function markPlanPurchasedAction(
   id: string,
 ): Promise<PlanActionResult> {
+  const userId = await requireUserId();
   const trimmed = id.trim();
 
   if (!trimmed) {
@@ -77,7 +81,7 @@ export async function markPlanPurchasedAction(
   }
 
   try {
-    const plan = await markPlanDone(trimmed);
+    const plan = await markPlanDone(userId, trimmed);
     revalidatePlans();
     return { ok: true, plan };
   } catch {

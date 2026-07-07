@@ -2,21 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SettingsSheet } from "@/components/shared/settings-sheet";
+import { SidebarAppLogo } from "@/components/shared/sidebar-app-logo";
+import { SidebarCollapsedProfile } from "@/components/shared/sidebar-collapsed-profile";
+import { SidebarCollapsedSettings } from "@/components/shared/sidebar-collapsed-settings";
 import {
   SidebarDock,
   SidebarDockItem,
   useSidebarDockTooltipVisible,
 } from "@/components/shared/sidebar-dock";
 import { useSidebar } from "@/components/ui/sidebar";
-import { APP_NAME, APP_NAME_INITIAL } from "@/config/app";
+import { APP_NAME } from "@/config/app";
 import { mainNavItems } from "@/config/navigation";
 import {
   SIDEBAR_APP_ICON_GLYPH,
   SIDEBAR_APP_ICON_GRADIENTS,
   SIDEBAR_APP_ICON_SHELL,
 } from "@/config/sidebar";
-import { GearSixIcon, SidebarIcon } from "@/lib/icons";
+import { SidebarIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const DOCK_TRIGGER_CLASS =
@@ -41,9 +43,10 @@ function DockLabel({ label }: { label: string }) {
 interface DockAppButtonProps {
   href?: string;
   label: string;
-  gradient: string;
+  gradient?: string;
   isActive?: boolean;
   onClick?: () => void;
+  bare?: boolean;
   children: React.ReactNode;
 }
 
@@ -66,9 +69,12 @@ function DockAppButton({
   gradient,
   isActive = false,
   onClick,
+  bare = false,
   children,
 }: DockAppButtonProps) {
-  const icon = (
+  const icon = bare ? (
+    children
+  ) : (
     <span className={cn(SIDEBAR_APP_ICON_SHELL, "bg-linear-to-b", gradient)}>
       {children}
     </span>
@@ -110,14 +116,8 @@ export function SidebarCollapsedDock() {
   return (
     <SidebarDock>
       <SidebarDockItem index={index++}>
-        <DockAppButton
-          href="/"
-          label={APP_NAME}
-          gradient={SIDEBAR_APP_ICON_GRADIENTS.brand}
-        >
-          <span className="text-sm font-semibold text-white drop-shadow-sm">
-            {APP_NAME_INITIAL}
-          </span>
+        <DockAppButton href="/" label={APP_NAME} bare>
+          <SidebarAppLogo className="size-9" size={36} alt="" />
         </DockAppButton>
       </SidebarDockItem>
 
@@ -149,30 +149,8 @@ export function SidebarCollapsedDock() {
         );
       })}
 
-      <SidebarDockItem index={index++}>
-        <div className="relative flex items-center justify-center">
-          <SettingsSheet
-            trigger={
-              <button
-                type="button"
-                aria-label="Pengaturan"
-                className={DOCK_TRIGGER_CLASS}
-              >
-                <span
-                  className={cn(
-                    SIDEBAR_APP_ICON_SHELL,
-                    "bg-linear-to-b",
-                    SIDEBAR_APP_ICON_GRADIENTS.settings,
-                  )}
-                >
-                  <GearSixIcon className={SIDEBAR_APP_ICON_GLYPH} />
-                </span>
-              </button>
-            }
-          />
-          <DockLabel label="Pengaturan" />
-        </div>
-      </SidebarDockItem>
+      <SidebarCollapsedSettings index={index++} />
+      <SidebarCollapsedProfile index={index++} />
     </SidebarDock>
   );
 }

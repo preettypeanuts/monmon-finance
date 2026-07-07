@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /** Bump when Prisma schema changes to invalidate dev hot-reload cache. */
-const PRISMA_CLIENT_VERSION = 10;
+const PRISMA_CLIENT_VERSION = 12;
 
 const REQUIRED_PLANNED_ITEM_FIELDS = ["paidInstallmentCount"] as const;
 const REQUIRED_CATEGORY_BUDGET_FIELDS = ["repeatNextMonth"] as const;
@@ -37,7 +37,9 @@ function hasExpectedDelegates(client: PrismaClient): boolean {
     typeof client.inboxMessage?.findMany === "function" &&
     typeof client.plannedItem?.findMany === "function" &&
     typeof client.plan?.findMany === "function" &&
+    typeof client.savingsGoal?.findMany === "function" &&
     typeof client.categoryBudget?.findMany === "function" &&
+    typeof client.user?.findMany === "function" &&
     REQUIRED_PLANNED_ITEM_FIELDS.every((field) => plannedItemFields.has(field)) &&
     REQUIRED_CATEGORY_BUDGET_FIELDS.every((field) =>
       categoryBudgetFields.has(field),

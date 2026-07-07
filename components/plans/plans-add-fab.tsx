@@ -1,5 +1,6 @@
 "use client";
 
+import { MOBILE_ADD_FAB_ICON } from "@/config/mobile-nav";
 import { PLANS_ADD_FAB } from "@/config/plans";
 import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ export function PlansAddFab({ onClick, className }: PlansAddFabProps) {
       onClick={onClick}
       className={cn(PLANS_ADD_FAB, className)}
     >
-      <PlusIcon aria-hidden className="size-6" />
+      <PlusIcon aria-hidden className={MOBILE_ADD_FAB_ICON} />
     </button>
   );
 }

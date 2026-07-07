@@ -18,6 +18,7 @@ export const PLANS_ROUTE = "/plans";
 
 /** User-facing page title for `/plans` — internal route unchanged. */
 export const WISH_PAGE_TITLE = "Wish";
+export const SAVINGS_PAGE_TITLE = "Tabungan";
 
 export interface NavItem {
   title: string;

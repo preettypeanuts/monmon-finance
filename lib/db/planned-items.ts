@@ -4,6 +4,7 @@ import {
 } from "@/config/planner-items";
 import { startOfDay } from "@/lib/finance/day-range";
 import { prisma } from "@/lib/db/prisma";
+import { scopedId } from "@/lib/db/user-scope";
 import type {
   PlannedItemFormInput,
   PlannedItemKind,
@@ -76,10 +77,11 @@ function buildEndFields(input: PlannedItemFormInput) {
   }
 }
 
-function buildCreateData(input: PlannedItemFormInput) {
+function buildCreateData(userId: string, input: PlannedItemFormInput) {
   const endFields = buildEndFields(input);
 
   return {
+    userId,
     name: input.name.trim(),
     kind: input.kind,
     repeat: input.repeat,
@@ -94,8 +96,10 @@ function buildCreateData(input: PlannedItemFormInput) {
   };
 }
 
-async function ensureSamplePlannedItems(): Promise<void> {
-  const count = await prisma.plannedItem.count();
+async function ensureSamplePlannedItems(userId: string): Promise<void> {
+  const count = await prisma.plannedItem.count({
+    where: { userId },
+  });
   if (count > 0) {
     return;
   }
@@ -105,6 +109,7 @@ async function ensureSamplePlannedItems(): Promise<void> {
   await prisma.plannedItem.createMany({
     data: [
       {
+        userId,
         name: "Apartemen",
         kind: "bill",
         repeat: "monthly",
@@ -114,6 +119,7 @@ async function ensureSamplePlannedItems(): Promise<void> {
         startAt: new Date(year, 6, 25),
       },
       {
+        userId,
         name: "Netflix",
         kind: "subscription",
         repeat: "monthly",
@@ -123,6 +129,7 @@ async function ensureSamplePlannedItems(): Promise<void> {
         startAt: new Date(year, 6, 8),
       },
       {
+        userId,
         name: "MacBook",
         kind: "installment",
         repeat: "monthly",
@@ -137,10 +144,13 @@ async function ensureSamplePlannedItems(): Promise<void> {
   });
 }
 
-export async function listPlannedItems(): Promise<PlannedItemRecord[]> {
-  await ensureSamplePlannedItems();
+export async function listPlannedItems(
+  userId: string,
+): Promise<PlannedItemRecord[]> {
+  await ensureSamplePlannedItems(userId);
 
   const records = await prisma.plannedItem.findMany({
+    where: { userId },
     orderBy: [{ createdAt: "asc" }],
     select: PLANNED_ITEM_SELECT,
   });
@@ -148,15 +158,18 @@ export async function listPlannedItems(): Promise<PlannedItemRecord[]> {
   return records.map(mapPlannedItem);
 }
 
-export async function getPlannedItemsForExpansion(): Promise<PlannedItemRecord[]> {
-  return listPlannedItems();
+export async function getPlannedItemsForExpansion(
+  userId: string,
+): Promise<PlannedItemRecord[]> {
+  return listPlannedItems(userId);
 }
 
 export async function createPlannedItem(
+  userId: string,
   input: PlannedItemFormInput,
 ): Promise<PlannedItemRecord> {
   const record = await prisma.plannedItem.create({
-    data: buildCreateData(input),
+    data: buildCreateData(userId, input),
     select: PLANNED_ITEM_SELECT,
   });
 
@@ -164,30 +177,35 @@ export async function createPlannedItem(
 }
 
 export async function updatePlannedItem(
+  userId: string,
   id: string,
   input: PlannedItemFormInput,
 ): Promise<PlannedItemRecord> {
   const record = await prisma.plannedItem.update({
-    where: { id },
-    data: buildCreateData(input),
+    where: scopedId(userId, id),
+    data: buildCreateData(userId, input),
     select: PLANNED_ITEM_SELECT,
   });
 
   return mapPlannedItem(record);
 }
 
-export async function deletePlannedItem(id: string): Promise<void> {
+export async function deletePlannedItem(
+  userId: string,
+  id: string,
+): Promise<void> {
   await prisma.plannedItem.delete({
-    where: { id },
+    where: scopedId(userId, id),
   });
 }
 
 export async function markInstallmentPaid(
+  userId: string,
   id: string,
   installmentIndex: number,
 ): Promise<PlannedItemRecord> {
   const existing = await prisma.plannedItem.findUnique({
-    where: { id },
+    where: scopedId(userId, id),
     select: {
       installmentCount: true,
       paidInstallmentCount: true,
@@ -212,7 +230,7 @@ export async function markInstallmentPaid(
   const nextPaid = Math.max(existing.paidInstallmentCount, installmentIndex + 1);
 
   const record = await prisma.plannedItem.update({
-    where: { id },
+    where: scopedId(userId, id),
     data: { paidInstallmentCount: nextPaid },
     select: PLANNED_ITEM_SELECT,
   });

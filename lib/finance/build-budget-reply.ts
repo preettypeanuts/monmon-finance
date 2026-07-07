@@ -17,6 +17,7 @@ function toPeriodMonth(occurredAt: string | Date): string {
 }
 
 export async function getBudgetStatusForExpense(
+  userId: string,
   category: string,
   occurredAt: string | Date = new Date(),
   additionalSpent = 0,
@@ -28,6 +29,7 @@ export async function getBudgetStatusForExpense(
 
   const periodMonth = toPeriodMonth(occurredAt);
   const result = await getBudgetForCategory(
+    userId,
     normalized,
     periodMonth,
     additionalSpent,
@@ -88,11 +90,17 @@ export function formatBudgetReplySnippet(status: BudgetStatus): string {
 }
 
 export async function buildBudgetReplySnippet(
+  userId: string,
   category: string,
   occurredAt: string | Date,
   amount = 0,
 ): Promise<string | null> {
-  const status = await getBudgetStatusForExpense(category, occurredAt, amount);
+  const status = await getBudgetStatusForExpense(
+    userId,
+    category,
+    occurredAt,
+    amount,
+  );
   if (!status) {
     return null;
   }

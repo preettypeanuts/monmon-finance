@@ -7,6 +7,7 @@ import {
 } from "@/config/planner-manage";
 import { SOLID_WIDGET_TILE_STYLES } from "@/config/solid-widget-tiles";
 import { GRID_GAP } from "@/config/spacing";
+import { MOBILE_ADD_FAB } from "@/config/mobile-nav";
 import { SEPARATED_SURFACE } from "@/config/shape";
 import type { SummaryTileIcon } from "@/config/summary-tiles";
 import type { PlansInsightTone } from "@/types/plan";
@@ -154,15 +155,8 @@ export const PLANS_MOBILE_SOLID_CARD = [
 /** Hide inner hairline on mobile solid wish cards. */
 export const PLANS_MOBILE_SOLID_DIVIDER = mobileOnly("hidden");
 
-/** Floating add button — mobile Wish page, circular, flush right. */
-export const PLANS_ADD_FAB = [
-  "pointer-events-auto fixed right-3 z-30 md:hidden",
-  "bottom-[calc(var(--mobile-bottom-nav-offset)+0.625rem)]",
-  "flex size-14 items-center justify-center rounded-full",
-  "bg-primary text-primary-foreground",
-  "shadow-[0_8px_28px_rgba(0,0,0,0.22)]",
-  "transition-transform active:scale-95",
-].join(" ");
+/** Floating add button — mobile Wish page, aligned with bottom nav. */
+export const PLANS_ADD_FAB = MOBILE_ADD_FAB;
 
 export const PLANS_CARD_LIST = `grid grid-cols-1 pb-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 ${GRID_GAP}`;
 
