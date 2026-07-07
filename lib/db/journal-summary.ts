@@ -1,20 +1,19 @@
 import { cache } from "react";
 
-import { generateJournalCondition } from "@/lib/ai/generate-journal-condition";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
-import {
-  addDays,
-  endOfDay,
-  getDayRange,
-  startOfDay,
-} from "@/lib/finance/day-range";
+import { buildFallbackJournalCondition } from "@/lib/finance/build-journal-condition";
+import { endOfDay, startOfDay } from "@/lib/finance/day-range";
+import { getDayFlowTotals } from "@/lib/finance/get-day-flow-totals";
+import { getMonthRange } from "@/lib/planner/calendar";
 import { prisma } from "@/lib/db/prisma";
 import { scopedByUser } from "@/lib/db/user-scope";
 import type { JournalDaySummary } from "@/types/journal";
 
-async function getDayTransactions(userId: string, date: Date) {
-  const { start, end } = getDayRange(date);
-
+async function getMonthTransactions(
+  userId: string,
+  start: Date,
+  end: Date,
+) {
   return prisma.transaction.findMany({
     where: scopedByUser(userId, {
       occurredAt: {
@@ -57,42 +56,55 @@ async function getCumulativeBalance(userId: string, date: Date): Promise<number>
   return (incomeAgg._sum?.amount ?? 0) - (expenseAgg._sum?.amount ?? 0);
 }
 
+/** Journal header widget — current month (MTD) vs previous full month. */
 export const getJournalDaySummary = cache(
   async (
     userId: string,
     date: Date = new Date(),
   ): Promise<JournalDaySummary> => {
-    const day = startOfDay(date);
-    const yesterday = addDays(day, -1);
+    const anchor = startOfDay(date);
+    const year = anchor.getFullYear();
+    const month = anchor.getMonth();
+    const currentMonthStart = getMonthRange(year, month).start;
+    const currentMonthEnd = endOfDay(anchor);
+
+    const lastMonthAnchor = new Date(year, month - 1, 1);
+    const lastMonthRange = getMonthRange(
+      lastMonthAnchor.getFullYear(),
+      lastMonthAnchor.getMonth(),
+    );
 
     const [
-      transactions,
-      yesterdayTransactions,
+      currentMonthFlow,
+      lastMonthFlow,
+      monthTransactions,
       cumulativeBalance,
-      yesterdayBalance,
+      lastMonthEndBalance,
     ] = await Promise.all([
-      getDayTransactions(userId, day),
-      getDayTransactions(userId, yesterday),
-      getCumulativeBalance(userId, day),
-      getCumulativeBalance(userId, yesterday),
+      getDayFlowTotals(userId, currentMonthStart, currentMonthEnd),
+      getDayFlowTotals(userId, lastMonthRange.start, lastMonthRange.end),
+      getMonthTransactions(userId, currentMonthStart, currentMonthEnd),
+      getCumulativeBalance(userId, anchor),
+      getCumulativeBalance(userId, lastMonthRange.end),
     ]);
 
-    const summary = buildTodaySummary(transactions);
-    const yesterdaySummary = buildTodaySummary(yesterdayTransactions);
-    const condition = await generateJournalCondition(
-      day,
-      transactions,
+    const summary = buildTodaySummary(monthTransactions);
+    const condition = buildFallbackJournalCondition(
+      monthTransactions,
+      summary.totalExpense,
+      summary.totalIncome,
       cumulativeBalance,
     );
 
     return {
-      date: day,
-      totalExpense: summary.totalExpense,
-      totalIncome: summary.totalIncome,
+      date: currentMonthStart,
+      totalExpense: currentMonthFlow.totalExpense,
+      totalIncome: currentMonthFlow.totalIncome,
       cumulativeBalance,
-      expenseDelta: summary.totalExpense - yesterdaySummary.totalExpense,
-      incomeDelta: summary.totalIncome - yesterdaySummary.totalIncome,
-      balanceDelta: cumulativeBalance - yesterdayBalance,
+      expenseDelta:
+        currentMonthFlow.totalExpense - lastMonthFlow.totalExpense,
+      incomeDelta: currentMonthFlow.totalIncome - lastMonthFlow.totalIncome,
+      balanceDelta: cumulativeBalance - lastMonthEndBalance,
       condition,
     };
   },

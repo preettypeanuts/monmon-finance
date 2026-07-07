@@ -11,6 +11,7 @@ interface JournalStatTileProps {
   value: string;
   subtitle?: string;
   delta?: string;
+  deltaLabel?: string;
   surfaceClassName: string;
   iconClassName?: string;
   labelClassName?: string;
@@ -26,6 +27,7 @@ export function JournalStatTile({
   value,
   subtitle,
   delta,
+  deltaLabel = "vs kemarin",
   surfaceClassName,
   iconClassName,
   labelClassName,
@@ -73,7 +75,7 @@ export function JournalStatTile({
               deltaClassName ?? subtitleClassName ?? "text-muted-foreground",
             )}
           >
-            {delta} vs kemarin
+            {delta} {deltaLabel}
           </p>
         ) : null}
       </div>

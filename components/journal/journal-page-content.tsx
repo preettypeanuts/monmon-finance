@@ -16,7 +16,10 @@ import { JOURNAL_DESKTOP_SCROLL_SURFACE } from "@/config/journal-desktop";
 import { JOURNAL_DESKTOP_SCROLL_TRAIL } from "@/config/journal-desktop";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { STACK_GAP } from "@/config/spacing";
-import { formatJournalHeaderDate } from "@/lib/finance/format-datetime";
+import {
+  formatPlannerMonthLabel,
+  getCurrentMonthKey,
+} from "@/lib/planner/calendar";
 import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type {
@@ -65,7 +68,7 @@ export function JournalPageContent({
               </div>
               <div className="flex shrink-0 items-center gap-3">
                 <p className="text-right text-sm font-semibold capitalize text-foreground/90">
-                  {formatJournalHeaderDate(daySummary.date)}
+                  {formatPlannerMonthLabel(getCurrentMonthKey(daySummary.date))}
                 </p>
                 <Button
                   type="button"
@@ -84,7 +87,7 @@ export function JournalPageContent({
               Semua transaksi — dari inbox atau input manual.
             </p>
             <p className="shrink-0 text-[11px] font-semibold capitalize text-foreground/90">
-              {formatJournalHeaderDate(daySummary.date)}
+              {formatPlannerMonthLabel(getCurrentMonthKey(daySummary.date))}
             </p>
           </div>
 

@@ -39,12 +39,16 @@ export interface JournalCondition {
 }
 
 export interface JournalDaySummary {
+  /** First day of the active month shown in the widget. */
   date: Date;
+  /** Month-to-date totals for the active month. */
   totalExpense: number;
   totalIncome: number;
   cumulativeBalance: number;
+  /** Delta vs the previous full calendar month. */
   expenseDelta: number;
   incomeDelta: number;
+  /** Delta vs cumulative balance at end of previous month. */
   balanceDelta: number;
   condition: JournalCondition;
 }
