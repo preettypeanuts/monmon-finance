@@ -1,4 +1,4 @@
-import { startOfDay } from "@/lib/finance/day-range";
+import { addDays, toDayKey } from "@/lib/finance/day-range";
 
 const WEEKDAY_FORMAT = new Intl.DateTimeFormat("id-ID", {
   weekday: "long",
@@ -97,15 +97,14 @@ export function formatJournalSectionDate(
   value: Date | string,
   referenceDate: Date = new Date(),
 ): string {
-  const date = startOfDay(toDate(value));
-  const today = startOfDay(referenceDate);
-  const dayDiff = Math.round((today.getTime() - date.getTime()) / 86_400_000);
+  const dateKey = toDayKey(value);
+  const todayKey = toDayKey(referenceDate);
 
-  if (dayDiff === 0) {
+  if (dateKey === todayKey) {
     return "Hari ini";
   }
 
-  if (dayDiff === 1) {
+  if (dateKey === toDayKey(addDays(referenceDate, -1))) {
     return "Kemarin";
   }
 

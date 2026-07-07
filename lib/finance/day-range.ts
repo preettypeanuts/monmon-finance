@@ -29,12 +29,37 @@ export function addDays(value: Date, days: number): Date {
   return next;
 }
 
-export function toDayKey(value: Date): string {
-  const date = startOfDay(value);
+/** YYYY-MM-DD from a calendar Date using local calendar day. */
+export function dateInputFromCalendarDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/** Parse YYYY-MM-DD to UTC noon — stable across server/client timezones. */
+export function parseDateOnlyInput(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
+export function toDayKey(value: Date | string): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+
   return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0"),
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, "0"),
+    String(date.getUTCDate()).padStart(2, "0"),
   ].join("-");
 }
 

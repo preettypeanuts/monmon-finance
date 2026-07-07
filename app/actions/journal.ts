@@ -45,14 +45,14 @@ export async function saveJournalEntryAction(
 
   const existing = await prisma.transaction.findFirst({
     where: scopedId(userId, id),
-    select: { occurredAt: true },
+    select: { id: true },
   });
 
   if (!existing) {
     return { ok: false, error: "Transaksi tidak ditemukan." };
   }
 
-  const parsed = parseJournalEntryFormData(formData, existing.occurredAt);
+  const parsed = parseJournalEntryFormData(formData);
 
   if (!parsed.ok) {
     return parsed;
@@ -83,7 +83,13 @@ export async function createJournalEntryAction(
 export async function deleteJournalEntryAction(
   id: string,
 ): Promise<
-  | { ok: true; deleted: { inboxMessageId: string | null; transaction: ParsedTransaction } }
+  | {
+      ok: true;
+      deleted: {
+        inboxMessageId: string | null;
+        transaction: ParsedTransaction;
+      };
+    }
   | JournalActionFailure
 > {
   const userId = await requireUserId();

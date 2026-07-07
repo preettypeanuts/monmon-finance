@@ -64,6 +64,7 @@ export function JournalEntryCreateDialog({
     const formData = new FormData(event.currentTarget);
     formData.set("type", type);
     formData.set("category", category);
+    formData.set("occurredAt", occurredAtText);
 
     startTransition(async () => {
       const result = await createJournalEntryAction(formData);

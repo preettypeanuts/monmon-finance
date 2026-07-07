@@ -9,13 +9,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { FORM_FIELD_DATE } from "@/config/form-dialog";
+import {
+  dateInputFromCalendarDate,
+  parseDateOnlyInput,
+} from "@/lib/finance/day-range";
 import { formatJournalDate } from "@/lib/finance/format-datetime";
 import { CalendarBlankIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
-import {
-  isValidDateInput,
-  toDateInputValue,
-} from "@/lib/validations/planned-item";
 
 interface FormDatePickerProps {
   id: string;
@@ -29,12 +29,7 @@ interface FormDatePickerProps {
 }
 
 function dateFromInputValue(value: string): Date | undefined {
-  if (!isValidDateInput(value)) {
-    return undefined;
-  }
-
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day);
+  return parseDateOnlyInput(value) ?? undefined;
 }
 
 export function FormDatePicker({
@@ -79,7 +74,7 @@ export function FormDatePicker({
                 return;
               }
 
-              onChange(toDateInputValue(date));
+              onChange(dateInputFromCalendarDate(date));
               setOpen(false);
             }}
           />

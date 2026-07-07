@@ -5,6 +5,7 @@ import {
   getCategoryLabel,
 } from "@/config/categories";
 import { parseAmount } from "@/lib/finance/parse-amount";
+import { parseDateOnlyInput } from "@/lib/finance/day-range";
 import { isValidDateInput } from "@/lib/validations/planned-item";
 import type { JournalEntryFormInput } from "@/types/journal";
 import type { TransactionType } from "@/types/transaction";
@@ -16,37 +17,16 @@ function readString(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function parseOccurredAtDateInput(
-  dateInput: string,
-  existing?: Date | string,
-): Date | null {
+function parseOccurredAtDateInput(dateInput: string): Date | null {
   if (!isValidDateInput(dateInput)) {
     return null;
   }
 
-  const [year, month, day] = dateInput.split("-").map(Number);
-
-  if (existing) {
-    const base = existing instanceof Date ? existing : new Date(existing);
-    if (!Number.isNaN(base.getTime())) {
-      return new Date(
-        year,
-        month - 1,
-        day,
-        base.getHours(),
-        base.getMinutes(),
-        base.getSeconds(),
-        base.getMilliseconds(),
-      );
-    }
-  }
-
-  return new Date(year, month - 1, day, 12, 0, 0, 0);
+  return parseDateOnlyInput(dateInput);
 }
 
 export function parseJournalEntryFormData(
   formData: FormData,
-  existingOccurredAt?: Date | string,
 ): { ok: true; data: JournalEntryFormInput } | { ok: false; error: string } {
   const typeRaw = readString(formData, "type");
 
@@ -79,7 +59,6 @@ export function parseJournalEntryFormData(
   const rawInput = readString(formData, "rawInput") || description;
   const occurredAt = parseOccurredAtDateInput(
     readString(formData, "occurredAt"),
-    existingOccurredAt,
   );
 
   if (!occurredAt) {

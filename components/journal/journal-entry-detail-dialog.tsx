@@ -37,7 +37,10 @@ import { formatIdr } from "@/lib/finance/format-currency";
 import { PencilSimpleIcon, TrashIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { toDateInputValue } from "@/lib/validations/planned-item";
-import { getCategoryLabel, type TransactionCategoryId } from "@/config/categories";
+import {
+  getCategoryLabel,
+  type TransactionCategoryId,
+} from "@/config/categories";
 import type { JournalEntry } from "@/types/journal";
 import type { TransactionType } from "@/types/transaction";
 
@@ -94,6 +97,7 @@ export function JournalEntryDetailDialog({
     formData.set("id", currentEntry.id);
     formData.set("type", type);
     formData.set("category", category);
+    formData.set("occurredAt", occurredAtText);
 
     startTransition(async () => {
       const result = await saveJournalEntryAction(formData);
