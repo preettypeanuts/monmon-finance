@@ -20,7 +20,7 @@ export const GLASS_HOVER =
   "hover:bg-white/75 dark:hover:bg-white/10 dark:active:bg-white/14";
 
 export const GLASS_TILE_HIGHLIGHT =
-  "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_1px_2px_rgba(0,0,0,0.3)]";
+  "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]";
 
 export const GLASS_TILE_BASE = `${GLASS_BACKDROP} ${GLASS_TILE_HIGHLIGHT}`;
 
