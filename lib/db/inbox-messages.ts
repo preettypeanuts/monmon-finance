@@ -1,6 +1,7 @@
 import { normalizeCategory } from "@/config/categories";
 import { INBOX_MESSAGE_PAGE_SIZE } from "@/config/inbox-messages";
 import { backfillInboxMessagesFromTransactions } from "@/lib/db/backfill-inbox-messages";
+import { invalidateAiInsightCacheOnTransactionMutation } from "@/lib/db/ai-insight-cache";
 import { ensurePendingDailySummaries } from "@/lib/db/daily-summary";
 import { prisma } from "@/lib/db/prisma";
 import { scopedByUser, scopedId } from "@/lib/db/user-scope";
@@ -266,6 +267,13 @@ export async function deleteInboxMessagePair(
     removedIds.push(assistantRecord.id);
   }
 
+  const linkedTransaction = transactionId
+    ? await prisma.transaction.findFirst({
+        where: scopedId(userId, transactionId),
+        select: { occurredAt: true },
+      })
+    : null;
+
   await prisma.$transaction(async (tx) => {
     if (assistantRecord) {
       await tx.inboxMessage.deleteMany({
@@ -283,6 +291,13 @@ export async function deleteInboxMessagePair(
       });
     }
   });
+
+  if (linkedTransaction) {
+    await invalidateAiInsightCacheOnTransactionMutation(
+      userId,
+      linkedTransaction.occurredAt,
+    );
+  }
 
   return {
     removedIds,

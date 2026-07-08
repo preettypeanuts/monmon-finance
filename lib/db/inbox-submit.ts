@@ -1,4 +1,5 @@
 import { normalizeCategory } from "@/config/categories";
+import { invalidateAiInsightCacheOnTransactionMutation } from "@/lib/db/ai-insight-cache";
 import { prisma } from "@/lib/db/prisma";
 import type { ChatMessage } from "@/types/chat";
 import type { ParsedTransaction } from "@/types/transaction";
@@ -60,7 +61,7 @@ export async function submitInboxChatTransaction(input: {
   const userAt = new Date(now.getTime() - 1_000);
   const assistantAt = now;
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const userRecord = await tx.inboxMessage.create({
       data: {
         userId: input.userId,
@@ -113,8 +114,19 @@ export async function submitInboxChatTransaction(input: {
         assistantRecord,
         savedTransaction,
       ),
+      occurredAt: savedTransaction.occurredAt,
     };
   });
+
+  await invalidateAiInsightCacheOnTransactionMutation(
+    input.userId,
+    result.occurredAt,
+  );
+
+  return {
+    userMessage: result.userMessage,
+    assistantMessage: result.assistantMessage,
+  };
 }
 
 export async function submitInboxChatFailure(input: {

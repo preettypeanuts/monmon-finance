@@ -29,6 +29,7 @@ model User {
   savingsGoals    SavingsGoal[]
   pushSubscriptions PushSubscription[]
   appNotifications  AppNotification[]
+  aiInsightCaches   AiInsightCache[]
 
   @@unique([email])
   @@map("user")
@@ -300,5 +301,27 @@ model AppNotification {
 
   @@unique([userId, dedupeKey])
   @@index([userId, readAt, createdAt])
+  @@schema("monmon_whethertie")
+}
+
+enum AiInsightCacheType {
+  journal_condition
+  plans_insight
+
+  @@schema("monmon_whethertie")
+}
+
+model AiInsightCache {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      AiInsightCacheType
+  dateKey   String
+  payload   Json
+  createdAt DateTime           @default(now())
+
+  @@unique([userId, type, dateKey])
+  @@index([userId])
+  @@map("ai_insight_cache")
   @@schema("monmon_whethertie")
 }

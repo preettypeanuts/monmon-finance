@@ -2,6 +2,7 @@ import { TRANSACTION_CATEGORIES, normalizeCategory } from "@/config/categories";
 import { JOURNAL_PAGE_SIZE } from "@/config/journal";
 import { buildJournalCategoryExpenseBreakdown } from "@/lib/finance/build-journal-category-breakdown";
 import { prisma } from "@/lib/db/prisma";
+import { invalidateAiInsightCacheOnTransactionMutation } from "@/lib/db/ai-insight-cache";
 import { scopedByUser, scopedId } from "@/lib/db/user-scope";
 import type {
   JournalCategoryExpenseBreakdown,
@@ -123,7 +124,7 @@ export async function createJournalTransaction(
   userId: string,
   data: JournalEntryFormInput,
 ): Promise<JournalEntry> {
-  return prisma.transaction.create({
+  const entry = await prisma.transaction.create({
     data: {
       userId,
       type: data.type,
@@ -135,6 +136,10 @@ export async function createJournalTransaction(
     },
     select: JOURNAL_ENTRY_SELECT,
   });
+
+  await invalidateAiInsightCacheOnTransactionMutation(userId, entry.occurredAt);
+
+  return entry;
 }
 
 export async function updateJournalTransaction(
@@ -158,10 +163,14 @@ export async function updateJournalTransaction(
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  return prisma.transaction.findFirstOrThrow({
+  const entry = await prisma.transaction.findFirstOrThrow({
     where: scopedId(userId, id),
     select: JOURNAL_ENTRY_SELECT,
   });
+
+  await invalidateAiInsightCacheOnTransactionMutation(userId, entry.occurredAt);
+
+  return entry;
 }
 
 export interface DeleteJournalTransactionResult {
@@ -208,6 +217,11 @@ export async function deleteJournalTransaction(
       where: scopedId(userId, id),
     });
   });
+
+  await invalidateAiInsightCacheOnTransactionMutation(
+    userId,
+    record.occurredAt,
+  );
 
   return {
     transaction: snapshot,

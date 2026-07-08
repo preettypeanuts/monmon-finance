@@ -61,7 +61,11 @@ export default async function PlansPage({ searchParams }: PlansPageProps) {
       savingsOverview={savingsOverview}
       aiInsight={
         <Suspense fallback={<PlansAiInsightSkeleton />}>
-          <PlansAiInsight plans={plans} availableBalance={availableBalance} />
+          <PlansAiInsight
+            userId={userId}
+            plans={plans}
+            availableBalance={availableBalance}
+          />
         </Suspense>
       }
     />

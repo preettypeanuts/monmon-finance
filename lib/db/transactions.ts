@@ -1,6 +1,7 @@
 import { buildTodaySummary } from "@/lib/finance/build-summary";
 import { getDayRange } from "@/lib/finance/day-range";
 import { prisma } from "@/lib/db/prisma";
+import { invalidateAiInsightCacheOnTransactionMutation } from "@/lib/db/ai-insight-cache";
 import { scopedByUser } from "@/lib/db/user-scope";
 import type { ParsedTransaction } from "@/types/transaction";
 import type { TodaySummary } from "@/types/summary";
@@ -20,7 +21,7 @@ export async function createTransaction({
   rawInput,
   transaction,
 }: CreateTransactionInput) {
-  return prisma.transaction.create({
+  const saved = await prisma.transaction.create({
     data: {
       userId,
       type: transaction.type,
@@ -31,6 +32,13 @@ export async function createTransaction({
       rawInput,
     },
   });
+
+  await invalidateAiInsightCacheOnTransactionMutation(
+    userId,
+    saved.occurredAt,
+  );
+
+  return saved;
 }
 
 export async function getTodaySummary(userId: string): Promise<TodaySummary> {

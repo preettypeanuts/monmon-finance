@@ -38,6 +38,7 @@ export interface PlansOverview {
 
 /** Inputs for streamed plans AI insight — rendered separately from page shell. */
 export interface PlansInsightInputs {
+  userId: string;
   plans: PlanRecord[];
   availableBalance: number;
 }

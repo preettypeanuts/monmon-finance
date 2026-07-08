@@ -1,3 +1,4 @@
+import { invalidatePlansInsightCache } from "@/lib/db/ai-insight-cache";
 import { prisma } from "@/lib/db/prisma";
 import { scopedId } from "@/lib/db/user-scope";
 import { recordPlanPurchase } from "@/lib/finance/record-plan-purchase";
@@ -56,6 +57,8 @@ export async function createPlan(
     await recordPlanPurchase(userId, plan);
   }
 
+  await invalidatePlansInsightCache(userId);
+
   return plan;
 }
 
@@ -97,6 +100,8 @@ export async function updatePlan(
     await recordPlanPurchase(userId, plan);
   }
 
+  await invalidatePlansInsightCache(userId);
+
   return plan;
 }
 
@@ -108,6 +113,8 @@ export async function deletePlan(userId: string, id: string): Promise<void> {
   if (deleted.count === 0) {
     throw new Error("Wish tidak ditemukan.");
   }
+
+  await invalidatePlansInsightCache(userId);
 }
 
 export async function markPlanDone(
@@ -141,6 +148,7 @@ export async function markPlanDone(
 
   const plan = mapPlan(record);
   await recordPlanPurchase(userId, plan);
+  await invalidatePlansInsightCache(userId);
 
   return plan;
 }

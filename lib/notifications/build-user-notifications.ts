@@ -168,6 +168,7 @@ export async function buildUserNotificationDrafts(
         availableBalance,
       )
     : await generateJournalCondition(
+        userId,
         referenceDate,
         todayTransactions,
         availableBalance,

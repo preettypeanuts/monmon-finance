@@ -154,6 +154,7 @@ export async function getOverviewPageData(
       })),
     },
     aiBriefInputs: {
+      userId,
       journalTransactions,
       availableBalance,
       todaySummary,

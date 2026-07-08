@@ -59,6 +59,7 @@ export interface OverviewPageData {
 
 /** Inputs for streamed AI brief — fetched with page data, rendered separately. */
 export interface OverviewAiBriefInputs {
+  userId: string;
   journalTransactions: {
     type: "income" | "expense";
     amount: number;

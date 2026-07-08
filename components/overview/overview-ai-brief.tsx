@@ -9,6 +9,7 @@ interface OverviewAiBriefProps extends OverviewAiBriefInputs {
 }
 
 export async function OverviewAiBrief({
+  userId,
   journalTransactions,
   availableBalance,
   todaySummary,
@@ -16,6 +17,7 @@ export async function OverviewAiBrief({
   className,
 }: OverviewAiBriefProps) {
   const condition = await generateJournalCondition(
+    userId,
     new Date(),
     journalTransactions,
     availableBalance,
