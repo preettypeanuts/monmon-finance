@@ -2,16 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 
+import { normalizeCategory } from "@/config/categories";
 import { requireUserId } from "@/lib/auth/session";
-import {
-  revalidateUserPlannedItems,
-} from "@/lib/cache/revalidate-user-data";
+import { revalidateUserPlannedItems } from "@/lib/cache/revalidate-user-data";
 import {
   createPlannedItem,
   deletePlannedItem,
   markInstallmentPaid,
   updatePlannedItem,
 } from "@/lib/db/planned-items";
+import { prisma } from "@/lib/db/prisma";
+import type { RecurringSuggestion } from "@/lib/finance/detect-recurring-transaction";
+import { extractCategoryKeyword } from "@/lib/finance/extract-category-keyword";
+import { toDayKey } from "@/lib/finance/day-range";
 import { parsePlannedItemFormData } from "@/lib/validations/planned-item";
 import type { PlannedItemRecord } from "@/types/planner";
 
@@ -32,6 +35,14 @@ export type PlannedItemActionResult =
 function revalidatePayPlan(userId: string) {
   revalidateUserPlannedItems(userId);
   revalidatePath("/payplan");
+}
+
+function startAtNextMonth(fromIso: string): string {
+  const base = new Date(fromIso);
+  const date = Number.isNaN(base.getTime()) ? new Date() : base;
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + 1);
+  return toDayKey(next);
 }
 
 export async function savePlannedItemAction(
@@ -58,9 +69,7 @@ export async function savePlannedItemAction(
 export async function markInstallmentPaidAction(
   plannedItemId: string,
   installmentIndex: number,
-): Promise<
-  { ok: true; paidCount: number } | PlannedItemActionFailure
-> {
+): Promise<{ ok: true; paidCount: number } | PlannedItemActionFailure> {
   const userId = await requireUserId();
   const trimmed = plannedItemId.trim();
 
@@ -93,5 +102,65 @@ export async function deletePlannedItemAction(
     return { ok: true };
   } catch {
     return { ok: false, error: "Gagal menghapus item." };
+  }
+}
+
+export async function createPlannedItemFromSuggestionAction(input: {
+  suggestion: RecurringSuggestion;
+  lastOccurredAt: string;
+}): Promise<PlannedItemActionResult> {
+  const userId = await requireUserId();
+  const { suggestion, lastOccurredAt } = input;
+  const keyword = suggestion.keyword?.trim().toLowerCase();
+
+  if (!keyword || suggestion.averageAmount <= 0) {
+    return { ok: false, error: "Saran jadwal tidak valid." };
+  }
+
+  const kind = suggestion.flowType === "income" ? "income" : "subscription";
+  const displayName = keyword.charAt(0).toUpperCase() + keyword.slice(1);
+
+  try {
+    const item = await createPlannedItem(userId, {
+      name: displayName,
+      kind,
+      repeat: suggestion.suggestedRepeat,
+      amount: suggestion.averageAmount,
+      startAt: startAtNextMonth(lastOccurredAt),
+      endMode: "never",
+      category: normalizeCategory(suggestion.category),
+      flowType: suggestion.flowType,
+      note: `Dari pola berulang chat (${suggestion.matchCount}x)`,
+    });
+
+    revalidatePayPlan(userId);
+    return { ok: true, item };
+  } catch {
+    return { ok: false, error: "Gagal menjadwalkan di PayPlan." };
+  }
+}
+
+export async function dismissRecurringSuggestionAction(
+  keyword: string,
+): Promise<{ ok: true } | PlannedItemActionFailure> {
+  const userId = await requireUserId();
+  const normalized =
+    extractCategoryKeyword(keyword) || keyword.trim().toLowerCase();
+
+  if (!normalized) {
+    return { ok: false, error: "Keyword tidak valid." };
+  }
+
+  try {
+    await prisma.recurringSuggestionDismissal.upsert({
+      where: {
+        userId_keyword: { userId, keyword: normalized },
+      },
+      create: { userId, keyword: normalized },
+      update: {},
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Gagal menyimpan penolakan." };
   }
 }

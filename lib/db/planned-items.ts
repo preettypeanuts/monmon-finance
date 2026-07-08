@@ -104,8 +104,8 @@ function buildCreateData(userId: string, input: PlannedItemFormInput) {
     kind: input.kind,
     repeat: input.repeat,
     amount: input.amount,
-    flowType: getFlowTypeForKind(input.kind),
-    category: getDefaultCategoryForKind(input.kind),
+    flowType: input.flowType ?? getFlowTypeForKind(input.kind),
+    category: input.category ?? getDefaultCategoryForKind(input.kind),
     startAt: parseStoredDateInput(input.startAt),
     note: input.note?.trim() || null,
     paidInstallmentCount:

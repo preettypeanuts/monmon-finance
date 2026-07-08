@@ -78,6 +78,9 @@ export interface PlannedItemFormInput {
   paidInstallmentCount?: number;
   endAt?: string;
   note?: string;
+  /** Optional overrides (defaults come from kind). */
+  category?: string;
+  flowType?: "income" | "expense";
 }
 
 export type PlannedPaymentStatusFilter = "all" | "unpaid" | "paid";

@@ -34,6 +34,9 @@ import { createMultipleTransactions } from "@/lib/db/transactions";
 import { scopedByUser, scopedId } from "@/lib/db/user-scope";
 import { formatIdr } from "@/lib/finance/format-currency";
 import {
+  detectRecurringPattern,
+} from "@/lib/finance/detect-recurring-transaction";
+import {
   canMarkPlannedItemPaid,
   getPlannedItemPaymentIndex,
 } from "@/lib/planner/item-payment";
@@ -83,6 +86,41 @@ function withLowConfidenceFlag(
     lowConfidenceCategory: Boolean(flagged),
     lowConfidenceTransactionId: flagged?.id,
   };
+}
+
+async function withRecurringSuggestion(
+  userId: string,
+  transactions: ParsedTransaction[],
+  message: ChatMessage,
+): Promise<ChatMessage> {
+  const last = transactions.at(-1);
+  if (!last) {
+    return message;
+  }
+
+  try {
+    const suggestion = await detectRecurringPattern(userId, last);
+    if (!suggestion) {
+      return message;
+    }
+
+    return {
+      ...message,
+      recurringSuggestion: suggestion,
+    };
+  } catch {
+    return message;
+  }
+}
+
+async function enrichAssistantMessage(
+  userId: string,
+  rawInput: string,
+  transactions: ParsedTransaction[],
+  message: ChatMessage,
+): Promise<ChatMessage> {
+  const withConfidence = withLowConfidenceFlag(rawInput, transactions, message);
+  return withRecurringSuggestion(userId, transactions, withConfidence);
 }
 
 export async function submitInboxMessage(
@@ -135,7 +173,8 @@ export async function submitInboxMessage(
       transaction: savedTransactions[0],
       transactions: savedTransactions,
       userMessage,
-      assistantMessage: withLowConfidenceFlag(
+      assistantMessage: await enrichAssistantMessage(
+        userId,
         trimmed,
         savedTransactions,
         assistantMessage,
@@ -242,10 +281,15 @@ export async function retryInboxMessageAction(
       transaction: savedTransactions[0],
       transactions: savedTransactions,
       userMessage,
-      assistantMessage: withLowConfidenceFlag(trimmed, savedTransactions, {
-        ...assistantMessage,
-        transactions: savedTransactions,
-      }),
+      assistantMessage: await enrichAssistantMessage(
+        userId,
+        trimmed,
+        savedTransactions,
+        {
+          ...assistantMessage,
+          transactions: savedTransactions,
+        },
+      ),
     };
   } catch (error) {
     const content = formatInboxProcessingError(error);

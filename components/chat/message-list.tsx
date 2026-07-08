@@ -9,6 +9,7 @@ import { MessageBubble } from "@/components/chat/message-bubble";
 import { MessageTimestamp } from "@/components/chat/message-timestamp";
 import { TransactionPreview } from "@/components/chat/transaction-preview";
 import { TransactionQuickCorrect } from "@/components/chat/transaction-quick-correct";
+import { RecurringSuggestionPrompt } from "@/components/chat/recurring-suggestion-prompt";
 import { MobilePageTitle } from "@/components/shared/mobile-page-title";
 import { useSyncMobileScrollChrome } from "@/components/shared/mobile-scroll-chrome-provider";
 import { useSyncMobileTopBlur } from "@/components/shared/mobile-top-blur-provider";
@@ -367,6 +368,18 @@ export function MessageList({
                         category,
                         type,
                       })
+                    }
+                  />
+                ) : null}
+                {!isUser &&
+                message.recurringSuggestion &&
+                !message.transactionDeleted ? (
+                  <RecurringSuggestionPrompt
+                    disabled={actionsDisabled}
+                    suggestion={message.recurringSuggestion}
+                    lastOccurredAt={
+                      (message.transactions?.at(-1) ?? message.transaction)
+                        ?.occurredAt ?? message.createdAt
                     }
                   />
                 ) : null}

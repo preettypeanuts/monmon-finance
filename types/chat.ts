@@ -1,3 +1,4 @@
+import type { RecurringSuggestion } from "@/lib/finance/detect-recurring-transaction";
 import type { ParsedTransaction } from "@/types/transaction";
 
 export type MessageRole = "user" | "assistant";
@@ -20,6 +21,8 @@ export interface ChatMessage {
   lowConfidenceCategory?: boolean;
   /** Transaction id within a batch that should show quick-correct chips. */
   lowConfidenceTransactionId?: string;
+  /** Offer to schedule a recurring PayPlan item when a monthly pattern is detected. */
+  recurringSuggestion?: RecurringSuggestion;
 }
 
 export interface UnpaidPayPlanChatItem {

@@ -29,8 +29,9 @@ model User {
   savingsGoals    SavingsGoal[]
   pushSubscriptions PushSubscription[]
   appNotifications  AppNotification[]
-  aiInsightCaches       AiInsightCache[]
-  categoryOverrides     UserCategoryOverride[]
+  aiInsightCaches                AiInsightCache[]
+  categoryOverrides              UserCategoryOverride[]
+  recurringSuggestionDismissals  RecurringSuggestionDismissal[]
 
   @@unique([email])
   @@map("user")
@@ -341,5 +342,16 @@ model UserCategoryOverride {
 
   @@unique([userId, keyword, type])
   @@index([userId])
+  @@schema("monmon_whethertie")
+}
+
+model RecurringSuggestionDismissal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyword   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, keyword])
   @@schema("monmon_whethertie")
 }
