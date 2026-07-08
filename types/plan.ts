@@ -36,6 +36,12 @@ export interface PlansOverview {
   insightMeta: PlansInsightMeta;
 }
 
+/** Inputs for streamed plans AI insight — rendered separately from page shell. */
+export interface PlansInsightInputs {
+  plans: PlanRecord[];
+  availableBalance: number;
+}
+
 export interface PlansUpcomingImpactItem {
   id: string;
   name: string;

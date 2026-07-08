@@ -23,6 +23,7 @@ interface PlansPageContentProps {
   upcomingImpact: PlansUpcomingImpactItem[];
   savingsGoals: SavingsGoalRecord[];
   savingsOverview: SavingsOverview;
+  aiInsight: React.ReactNode;
 }
 
 function syncPlansTabUrl(tab: PlansPageTab) {
@@ -45,6 +46,7 @@ export function PlansPageContent({
   upcomingImpact,
   savingsGoals,
   savingsOverview,
+  aiInsight,
 }: PlansPageContentProps) {
   const [tab, setTab] = useState<PlansPageTab>(initialTab);
   const isSavingsTab = tab === "savings";
@@ -91,6 +93,7 @@ export function PlansPageContent({
 
           <div className={cn(tab !== "wish" && "hidden")}>
             <PlansView
+              aiInsight={aiInsight}
               plans={plans}
               overview={plansOverview}
               upcomingImpact={upcomingImpact}

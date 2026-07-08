@@ -12,7 +12,6 @@ import { PlanCard } from "@/components/plans/plan-card";
 import { PlanDetailDialog } from "@/components/plans/plan-detail-dialog";
 import { PlansAddFab } from "@/components/plans/plans-add-fab";
 import { PlansRelatedUpcoming } from "@/components/plans/plans-related-upcoming";
-import { PlansAiSummary } from "@/components/plans/plans-ai-summary";
 import { PlansSummaryWidgets } from "@/components/plans/plans-summary-widgets";
 import { Button } from "@/components/ui/button";
 import { PLANS_CARD_LIST, PLANS_MOBILE_SOLID_CARD, PLANS_WIDGET_TILE } from "@/config/plans";
@@ -33,6 +32,7 @@ interface PlansViewProps {
   plans: PlanRecord[];
   overview: PlansOverview;
   upcomingImpact: PlansUpcomingImpactItem[];
+  aiInsight: React.ReactNode;
 }
 
 function sortPlans(plans: PlanRecord[]): PlanRecord[] {
@@ -62,7 +62,12 @@ function buildLocalOverview(
   };
 }
 
-export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
+export function PlansView({
+  plans,
+  overview,
+  upcomingImpact,
+  aiInsight,
+}: PlansViewProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>("view");
@@ -150,7 +155,7 @@ export function PlansView({ plans, overview, upcomingImpact }: PlansViewProps) {
   return (
     <div className={cn("flex flex-col", STACK_GAP)}>
       <PlansSummaryWidgets overview={summary} />
-      <PlansAiSummary overview={summary} />
+      {aiInsight}
 
       <div className="flex items-center justify-between gap-3">
         <div>

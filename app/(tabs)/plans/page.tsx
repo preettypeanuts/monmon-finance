@@ -1,11 +1,17 @@
+import { Suspense } from "react";
+
+import { PlansAiInsight } from "@/components/plans/plans-ai-insight";
+import { PlansAiInsightSkeleton } from "@/components/plans/plans-ai-insight-skeleton";
 import { PlansPageContent } from "@/components/plans/plans-page-content";
 import type { PlansPageTab } from "@/components/plans/plans-page-tabs";
-import { generatePlansInsight } from "@/lib/ai/generate-plans-insight";
 import { requireUserId } from "@/lib/auth/session";
 import { getAvailableBalance } from "@/lib/db/balance";
 import { listPlans } from "@/lib/db/plans";
 import { listSavingsGoals } from "@/lib/db/savings-goals";
-import { buildPlansOverview } from "@/lib/finance/build-plans-overview";
+import {
+  buildFallbackPlansInsight,
+  buildPlansOverview,
+} from "@/lib/finance/build-plans-overview";
 import { buildSavingsOverview } from "@/lib/finance/build-savings-overview";
 import { getPlansUpcomingImpact } from "@/lib/planner/build-plans-upcoming-impact";
 
@@ -36,8 +42,13 @@ export default async function PlansPage({ searchParams }: PlansPageProps) {
       getPlansUpcomingImpact(userId),
     ]);
 
-  const insight = await generatePlansInsight(plans, availableBalance);
-  const plansOverview = buildPlansOverview(plans, availableBalance, insight);
+  const activePlans = plans.filter((plan) => plan.status === "active");
+  const estimatedCost = activePlans.reduce((sum, plan) => sum + plan.amount, 0);
+  const plansOverview = buildPlansOverview(
+    plans,
+    availableBalance,
+    buildFallbackPlansInsight(estimatedCost, availableBalance),
+  );
   const savingsOverview = buildSavingsOverview(savingsGoals, availableBalance);
 
   return (
@@ -48,6 +59,11 @@ export default async function PlansPage({ searchParams }: PlansPageProps) {
       upcomingImpact={upcomingImpact}
       savingsGoals={savingsGoals}
       savingsOverview={savingsOverview}
+      aiInsight={
+        <Suspense fallback={<PlansAiInsightSkeleton />}>
+          <PlansAiInsight plans={plans} availableBalance={availableBalance} />
+        </Suspense>
+      }
     />
   );
 }
