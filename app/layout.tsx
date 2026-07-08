@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   metadataBase: resolveMetadataBase(),
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: PWA_ICON_192, sizes: "192x192", type: "image/png" },
       { url: PWA_ICON_512, sizes: "512x512", type: "image/png" },
     ],
