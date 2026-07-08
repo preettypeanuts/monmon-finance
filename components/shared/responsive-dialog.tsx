@@ -20,17 +20,16 @@ import {
   FORM_DIALOG_HEADER,
   FORM_DIALOG_SURFACE,
 } from "@/config/form-dialog";
+import { RESPONSIVE_FORM_DRAWER_POPUP } from "@/config/responsive-dialog-mobile";
 import { useDrawerScrollLock } from "@/hooks/use-drawer-scroll-lock";
 import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { cn } from "@/lib/utils";
 
-/** Bottom sheet shell — swipe handle on top, safe-area inset at bottom. */
+/** Bottom sheet shell — styling in globals.css `.responsive-form-drawer-popup`. */
 const RESPONSIVE_DIALOG_DRAWER_SHELL = cn(
   FORM_DIALOG_SURFACE,
-  "flex flex-col gap-0 overflow-hidden rounded-t-[1.75rem] rounded-b-none border-0 p-0",
-  "!bottom-[var(--mobile-safe-bottom)]",
-  "max-h-[calc(100dvh-var(--mobile-safe-top)-var(--mobile-safe-bottom)-1rem)]",
-  "[--drawer-content-max-height:calc(100dvh-var(--mobile-safe-top)-var(--mobile-safe-bottom)-1rem)]",
+  RESPONSIVE_FORM_DRAWER_POPUP,
+  "flex flex-col gap-0 overflow-hidden border-0 p-0",
 );
 
 interface ResponsiveDialogProps {
