@@ -48,7 +48,6 @@ export interface OverviewPageData {
   greeting: OverviewGreeting;
   balance: number;
   dayDeltas: OverviewDayDeltas;
-  aiBrief: OverviewAiBrief;
   alerts: OverviewAlert[];
   upcoming: PlansUpcomingImpactItem[];
   plansOverview: PlansOverview;
@@ -56,4 +55,22 @@ export interface OverviewPageData {
   monthlySnapshot: OverviewMonthlySnapshot;
   todaySummary: TodaySummary;
   todayActivity: OverviewActivityItem[];
+}
+
+/** Inputs for streamed AI brief — fetched with page data, rendered separately. */
+export interface OverviewAiBriefInputs {
+  journalTransactions: {
+    type: "income" | "expense";
+    amount: number;
+    category: string;
+    description: string;
+  }[];
+  availableBalance: number;
+  todaySummary: TodaySummary;
+  plansOverview: PlansOverview;
+}
+
+export interface OverviewPageResult {
+  data: OverviewPageData;
+  aiBriefInputs: OverviewAiBriefInputs;
 }

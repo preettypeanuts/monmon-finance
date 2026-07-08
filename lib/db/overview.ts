@@ -1,4 +1,3 @@
-import { generateJournalCondition } from "@/lib/ai/generate-journal-condition";
 import { getCategoryLabel } from "@/config/categories";
 import { getAvailableBalance } from "@/lib/db/balance";
 import { listPlans } from "@/lib/db/plans";
@@ -6,7 +5,6 @@ import { prisma } from "@/lib/db/prisma";
 import { listSavingsGoals } from "@/lib/db/savings-goals";
 import { scopedByUser } from "@/lib/db/user-scope";
 import { buildOverviewAlerts } from "@/lib/finance/build-overview-alerts";
-import { buildOverviewBrief } from "@/lib/finance/build-overview-brief";
 import {
   buildFallbackPlansInsight,
   buildPlansOverview,
@@ -23,11 +21,11 @@ import {
   getMonthRange,
 } from "@/lib/planner/calendar";
 import { getPlansUpcomingImpact } from "@/lib/planner/build-plans-upcoming-impact";
-import type { OverviewPageData } from "@/types/overview";
+import type { OverviewPageResult } from "@/types/overview";
 
 export async function getOverviewPageData(
   userId: string,
-): Promise<OverviewPageData> {
+): Promise<OverviewPageResult> {
   const now = new Date();
   const yesterday = addDays(now, -1);
   const monthKey = getCurrentMonthKey(now);
@@ -105,12 +103,6 @@ export async function getOverviewPageData(
   const todaySummary = buildTodaySummary(journalTransactions);
   const monthSummary = buildTodaySummary(monthTransactions);
 
-  const condition = await generateJournalCondition(
-    now,
-    journalTransactions,
-    availableBalance,
-  );
-
   const plansOverview = buildPlansOverview(
     plans,
     availableBalance,
@@ -128,37 +120,44 @@ export async function getOverviewPageData(
   );
 
   return {
-    greeting: formatOverviewGreeting(now),
-    balance: availableBalance,
-    dayDeltas: {
-      incomeDelta: todayFlow.totalIncome - yesterdayFlow.totalIncome,
-      expenseDelta: todayFlow.totalExpense - yesterdayFlow.totalExpense,
-      balanceDelta: availableBalance - yesterdayBalance,
-    },
-    aiBrief: buildOverviewBrief(condition, todaySummary, plansOverview),
-    alerts: buildOverviewAlerts({
+    data: {
+      greeting: formatOverviewGreeting(now),
+      balance: availableBalance,
+      dayDeltas: {
+        incomeDelta: todayFlow.totalIncome - yesterdayFlow.totalIncome,
+        expenseDelta: todayFlow.totalExpense - yesterdayFlow.totalExpense,
+        balanceDelta: availableBalance - yesterdayBalance,
+      },
+      alerts: buildOverviewAlerts({
+        upcoming: upcomingImpact,
+        plansOverview,
+        availableBalance,
+      }),
       upcoming: upcomingImpact,
       plansOverview,
-      availableBalance,
-    }),
-    upcoming: upcomingImpact,
-    plansOverview,
-    savingsOverview,
-    monthlySnapshot: {
-      monthLabel: formatPlannerMonthLabel(monthKey),
-      totalIncome: monthSummary.totalIncome,
-      totalExpense: monthSummary.totalExpense,
-      netFlow: monthSummary.totalIncome - monthSummary.totalExpense,
-      transactionCount: monthTransactions.length,
+      savingsOverview,
+      monthlySnapshot: {
+        monthLabel: formatPlannerMonthLabel(monthKey),
+        totalIncome: monthSummary.totalIncome,
+        totalExpense: monthSummary.totalExpense,
+        netFlow: monthSummary.totalIncome - monthSummary.totalExpense,
+        transactionCount: monthTransactions.length,
+      },
+      todaySummary,
+      todayActivity: todayActivityRows.map((transaction) => ({
+        id: transaction.id,
+        title: transaction.rawInput.trim() || transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        timeLabel: formatJournalTime(transaction.occurredAt),
+        categoryLabel: getCategoryLabel(transaction.category),
+      })),
     },
-    todaySummary,
-    todayActivity: todayActivityRows.map((transaction) => ({
-      id: transaction.id,
-      title: transaction.rawInput.trim() || transaction.description,
-      amount: transaction.amount,
-      type: transaction.type,
-      timeLabel: formatJournalTime(transaction.occurredAt),
-      categoryLabel: getCategoryLabel(transaction.category),
-    })),
+    aiBriefInputs: {
+      journalTransactions,
+      availableBalance,
+      todaySummary,
+      plansOverview,
+    },
   };
 }

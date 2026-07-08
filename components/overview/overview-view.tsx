@@ -1,4 +1,3 @@
-import { OverviewAiBriefCard } from "@/components/overview/overview-ai-brief-card";
 import { OverviewAlertsCard } from "@/components/overview/overview-alerts-card";
 import { OverviewBalanceHero } from "@/components/overview/overview-balance-hero";
 import { OverviewGreetingCard } from "@/components/overview/overview-greeting-card";
@@ -17,14 +16,15 @@ import type { OverviewPageData } from "@/types/overview";
 
 interface OverviewViewProps {
   data: OverviewPageData;
+  aiBrief: React.ReactNode;
 }
 
-export function OverviewView({ data }: OverviewViewProps) {
+export function OverviewView({ data, aiBrief }: OverviewViewProps) {
   return (
     <div className={OVERVIEW_BENTO_GRID}>
       <div className={OVERVIEW_TOP_PAIR}>
         <OverviewGreetingCard greeting={data.greeting} className="h-full" />
-        <OverviewAiBriefCard brief={data.aiBrief} className="h-full" />
+        {aiBrief}
       </div>
 
       <OverviewBalanceHero
