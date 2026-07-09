@@ -17,6 +17,7 @@ import { PersistentSidebarProvider } from "@/components/shared/persistent-sideba
 import { PwaHtmlBackgroundSync } from "@/components/shared/pwa-html-background-sync";
 import { PwaStandaloneViewportFix } from "@/components/shared/pwa-standalone-viewport-fix";
 import { PwaStatusBarFix } from "@/components/shared/pwa-status-bar-fix";
+import { SafariBrowserChromeSync } from "@/components/shared/safari-browser-chrome-sync";
 import { WallpaperBackground } from "@/components/shared/wallpaper-background";
 import { WallpaperProvider } from "@/components/shared/wallpaper-provider";
 import { SidebarInset } from "@/components/ui/sidebar";
@@ -45,6 +46,7 @@ export function AppShell({
         <WallpaperBackground />
       </FixedViewportPortal>
       <PwaHtmlBackgroundSync />
+      <SafariBrowserChromeSync />
       <PwaStatusBarFix />
       <PwaStandaloneViewportFix />
       <PushNotificationManager />

@@ -4,59 +4,25 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 import { useWallpaper } from "@/components/shared/wallpaper-provider";
-import { isWallpaperRoute } from "@/config/page-surface";
-import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
+import {
+  applySolidBackground,
+  applyWallpaperBackground,
+  clearRootBackground,
+} from "@/lib/pwa/root-background";
+import { resolveUseWallpaperRoot } from "@/lib/pwa/safari-browser-chrome";
 import { getWallpaperLayerStyle } from "@/lib/wallpaper/resolve-wallpaper";
-
-function applyWallpaperBackground(
-  element: HTMLElement,
-  style: ReturnType<typeof getWallpaperLayerStyle>,
-) {
-  element.style.background = "";
-  element.style.backgroundColor = style.backgroundColor
-    ? String(style.backgroundColor)
-    : "";
-  element.style.backgroundImage = style.backgroundImage
-    ? String(style.backgroundImage)
-    : "";
-  element.style.backgroundSize = style.backgroundSize
-    ? String(style.backgroundSize)
-    : "";
-  element.style.backgroundPosition = style.backgroundPosition
-    ? String(style.backgroundPosition)
-    : "";
-  element.style.backgroundRepeat = style.backgroundRepeat
-    ? String(style.backgroundRepeat)
-    : "";
-}
-
-function applySolidBackground(element: HTMLElement) {
-  element.style.background = "";
-  element.style.backgroundColor = "var(--background)";
-  element.style.backgroundImage = "";
-  element.style.backgroundSize = "";
-  element.style.backgroundPosition = "";
-  element.style.backgroundRepeat = "";
-}
-
-function clearRootBackground(element: HTMLElement) {
-  element.style.background = "";
-  element.style.backgroundColor = "";
-  element.style.backgroundImage = "";
-  element.style.backgroundSize = "";
-  element.style.backgroundPosition = "";
-  element.style.backgroundRepeat = "";
-}
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 
 /**
  * iOS standalone samples html/body for the status bar band.
- * Desktop: always wallpaper. Mobile: wallpaper on Inbox/Overview only.
+ * Desktop: always wallpaper. Mobile PWA: wallpaper on Inbox/Overview only.
+ * Mobile Safari browser: wallpaper on all routes (seamless chrome; no PWA change).
  */
 export function PwaHtmlBackgroundSync() {
   const pathname = usePathname();
   const isMobile = useIsMobileViewport();
   const { wallpaper } = useWallpaper();
-  const useWallpaperRoot = !isMobile || isWallpaperRoute(pathname);
+  const useWallpaperRoot = resolveUseWallpaperRoot(isMobile, pathname);
 
   useEffect(() => {
     const html = document.documentElement;
