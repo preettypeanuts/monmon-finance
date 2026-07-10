@@ -1,6 +1,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
+import { resolveDatabasePoolMax } from "@/config/database";
 import { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
@@ -12,11 +13,22 @@ const globalForPrisma = globalThis as unknown as {
 /** Bump when Prisma schema changes to invalidate dev hot-reload cache. */
 const PRISMA_CLIENT_VERSION = 14;
 
-/** One connection per serverless instance — safe for low DB connection limits. */
-const SERVERLESS_POOL_MAX = 1;
+const IS_DEV = process.env.NODE_ENV !== "production";
+const POOL_MAX = resolveDatabasePoolMax(IS_DEV);
 
 const REQUIRED_PLANNED_ITEM_FIELDS = ["paidInstallmentCount"] as const;
 const REQUIRED_CATEGORY_BUDGET_FIELDS = ["repeatNextMonth"] as const;
+
+function recyclePrismaResources(): void {
+  const client = globalForPrisma.prisma;
+  const pool = globalForPrisma.prismaPool;
+
+  globalForPrisma.prisma = undefined;
+  globalForPrisma.prismaPool = undefined;
+  globalForPrisma.prismaClientVersion = undefined;
+
+  void Promise.allSettled([client?.$disconnect(), pool?.end()]);
+}
 
 function getConnectionPool(): Pool {
   const cached = globalForPrisma.prismaPool;
@@ -33,9 +45,11 @@ function getConnectionPool(): Pool {
 
   const pool = new Pool({
     connectionString,
-    max: SERVERLESS_POOL_MAX,
-    idleTimeoutMillis: 20_000,
+    max: POOL_MAX,
+    min: 0,
+    idleTimeoutMillis: IS_DEV ? 5_000 : 20_000,
     connectionTimeoutMillis: 10_000,
+    allowExitOnIdle: IS_DEV,
   });
 
   globalForPrisma.prismaPool = pool;
@@ -83,12 +97,25 @@ function getPrismaClient(): PrismaClient {
     return cached;
   }
 
+  if (cached || globalForPrisma.prismaPool) {
+    recyclePrismaResources();
+  }
+
   const client = createPrismaClient();
 
   globalForPrisma.prisma = client;
   globalForPrisma.prismaClientVersion = PRISMA_CLIENT_VERSION;
 
   return client;
+}
+
+if (IS_DEV) {
+  const cleanup = () => {
+    recyclePrismaResources();
+  };
+
+  process.once("SIGINT", cleanup);
+  process.once("SIGTERM", cleanup);
 }
 
 export const prisma = getPrismaClient();

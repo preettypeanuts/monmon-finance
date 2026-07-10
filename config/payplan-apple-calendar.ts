@@ -42,7 +42,7 @@ export const APPLE_CALENDAR_EVENT_PILL = [
 ].join(" ");
 
 export const APPLE_CALENDAR_TODAY_BUTTON = [
-  "pointer-events-auto fixed left-3 z-20 md:hidden",
+  "pointer-events-auto fixed left-5 z-20 md:hidden",
   "bottom-[calc(var(--mobile-bottom-nav-offset)+0.625rem)]",
   APPLE_CALENDAR_PILL,
   GLASS_BACKDROP, GLASS_BORDER,
