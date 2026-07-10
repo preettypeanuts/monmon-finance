@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { AuthErrorAlert } from "@/components/auth/auth-error-alert";
 import { Button } from "@/components/ui/button";
+import { hasDeploymentMismatch } from "@/lib/deployment/has-deployment-mismatch";
 import { formatAppError } from "@/lib/errors/format-app-error";
 import { isStaleDeploymentError } from "@/lib/errors/is-stale-deployment-error";
 import {
+  forceHardReload,
   getDeploymentReloadAttempts,
   reloadForDeployment,
 } from "@/lib/errors/reload-for-deployment";
@@ -17,32 +19,52 @@ interface ErrorPageProps {
 }
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
+  const [deploymentMismatch, setDeploymentMismatch] = useState(false);
   const isStaleDeployment = isStaleDeploymentError(error);
-  const reloadExhausted = getDeploymentReloadAttempts() >= 2;
+  const shouldRecoverDeployment = isStaleDeployment || deploymentMismatch;
+  const reloadExhausted = getDeploymentReloadAttempts() >= 3;
 
   useEffect(() => {
     console.error(error);
   }, [error]);
 
   useEffect(() => {
-    if (!isStaleDeployment || reloadExhausted) {
+    let cancelled = false;
+
+    void hasDeploymentMismatch().then((mismatch) => {
+      if (!cancelled) {
+        setDeploymentMismatch(mismatch);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!shouldRecoverDeployment || reloadExhausted) {
       return;
     }
 
     reloadForDeployment();
-  }, [isStaleDeployment, reloadExhausted]);
+  }, [shouldRecoverDeployment, reloadExhausted]);
 
-  const message = formatAppError(error);
+  const message = shouldRecoverDeployment
+    ? "Aplikasi baru saja diperbarui. Memuat versi terbaru…"
+    : formatAppError(error);
 
   const handleRetry = () => {
-    if (isStaleDeployment) {
+    if (shouldRecoverDeployment) {
       if (!reloadForDeployment()) {
-        window.location.assign(window.location.pathname);
+        forceHardReload();
       }
       return;
     }
 
-    reset();
+    if (!reloadForDeployment()) {
+      reset();
+    }
   };
 
   return (
@@ -50,7 +72,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
       <div className="w-full max-w-sm space-y-4 text-center">
         <div className="space-y-2">
           <h1 className="text-lg font-semibold tracking-tight">
-            {isStaleDeployment
+            {shouldRecoverDeployment
               ? "Memperbarui aplikasi"
               : "Gagal memuat halaman"}
           </h1>
@@ -59,7 +81,9 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Button type="button" onClick={handleRetry}>
-            {isStaleDeployment ? "Muat ulang sekarang" : "Coba lagi"}
+            {shouldRecoverDeployment
+              ? "Muat ulang sekarang"
+              : "Muat ulang halaman"}
           </Button>
           <Button
             type="button"

@@ -8,6 +8,14 @@ const STALE_DEPLOYMENT_PATTERNS = [
   "dynamically imported module",
   "unable to preload css",
   "outdated optimize dep",
+  "failed to find server action",
+  "server action not found",
+  "failed to fetch rsc payload",
+  "an error occurred in the server components render",
+  "connection closed before message completed",
+  "unexpected token '<'",
+  "is not valid javascript",
+  "mime type",
 ] as const;
 
 function readErrorText(error: unknown): string {

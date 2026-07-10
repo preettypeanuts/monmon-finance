@@ -2,30 +2,18 @@
 
 import { useEffect } from "react";
 
-import { CLIENT_BUILD_ID } from "@/lib/deployment/build-id";
+import { hasDeploymentMismatch } from "@/lib/deployment/has-deployment-mismatch";
 import { isStaleDeploymentError } from "@/lib/errors/is-stale-deployment-error";
 import {
   clearDeploymentReloadAttempts,
   reloadForDeployment,
 } from "@/lib/errors/reload-for-deployment";
 
-const BUILD_ID_ENDPOINT = "/api/build-id";
-const BUILD_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+const BUILD_CHECK_INTERVAL_MS = 60 * 1000;
 
-async function fetchServerBuildId(): Promise<string | null> {
-  try {
-    const response = await fetch(BUILD_ID_ENDPOINT, {
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = (await response.json()) as { buildId?: string };
-    return payload.buildId ?? null;
-  } catch {
-    return null;
+async function tryRecoverFromDeploymentMismatch(): Promise<void> {
+  if (await hasDeploymentMismatch()) {
+    reloadForDeployment();
   }
 }
 
@@ -41,6 +29,7 @@ function tryRecoverFromStaleClient(error: unknown): void {
 export function DeploymentRecoveryHandler() {
   useEffect(() => {
     clearDeploymentReloadAttempts();
+    void tryRecoverFromDeploymentMismatch();
 
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
       tryRecoverFromStaleClient(event.reason);
@@ -50,22 +39,10 @@ export function DeploymentRecoveryHandler() {
       tryRecoverFromStaleClient(event.error ?? event.message);
     };
 
-    const checkBuildId = async () => {
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-
-      const serverBuildId = await fetchServerBuildId();
-
-      if (!serverBuildId || serverBuildId === CLIENT_BUILD_ID) {
-        return;
-      }
-
-      reloadForDeployment();
-    };
-
     const onVisibilityChange = () => {
-      void checkBuildId();
+      if (document.visibilityState === "visible") {
+        void tryRecoverFromDeploymentMismatch();
+      }
     };
 
     window.addEventListener("unhandledrejection", onUnhandledRejection);
@@ -73,7 +50,7 @@ export function DeploymentRecoveryHandler() {
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     const intervalId = window.setInterval(() => {
-      void checkBuildId();
+      void tryRecoverFromDeploymentMismatch();
     }, BUILD_CHECK_INTERVAL_MS);
 
     return () => {

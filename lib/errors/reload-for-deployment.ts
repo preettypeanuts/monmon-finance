@@ -1,5 +1,5 @@
 const RELOAD_ATTEMPTS_KEY = "monmon:deployment-reload-attempts";
-const MAX_RELOAD_ATTEMPTS = 2;
+const MAX_RELOAD_ATTEMPTS = 3;
 
 function canReload(): boolean {
   if (typeof window === "undefined") {
@@ -16,6 +16,13 @@ function recordReloadAttempt(): void {
 }
 
 async function clearRuntimeCaches(): Promise<void> {
+  if ("serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(
+      registrations.map((registration) => registration.unregister()),
+    );
+  }
+
   if (!("caches" in window)) {
     return;
   }
@@ -39,6 +46,13 @@ export function reloadForDeployment(): boolean {
   window.location.replace(url.toString());
 
   return true;
+}
+
+/** Hard navigation fallback when the retry budget is exhausted. */
+export function forceHardReload(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set("_refresh", Date.now().toString());
+  window.location.assign(url.toString());
 }
 
 /** Call after a successful boot so later deploy recoveries can retry again. */

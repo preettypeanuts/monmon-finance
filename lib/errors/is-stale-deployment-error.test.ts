@@ -17,6 +17,20 @@ describe("isStaleDeploymentError", () => {
     ).toBe(true);
   });
 
+  it("detects server component deploy errors", () => {
+    expect(
+      isStaleDeploymentError(
+        new Error("An error occurred in the Server Components render"),
+      ),
+    ).toBe(true);
+  });
+
+  it("detects server action mismatch", () => {
+    expect(
+      isStaleDeploymentError(new Error("Failed to find Server Action")),
+    ).toBe(true);
+  });
+
   it("ignores unrelated errors", () => {
     expect(isStaleDeploymentError(new Error("Network request failed"))).toBe(
       false,
