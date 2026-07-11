@@ -34,6 +34,7 @@ const EMPTY_SLASH = {
 interface InboxBootstrapState {
   messages: ChatMessage[];
   summary: TodaySummary;
+  availableBalance: number | null;
   ready: boolean;
   hasMoreMessages: boolean;
 }
@@ -45,6 +46,7 @@ function toBootstrapState(
   return {
     messages: payload?.messages ?? [],
     summary: payload?.summary ?? EMPTY_TODAY_SUMMARY,
+    availableBalance: payload?.availableBalance ?? null,
     ready,
     hasMoreMessages: payload?.hasMoreMessages ?? false,
   };
@@ -291,10 +293,6 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
   }
 
   function requestDailySummary() {
-    if (dailySummary) {
-      return;
-    }
-
     void fetch("/api/inbox/context?scope=daily-summary", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
@@ -316,6 +314,8 @@ export function useInboxBootstrap(options: InboxBootstrapOptions = {}) {
     if (transactions.length === 0) {
       return;
     }
+
+    setDailySummary(null);
 
     setState((current) => {
       const summary = applyTransactionsToSummary(current.summary, transactions);

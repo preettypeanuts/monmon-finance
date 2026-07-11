@@ -18,6 +18,7 @@ interface InboxMobileLayoutProps {
   children: ReactNode;
   summary: TodaySummary;
   dailySummary: DailySummarySnapshot | null;
+  availableBalance?: number | null;
   messages?: ChatMessage[];
   onOpenSummary?: () => void;
   onRefresh?: () => void;
@@ -29,6 +30,7 @@ export function InboxMobileLayout({
   children,
   summary,
   dailySummary,
+  availableBalance = null,
   messages = [],
   onOpenSummary,
   onRefresh,
@@ -77,6 +79,7 @@ export function InboxMobileLayout({
         </div>
 
         <InboxTodaySummaryDrawer
+          availableBalance={availableBalance}
           dailySummary={dailySummary}
           onOpenChange={setSummaryOpen}
           open={summaryOpen}

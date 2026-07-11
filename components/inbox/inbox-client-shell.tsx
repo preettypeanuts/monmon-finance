@@ -27,6 +27,7 @@ export function InboxClientShell({
   const {
     messages,
     summary,
+    availableBalance,
     ready,
     dailySummary,
     slash,
@@ -47,6 +48,7 @@ export function InboxClientShell({
     <div className={INBOX_PAGE_ROW}>
       <section className={INBOX_CHAT_COLUMN}>
         <InboxMobileLayout
+          availableBalance={availableBalance}
           dailySummary={dailySummary}
           messages={messages}
           onFocusMessage={setFocusMessageId}
@@ -79,7 +81,11 @@ export function InboxClientShell({
         </InboxMobileLayout>
       </section>
       <aside className={INBOX_SUMMARY_ASIDE}>
-        <TodaySummaryPanel dailySummary={dailySummary} summary={summary} />
+        <TodaySummaryPanel
+          availableBalance={availableBalance}
+          dailySummary={dailySummary}
+          summary={summary}
+        />
       </aside>
     </div>
   );

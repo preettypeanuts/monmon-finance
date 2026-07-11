@@ -7,6 +7,7 @@ import {
   buildDailySummarySnapshot,
 } from "@/lib/finance/build-daily-summary-message";
 import { buildDailySummaryReflectionContext } from "@/lib/finance/build-daily-summary-reflection-context";
+import { buildDailySummarySignature } from "@/lib/finance/build-daily-summary-signature";
 import {
   endOfDay,
   getDayRange,
@@ -92,6 +93,7 @@ async function createDailySummaryForDay(
     bundle.insight,
     bundle.condition,
   );
+  const insightSignature = buildDailySummarySignature(transactions);
 
   await prisma.inboxMessage.upsert({
     where: {
@@ -107,10 +109,15 @@ async function createDailySummaryForDay(
       kind: "daily_summary",
       content,
       insight: storedInsight,
+      insightSignature,
       summaryDate,
       createdAt: endOfDay(date),
     },
-    update: {},
+    update: {
+      content,
+      insight: storedInsight,
+      insightSignature,
+    },
   });
 }
 
@@ -156,12 +163,14 @@ async function backfillMissingDailySummaryInsights(
       bundle.insight,
       bundle.condition,
     );
+    const insightSignature = buildDailySummarySignature(transactions);
 
     await prisma.inboxMessage.update({
       where: { id: message.id },
       data: {
         insight: storedInsight,
         content,
+        insightSignature,
       },
     });
   }
@@ -203,9 +212,16 @@ async function backfillLegacyDailySummaryInsights(
       userId,
       message.summaryDate,
     );
+    const reflectionContext = await buildDailySummaryReflectionContext(
+      userId,
+      message.summaryDate,
+      transactions,
+      cumulativeBalance,
+    );
     const condition = buildFallbackDailySummaryCondition(
       transactions,
       cumulativeBalance,
+      reflectionContext,
     );
     const storedInsight = serializeDailySummaryInsight(
       parsed.insight,
@@ -228,6 +244,8 @@ export async function ensureDailySummaryForDay(
   date: Date,
 ): Promise<void> {
   const summaryDate = startOfDay(date);
+  const transactions = await getTransactionsForDay(userId, date);
+  const currentSignature = buildDailySummarySignature(transactions);
 
   const existing = await prisma.inboxMessage.findFirst({
     where: {
@@ -235,10 +253,15 @@ export async function ensureDailySummaryForDay(
       kind: "daily_summary",
       summaryDate,
     },
-    select: { id: true },
+    select: { id: true, insightSignature: true },
   });
 
   if (existing) {
+    if (existing.insightSignature === currentSignature) {
+      return;
+    }
+
+    await createDailySummaryForDay(userId, date);
     return;
   }
 
@@ -281,29 +304,8 @@ async function runEnsurePendingDailySummaries(userId: string): Promise<void> {
       dayKeys.add(toDayKey(transaction.occurredAt));
     }
 
-    const existingSummaries = await prisma.inboxMessage.findMany({
-      where: {
-        userId,
-        kind: "daily_summary",
-        summaryDate: {
-          not: null,
-        },
-      },
-      select: {
-        summaryDate: true,
-      },
-    });
-
-    const summarizedDays = new Set(
-      existingSummaries.map((entry) => toDayKey(entry.summaryDate!)),
-    );
-
     for (const dayKey of dayKeys) {
-      if (summarizedDays.has(dayKey)) {
-        continue;
-      }
-
-      await createDailySummaryForDay(userId, parseDayKey(dayKey));
+      await ensureDailySummaryForDay(userId, parseDayKey(dayKey));
     }
   }
 
@@ -376,6 +378,8 @@ export async function getDailySummaryForDay(
   userId: string,
   date: Date,
 ): Promise<DailySummarySnapshot | null> {
+  await ensureDailySummaryForDay(userId, date);
+
   const summaryDate = startOfDay(date);
 
   const message = await prisma.inboxMessage.findFirst({

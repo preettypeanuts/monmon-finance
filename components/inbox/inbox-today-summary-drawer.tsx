@@ -19,6 +19,7 @@ interface InboxTodaySummaryDrawerProps {
   onOpenChange: (open: boolean) => void;
   summary: TodaySummary;
   dailySummary: DailySummarySnapshot | null;
+  availableBalance?: number | null;
 }
 
 export function InboxTodaySummaryDrawer({
@@ -26,6 +27,7 @@ export function InboxTodaySummaryDrawer({
   onOpenChange,
   summary,
   dailySummary,
+  availableBalance = null,
 }: InboxTodaySummaryDrawerProps) {
   useDrawerScrollLock(open);
 
@@ -35,6 +37,7 @@ export function InboxTodaySummaryDrawer({
         <DrawerTitle className="sr-only">{UI_LABEL_TODAY_SUMMARY}</DrawerTitle>
         <div className={INBOX_SUMMARY_DRAWER_BODY}>
           <TodaySummaryPanel
+            availableBalance={availableBalance}
             dailySummary={dailySummary}
             embedded
             summary={summary}

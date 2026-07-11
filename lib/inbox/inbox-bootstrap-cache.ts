@@ -7,6 +7,7 @@ const CACHE_KEY = "wang.inbox.bootstrap.v2";
 export interface InboxBootstrapPayload {
   messages: ChatMessage[];
   summary: TodaySummary;
+  availableBalance?: number;
   hasMoreMessages?: boolean;
 }
 

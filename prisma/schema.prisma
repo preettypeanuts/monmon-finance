@@ -256,6 +256,8 @@ model InboxMessage {
   kind                InboxMessageKind @default(chat)
   content             String
   insight             String?
+  /// Fingerprint of transaction count + totals when insight was generated.
+  insightSignature    String?
   createdAt           DateTime         @default(now())
   summaryDate         DateTime?
   transactions        Transaction[]
