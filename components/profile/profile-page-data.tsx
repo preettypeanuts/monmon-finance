@@ -2,18 +2,23 @@ import { ChangePasswordForm } from "@/components/profile/change-password-form";
 import { ProfileMobileLayout } from "@/components/profile/profile-mobile-layout";
 import { ProfileShell } from "@/components/profile/profile-shell";
 import { ProfileSummary } from "@/components/profile/profile-summary";
+import { SetPasswordForm } from "@/components/profile/set-password-form";
 import { MobileScrollSurface } from "@/components/shared/mobile-scroll-surface";
 import {
   PROFILE_TITLE,
   PROFILE_DESC,
   PROFILE_ACCOUNT,
 } from "@/config/settings-labels";
+import { userHasCredentialPassword } from "@/lib/auth/has-credential-password";
 import { getSession, requireUserId } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
 export async function ProfilePageData() {
-  await requireUserId();
-  const session = await getSession();
+  const userId = await requireUserId();
+  const [session, hasPassword] = await Promise.all([
+    getSession(),
+    userHasCredentialPassword(userId),
+  ]);
   const user = session?.user;
 
   return (
@@ -52,7 +57,7 @@ export async function ProfilePageData() {
                 </section>
               ) : null}
 
-              <ChangePasswordForm />
+              {hasPassword ? <ChangePasswordForm /> : <SetPasswordForm />}
             </div>
           </MobileScrollSurface>
         </ProfileShell>

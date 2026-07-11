@@ -66,10 +66,13 @@ export const SETTINGS_DEFAULT_USER = "User";
 export const SETTINGS_EMAIL_UNAVAILABLE = "Email unavailable";
 
 export const PROFILE_TITLE = "Profile";
-export const PROFILE_DESC = "Manage your account and change password.";
+export const PROFILE_DESC = "Manage your account and password.";
 export const PROFILE_ACCOUNT = "Account";
 export const PROFILE_LOADING = "Loading profile...";
 
+export const PROFILE_SET_PASSWORD = "Set password";
+export const PROFILE_SET_PASSWORD_DESC =
+  "You signed in with Google. Add a password to also sign in with email.";
 export const PROFILE_CHANGE_PASSWORD = "Change password";
 export const PROFILE_CHANGE_PASSWORD_DESC =
   "Enter your current and new password.";
@@ -82,7 +85,12 @@ export const PROFILE_PASSWORD_MIN_LENGTH =
   "New password must be at least 8 characters.";
 export const PROFILE_PASSWORD_MISMATCH = "Password confirmation does not match.";
 export const PROFILE_PASSWORD_CHANGE_FAILED = "Failed to change password.";
+export const PROFILE_PASSWORD_SET_FAILED = "Failed to set password.";
 export const PROFILE_PASSWORD_UPDATED = "Password updated successfully.";
+export const PROFILE_PASSWORD_SET =
+  "Password set successfully. You can now sign in with email.";
+export const PROFILE_PASSWORD_ALREADY_SET =
+  "Password already set. Use change password instead.";
 
 export const PUSH_ERROR_UNSUPPORTED =
   "This browser does not support push notifications.";
