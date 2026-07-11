@@ -67,12 +67,31 @@ export const SETTINGS_EMAIL_UNAVAILABLE = "Email unavailable";
 
 export const PROFILE_TITLE = "Profile";
 export const PROFILE_DESC = "Manage your account and password.";
+export const PROFILE_DESC_GOOGLE_ONLY =
+  "Akun ini masuk lewat Google. Kamu bisa tambah password sebagai cara login cadangan.";
 export const PROFILE_ACCOUNT = "Account";
 export const PROFILE_LOADING = "Loading profile...";
 
-export const PROFILE_SET_PASSWORD = "Set password";
+export const PROFILE_GOOGLE_SIGN_IN_BADGE = "Masuk via Google";
+
+export const PROFILE_SET_PASSWORD = "Tambah password";
 export const PROFILE_SET_PASSWORD_DESC =
-  "You signed in with Google. Add a password to also sign in with email.";
+  "Akunmu saat ini cuma bisa masuk lewat Google. Isi password di bawah kalau kamu juga mau login pakai email + password di halaman Masuk.";
+export const PROFILE_SET_PASSWORD_WHY_TITLE = "Kenapa perlu isi ini?";
+export const PROFILE_SET_PASSWORD_WHY_1 =
+  "Bisa login di browser atau perangkat tanpa akun Google";
+export const PROFILE_SET_PASSWORD_WHY_2 =
+  "Cadangan kalau Google sementara tidak bisa dipakai";
+export const PROFILE_SET_PASSWORD_WHY_3 =
+  "Login Google tetap aktif — password hanya menambah cara masuk";
+export const PROFILE_SET_PASSWORD_OPTIONAL =
+  "Opsional. Kamu boleh lewati bagian ini kalau cuma pakai Google.";
+export const PROFILE_SET_PASSWORD_NEW = "Password baru";
+export const PROFILE_SET_PASSWORD_CONFIRM = "Konfirmasi password";
+export const PROFILE_SAVE_PASSWORD_GOOGLE = "Simpan password";
+export const PROFILE_PASSWORD_SET_GOOGLE =
+  "Password tersimpan. Sekarang kamu bisa masuk lewat email + password atau Google.";
+
 export const PROFILE_CHANGE_PASSWORD = "Change password";
 export const PROFILE_CHANGE_PASSWORD_DESC =
   "Enter your current and new password.";
@@ -83,7 +102,10 @@ export const PROFILE_SAVE_PASSWORD = "Save password";
 export const PROFILE_SAVING_PASSWORD = "Saving...";
 export const PROFILE_PASSWORD_MIN_LENGTH =
   "New password must be at least 8 characters.";
+export const PROFILE_PASSWORD_MIN_LENGTH_ID = "Password minimal 8 karakter.";
 export const PROFILE_PASSWORD_MISMATCH = "Password confirmation does not match.";
+export const PROFILE_PASSWORD_MISMATCH_ID =
+  "Konfirmasi password tidak sama.";
 export const PROFILE_PASSWORD_CHANGE_FAILED = "Failed to change password.";
 export const PROFILE_PASSWORD_SET_FAILED = "Failed to set password.";
 export const PROFILE_PASSWORD_UPDATED = "Password updated successfully.";

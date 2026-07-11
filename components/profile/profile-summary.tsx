@@ -12,9 +12,14 @@ import {
 interface ProfileSummaryProps {
   name: string | null | undefined;
   email: string | null | undefined;
+  signInLabel?: string;
 }
 
-export function ProfileSummary({ name, email }: ProfileSummaryProps) {
+export function ProfileSummary({
+  name,
+  email,
+  signInLabel,
+}: ProfileSummaryProps) {
   const displayName = name?.trim() || SETTINGS_DEFAULT_USER;
   const initial = displayName.charAt(0).toUpperCase() || "W";
 
@@ -29,6 +34,11 @@ export function ProfileSummary({ name, email }: ProfileSummaryProps) {
           <p className={SETTINGS_IOS_PROFILE_SUBTITLE}>
             {email?.trim() || SETTINGS_EMAIL_UNAVAILABLE}
           </p>
+          {signInLabel ? (
+            <p className="mt-1.5 text-[11px] font-medium text-muted-foreground">
+              {signInLabel}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

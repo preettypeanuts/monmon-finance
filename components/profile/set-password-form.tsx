@@ -4,23 +4,30 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { setPasswordAction } from "@/app/actions/auth";
+import { GoogleAccountNotice } from "@/components/profile/google-account-notice";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  PROFILE_CONFIRM_PASSWORD,
-  PROFILE_NEW_PASSWORD,
-  PROFILE_PASSWORD_MIN_LENGTH,
-  PROFILE_PASSWORD_MISMATCH,
-  PROFILE_PASSWORD_SET,
+  PROFILE_PASSWORD_MIN_LENGTH_ID,
+  PROFILE_PASSWORD_MISMATCH_ID,
   PROFILE_PASSWORD_SET_FAILED,
-  PROFILE_SAVE_PASSWORD,
+  PROFILE_PASSWORD_SET_GOOGLE,
+  PROFILE_SAVE_PASSWORD_GOOGLE,
   PROFILE_SAVING_PASSWORD,
   PROFILE_SET_PASSWORD,
+  PROFILE_SET_PASSWORD_CONFIRM,
   PROFILE_SET_PASSWORD_DESC,
+  PROFILE_SET_PASSWORD_NEW,
 } from "@/config/settings-labels";
 
-export function SetPasswordForm() {
+interface SetPasswordFormProps {
+  usesGoogleSignIn?: boolean;
+}
+
+export function SetPasswordForm({
+  usesGoogleSignIn = true,
+}: SetPasswordFormProps) {
   const router = useRouter();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,12 +41,12 @@ export function SetPasswordForm() {
     setSuccess(null);
 
     if (newPassword.length < 8) {
-      setError(PROFILE_PASSWORD_MIN_LENGTH);
+      setError(PROFILE_PASSWORD_MIN_LENGTH_ID);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError(PROFILE_PASSWORD_MISMATCH);
+      setError(PROFILE_PASSWORD_MISMATCH_ID);
       return;
     }
 
@@ -56,13 +63,13 @@ export function SetPasswordForm() {
 
     setNewPassword("");
     setConfirmPassword("");
-    setSuccess(PROFILE_PASSWORD_SET);
+    setSuccess(PROFILE_PASSWORD_SET_GOOGLE);
     router.refresh();
   }
 
   return (
     <section className="space-y-3">
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <h2 className="text-[13px] font-medium text-muted-foreground">
           {PROFILE_SET_PASSWORD}
         </h2>
@@ -71,10 +78,12 @@ export function SetPasswordForm() {
         </p>
       </div>
 
+      {usesGoogleSignIn ? <GoogleAccountNotice /> : null}
+
       <form className="space-y-3" onSubmit={handleSubmit}>
         <div className="space-y-4 rounded-xl bg-neutral-100 p-4 dark:bg-neutral-900">
           <div className="space-y-2">
-            <Label htmlFor="set-new-password">{PROFILE_NEW_PASSWORD}</Label>
+            <Label htmlFor="set-new-password">{PROFILE_SET_PASSWORD_NEW}</Label>
             <PasswordInput
               autoComplete="new-password"
               id="set-new-password"
@@ -86,7 +95,9 @@ export function SetPasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="set-confirm-password">{PROFILE_CONFIRM_PASSWORD}</Label>
+            <Label htmlFor="set-confirm-password">
+              {PROFILE_SET_PASSWORD_CONFIRM}
+            </Label>
             <PasswordInput
               autoComplete="new-password"
               id="set-confirm-password"
@@ -111,7 +122,7 @@ export function SetPasswordForm() {
         </div>
 
         <Button className="w-full shrink-0" disabled={pending} type="submit">
-          {pending ? PROFILE_SAVING_PASSWORD : PROFILE_SAVE_PASSWORD}
+          {pending ? PROFILE_SAVING_PASSWORD : PROFILE_SAVE_PASSWORD_GOOGLE}
         </Button>
       </form>
     </section>

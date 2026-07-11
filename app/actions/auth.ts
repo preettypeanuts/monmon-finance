@@ -8,7 +8,7 @@ import {
   PROFILE_PASSWORD_MIN_LENGTH,
 } from "@/config/settings-labels";
 import { auth } from "@/lib/auth/auth";
-import { userHasCredentialPassword } from "@/lib/auth/has-credential-password";
+import { userHasCredentialPassword } from "@/lib/auth/user-auth-providers";
 import { requireUserId } from "@/lib/auth/session";
 import { formatAppError } from "@/lib/errors/format-app-error";
 

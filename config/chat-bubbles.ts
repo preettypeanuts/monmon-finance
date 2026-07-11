@@ -9,7 +9,7 @@ export interface ChatBubbleStyle {
 
 /** Typography + inner padding — keep horizontal > vertical for short words. */
 export const CHAT_BUBBLE_BASE =
-  "box-border px-3.5 py-1.75 text-[14px] leading-[1.35] whitespace-pre-wrap";
+  "box-border px-4 py-3 text-[14px] leading-[1.35] whitespace-pre-wrap";
 
 /** User/assistant bubble without context menu wrapper. */
 export const CHAT_BUBBLE_LAYOUT_STANDALONE = "inline-block max-w-[85%]";
