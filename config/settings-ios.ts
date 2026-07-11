@@ -105,6 +105,7 @@ export const SETTINGS_IOS_SHEET = [
 ].join(" ");
 
 /** Icon tile colors — Apple Settings palette. */
+export const SETTINGS_IOS_ICON_CATEGORIES = "bg-[#5856D6]";
 export const SETTINGS_IOS_ICON_THEME = "bg-[#FF9500]";
 export const SETTINGS_IOS_ICON_ACCENT = "bg-[#FF2D55]";
 export const SETTINGS_IOS_ICON_GLASS = "bg-[#007AFF]";

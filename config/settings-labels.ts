@@ -13,6 +13,7 @@ export const SETTINGS_TITLE = "Settings";
 export const SETTINGS_DONE = "Done";
 export const SETTINGS_CLOSE_SETTINGS = "Close settings";
 export const SETTINGS_ACCOUNT = "Account";
+export const SETTINGS_FINANCE = "Finance";
 export const SETTINGS_APPEARANCE = "Appearance";
 export const SETTINGS_DISPLAY_MODE = "Display mode";
 export const SETTINGS_ACCENT_COLOR = "Accent color";
@@ -32,6 +33,26 @@ export const SETTINGS_GLASS_PANEL_TRANSPARENCY_ARIA = "Glass panel transparency"
 export const SETTINGS_TRANSPARENT = "Transparent";
 export const SETTINGS_WALLPAPER_FOOTER =
   "Choose a preset or upload a photo. The mask helps text stay readable over wallpapers.";
+
+export const SETTINGS_CATEGORIES = "Categories";
+export const SETTINGS_CATEGORIES_ADD = "New category";
+export const SETTINGS_CATEGORIES_DEFAULT = "Default categories";
+export const SETTINGS_CATEGORIES_CUSTOM = "Your categories";
+export const SETTINGS_CATEGORIES_FOOTER =
+  "Rename or change icons for yourself only. Other users keep the defaults.";
+export const SETTINGS_CATEGORIES_FORM_TITLE_CUSTOM = "New category";
+export const SETTINGS_CATEGORIES_FORM_TITLE_EDIT = "Edit category";
+export const SETTINGS_CATEGORIES_FORM_DESC =
+  "Changes apply only to your account.";
+export const SETTINGS_CATEGORIES_FORM_NAME = "Name";
+export const SETTINGS_CATEGORIES_FORM_TYPE = "Type";
+export const SETTINGS_CATEGORIES_FORM_COLOR = "Color";
+export const SETTINGS_CATEGORIES_TYPE_EXPENSE = "Expense";
+export const SETTINGS_CATEGORIES_TYPE_INCOME = "Income";
+export const SETTINGS_CATEGORIES_FORM_SAVE = "Save";
+export const SETTINGS_CATEGORIES_FORM_SAVING = "Saving...";
+export const SETTINGS_CATEGORIES_RESET = "Reset";
+export const SETTINGS_CATEGORIES_DELETE = "Delete";
 
 export const SETTINGS_NOTIFICATIONS = "Notifications";
 export const SETTINGS_PUSH_NOTIFICATIONS = "Push notifications";

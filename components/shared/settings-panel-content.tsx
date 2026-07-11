@@ -6,6 +6,7 @@ import { useAppearance } from "@/components/shared/appearance-provider";
 import { useWallpaper } from "@/components/shared/wallpaper-provider";
 import { SettingsAccentPanel } from "@/components/settings/settings-accent-panel";
 import { SettingsAppearancePanel } from "@/components/settings/settings-appearance-panel";
+import { SettingsCategoriesPanel } from "@/components/settings/settings-categories-panel";
 import { SettingsGlassPanel } from "@/components/settings/settings-glass-panel";
 import { SettingsIosProfileCard } from "@/components/settings/settings-ios-profile-card";
 import { SettingsPushNotificationSection } from "@/components/notifications/settings-push-notification-section";
@@ -17,6 +18,7 @@ import { ACCENT_COLORS } from "@/config/accent-colors";
 import { GLASS_BLUR_LEVELS } from "@/config/glass-blur";
 import {
   SETTINGS_IOS_ICON_ACCENT,
+  SETTINGS_IOS_ICON_CATEGORIES,
   SETTINGS_IOS_ICON_GLASS,
   SETTINGS_IOS_ICON_THEME,
   SETTINGS_IOS_ICON_WALLPAPER,
@@ -29,6 +31,9 @@ import {
   SETTINGS_APPEARANCE,
   SETTINGS_DISPLAY_MODE,
   SETTINGS_ACCENT_COLOR,
+  SETTINGS_CATEGORIES,
+  SETTINGS_CATEGORIES_FOOTER,
+  SETTINGS_FINANCE,
   SETTINGS_GLASS_BLUR,
   SETTINGS_TITLE,
   SETTINGS_WALLPAPER,
@@ -40,11 +45,18 @@ import {
   HeartIcon,
   SparkleIcon,
   SquaresFourIcon,
+  TagIcon,
 } from "@/lib/icons";
 import { resolveActiveWallpaper } from "@/lib/wallpaper/resolve-wallpaper";
 import { cn } from "@/lib/utils";
 
-type SettingsPanel = "root" | "appearance" | "accent" | "glass" | "wallpaper";
+type SettingsPanel =
+  | "root"
+  | "appearance"
+  | "accent"
+  | "glass"
+  | "wallpaper"
+  | "categories";
 
 interface SettingsPanelContentProps {
   open: boolean;
@@ -93,6 +105,10 @@ export function SettingsPanelContent({
     return <SettingsWallpaperPanel onBack={() => setPanel("root")} />;
   }
 
+  if (panel === "categories") {
+    return <SettingsCategoriesPanel onBack={() => setPanel("root")} />;
+  }
+
   return (
     <section className={cn(SETTINGS_IOS_SCROLL, mobileDrawer && "pt-1")}>
       <h2
@@ -108,6 +124,18 @@ export function SettingsPanelContent({
       </div>
 
       <SettingsPushNotificationSection />
+
+      <SettingsIosSection
+        label={SETTINGS_FINANCE}
+        footer={SETTINGS_CATEGORIES_FOOTER}
+      >
+        <SettingsIosRow
+          icon={<TagIcon aria-hidden />}
+          iconClassName={SETTINGS_IOS_ICON_CATEGORIES}
+          label={SETTINGS_CATEGORIES}
+          onClick={() => setPanel("categories")}
+        />
+      </SettingsIosSection>
 
       <SettingsIosSection label={SETTINGS_APPEARANCE}>
         <SettingsIosRow
