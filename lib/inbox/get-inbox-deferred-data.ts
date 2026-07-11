@@ -2,7 +2,6 @@ import { listPlans } from "@/lib/db/plans";
 import { listPlannedItems } from "@/lib/db/planned-items";
 import { listActiveSavingsGoals } from "@/lib/db/savings-goals";
 import { getDailySummaryForDay } from "@/lib/db/daily-summary";
-import { getYesterday } from "@/lib/finance/day-range";
 import { listActivePlanChatItems } from "@/lib/plans/active-plan-chat";
 import { listUnpaidPayPlanChatItems } from "@/lib/planner/unpaid-payplan-chat";
 import { listActiveSavingsChatItems } from "@/lib/savings/active-savings-chat";
@@ -44,7 +43,7 @@ export async function getInboxDeferredData(
   userId: string,
 ): Promise<InboxDeferredData> {
   const [dailySummary, slash] = await Promise.all([
-    getDailySummaryForDay(userId, getYesterday()),
+    getDailySummaryForDay(userId, new Date()),
     getInboxSlashContext(userId),
   ]);
 

@@ -7,10 +7,12 @@ import type { DailySummarySnapshot } from "@/types/summary";
 
 interface DailySummarySectionProps {
   dailySummary: DailySummarySnapshot;
+  showReflection?: boolean;
 }
 
 export function DailySummarySection({
   dailySummary,
+  showReflection = true,
 }: DailySummarySectionProps) {
   const { formatAmount } = useProtectedCurrency();
   const { summary } = dailySummary;
@@ -39,7 +41,7 @@ export function DailySummarySection({
         </p>
       ) : null}
 
-      {dailySummary.insight && dailySummary.condition ? (
+      {showReflection && dailySummary.insight && dailySummary.condition ? (
         <DailySummaryReflection
           insight={dailySummary.insight}
           condition={dailySummary.condition}

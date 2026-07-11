@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getApiUserId } from "@/lib/auth/api-session";
-import { getDailySummaryForDay } from "@/lib/db/daily-summary";
-import { getYesterday } from "@/lib/finance/day-range";
+import { ensureDailySummaryForDay, getDailySummaryForDay } from "@/lib/db/daily-summary";
 import { getInboxSlashContext } from "@/lib/inbox/get-inbox-deferred-data";
 
 export async function GET(request: Request) {
@@ -19,7 +18,9 @@ export async function GET(request: Request) {
   }
 
   if (scope === "daily-summary") {
-    const dailySummary = await getDailySummaryForDay(userId, getYesterday());
+    const today = new Date();
+    await ensureDailySummaryForDay(userId, today);
+    const dailySummary = await getDailySummaryForDay(userId, today);
     return NextResponse.json({ dailySummary });
   }
 

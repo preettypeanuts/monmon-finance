@@ -1,5 +1,6 @@
 "use client";
 
+import { DailySummaryReflection } from "@/components/finance/daily-summary-reflection";
 import { DailySummarySection } from "@/components/finance/daily-summary-section";
 import { SummaryTile } from "@/components/finance/summary-tile";
 import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
@@ -29,6 +30,7 @@ import type { DailySummarySnapshot, TodaySummary } from "@/types/summary";
 interface TodaySummaryPanelProps {
   summary: TodaySummary;
   dailySummary: DailySummarySnapshot | null;
+  availableBalance?: number | null;
   /** Flat layout for mobile drawer — no outer glass shell. */
   embedded?: boolean;
 }
@@ -36,13 +38,18 @@ interface TodaySummaryPanelProps {
 export function TodaySummaryPanel({
   summary,
   dailySummary,
+  availableBalance = null,
   embedded = false,
 }: TodaySummaryPanelProps) {
   const today = new Date();
-  const { formatAmount } = useProtectedCurrency();
+  const { formatAmount, formatExpenseAmount } = useProtectedCurrency();
   const income = SOLID_WIDGET_TILE_STYLES.income;
   const expense = SOLID_WIDGET_TILE_STYLES.expense;
   const balance = SOLID_WIDGET_TILE_STYLES.balance;
+  const displayBalance = Math.max(
+    0,
+    availableBalance ?? summary.balance,
+  );
 
   return (
     <div
@@ -88,7 +95,7 @@ export function TodaySummaryPanel({
           />
           <SummaryTile
             label={UI_LABEL_EXPENSE}
-            value={formatAmount(summary.totalExpense)}
+            value={formatExpenseAmount(summary.totalExpense)}
             icon={TOTAL_TILE_STYLES.expense.icon}
             surfaceClassName={expense.surface}
             iconClassName={expense.iconColor}
@@ -97,7 +104,7 @@ export function TodaySummaryPanel({
           />
           <SummaryTile
             label={UI_LABEL_BALANCE}
-            value={formatAmount(summary.balance)}
+            value={formatAmount(displayBalance)}
             icon={TOTAL_TILE_STYLES.balance.icon}
             surfaceClassName={balance.surface}
             iconClassName={balance.iconColor}
@@ -107,6 +114,13 @@ export function TodaySummaryPanel({
             className="col-span-2"
           />
         </section>
+
+        {dailySummary?.insight && dailySummary.condition ? (
+          <DailySummaryReflection
+            condition={dailySummary.condition}
+            insight={dailySummary.insight}
+          />
+        ) : null}
 
         <section>
           <h3 className={cn("mb-3 text-sm font-semibold")}>{UI_LABEL_CATEGORIES}</h3>
@@ -136,7 +150,7 @@ export function TodaySummaryPanel({
         </section>
 
         {dailySummary ? (
-          <DailySummarySection dailySummary={dailySummary} />
+          <DailySummarySection dailySummary={dailySummary} showReflection={false} />
         ) : null}
       </div>
     </div>

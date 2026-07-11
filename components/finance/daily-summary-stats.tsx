@@ -58,7 +58,7 @@ export function DailySummaryStats({
   const values = {
     totalExpense,
     totalIncome,
-    balance,
+    balance: Math.max(0, balance),
   };
 
   return (

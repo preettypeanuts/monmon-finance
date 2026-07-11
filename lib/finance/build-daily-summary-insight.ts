@@ -28,10 +28,21 @@ function appendBudgetReflection(
   return `${insight} ${budgetSnippets.join(". ")}.`;
 }
 
+function hasDailyBudgetOver(context?: DailySummaryReflectionContext): boolean {
+  return (
+    context?.categoryBudgets.some((item) => item.dayStatus === "over") ?? false
+  );
+}
+
 export function buildFallbackDailySummaryCondition(
   transactions: DailySummaryTransaction[],
   cumulativeBalance = 0,
+  context?: DailySummaryReflectionContext,
 ): FinanceCondition {
+  if (hasDailyBudgetOver(context)) {
+    return { label: "Waspada" };
+  }
+
   const summary = buildTodaySummary(transactions);
 
   return buildFallbackJournalCondition(
@@ -110,6 +121,7 @@ export function buildFallbackDailySummaryInsightBundle(
     condition: buildFallbackDailySummaryCondition(
       transactions,
       context.cumulativeBalance,
+      context,
     ),
   };
 }

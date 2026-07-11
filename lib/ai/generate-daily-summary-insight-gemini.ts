@@ -45,6 +45,9 @@ Bahasa Indonesia, nada ramah dan objektif, tanpa menghakimi.
 Gunakan data budget dan saldo kumulatif yang disediakan untuk menilai kondisi — jangan mengarang transaksi, nominal, atau budget di luar data.
 Jangan gunakan emoji dalam teks insight.
 
+PRIORITAS: kalau ada kategori dengan budget HARIAN berstatus 'over', ini WAJIB jadi fokus utama refleksi dengan nada peringatan jelas — lebih prioritas dari sekadar kategori bertotal terbesar.
+Kondisi (label) TIDAK BOLEH 'Aman' kalau ada minimal satu kategori dengan budget harian berstatus 'over'.
+
 Berikan juga penilaian kondisi keuangan (label saja) yang mencerminkan kesehatan keuangan hari itu.
 Pertimbangkan: rasio pengeluaran vs pemasukan, pelanggaran budget harian, dan saldo kumulatif.
 Label harus salah satu: Aman, Stabil, Waspada, Boros, atau Kritis.`;
