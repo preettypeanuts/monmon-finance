@@ -7,9 +7,14 @@ import {
 import { invalidateAiInsightCacheOnTransactionMutation } from "@/lib/db/ai-insight-cache";
 import { prisma } from "@/lib/db/prisma";
 import type { ChatMessage } from "@/types/chat";
+import { assertFlowTransactionType, isFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import type { ParsedTransaction } from "@/types/transaction";
 
-function mapTransaction(record: Transaction): ParsedTransaction {
+function mapTransaction(record: Transaction): ParsedTransaction | null {
+  if (!isFlowTransactionType(record.type)) {
+    return null;
+  }
+
   return {
     id: record.id,
     type: record.type,
@@ -43,7 +48,9 @@ function mapAssistantMessage(
   },
   transactions: Transaction[],
 ): ChatMessage {
-  const parsed = transactions.map(mapTransaction);
+  const parsed = transactions
+    .map(mapTransaction)
+    .filter((transaction): transaction is ParsedTransaction => transaction !== null);
 
   return {
     id: record.id,
@@ -151,7 +158,9 @@ export async function submitInboxChatTransactions(input: {
     return {
       userMessage: mapUserMessage(userRecord),
       assistantMessage: mapAssistantMessage(assistantRecord, savedTransactions),
-      transactions: savedTransactions.map(mapTransaction),
+      transactions: savedTransactions
+        .map(mapTransaction)
+        .filter((transaction): transaction is ParsedTransaction => transaction !== null),
       occurredAts: savedTransactions.map((row) => row.occurredAt),
     };
   });

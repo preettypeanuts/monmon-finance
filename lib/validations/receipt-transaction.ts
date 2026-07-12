@@ -5,9 +5,9 @@ import {
 } from "@/config/categories";
 import { parseAmount } from "@/lib/finance/parse-amount";
 import type { ConfirmedReceiptTransaction } from "@/types/receipt";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
-const VALID_TYPES = new Set<TransactionType>(["income", "expense"]);
+const VALID_TYPES = new Set<FlowTransactionType>(["income", "expense"]);
 
 function buildReceiptRawInput(
   merchant: string,
@@ -52,7 +52,7 @@ export function parseConfirmedReceiptTransaction(input: {
 }):
   | { ok: true; data: ConfirmedReceiptTransaction }
   | { ok: false; error: string } {
-  const type = input.type.trim() as TransactionType;
+  const type = input.type.trim() as FlowTransactionType;
 
   if (!VALID_TYPES.has(type)) {
     return { ok: false, error: "Jenis transaksi tidak valid." };

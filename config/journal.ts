@@ -5,12 +5,12 @@ import {
   UI_LABEL_EXPENSE,
   UI_LABEL_INCOME,
 } from "@/config/ui-labels";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 export const JOURNAL_PAGE_SIZE = 15;
 
 export const JOURNAL_TYPE_OPTIONS: {
-  value: TransactionType | "all";
+  value: FlowTransactionType | "all";
   label: string;
 }[] = [
   { value: "all", label: UI_LABEL_ALL_TYPES },

@@ -18,6 +18,7 @@ import {
   resolveUserCategoryCatalog,
 } from "@/lib/finance/resolve-user-categories";
 import type { DayFlowTotals } from "@/lib/finance/get-day-flow-totals";
+import { assertFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import { buildJournalTransactionWhere } from "@/lib/journal/build-transaction-where";
 import type {
   JournalCategoryExpenseBreakdown,
@@ -26,7 +27,7 @@ import type {
   JournalFilters,
   JournalListResult,
 } from "@/types/journal";
-import type { ParsedTransaction, TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, ParsedTransaction, TransactionType } from "@/types/transaction";
 
 const JOURNAL_ENTRY_SELECT = {
   id: true,
@@ -298,7 +299,7 @@ export async function updateTransactionCategoryQuick(
   userId: string,
   id: string,
   category: string,
-  type?: TransactionType,
+  type?: FlowTransactionType,
 ): Promise<ParsedTransaction> {
   const existing = await prisma.transaction.findFirst({
     where: scopedId(userId, id),
@@ -315,7 +316,7 @@ export async function updateTransactionCategoryQuick(
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  const nextType = type ?? existing.type;
+  const nextType = assertFlowTransactionType(type ?? existing.type);
   const catalog = await resolveUserCategoryCatalog(userId);
   const nextCategory = resolveCategoryForTransaction(
     category,
@@ -345,7 +346,7 @@ export async function updateTransactionCategoryQuick(
 
   return {
     id: entry.id,
-    type: entry.type,
+    type: assertFlowTransactionType(entry.type),
     amount: entry.amount,
     category: normalizeCategory(entry.category),
     description: entry.description,
@@ -371,7 +372,7 @@ export async function deleteJournalTransaction(
   }
 
   const snapshot: ParsedTransaction = {
-    type: record.type,
+    type: assertFlowTransactionType(record.type),
     amount: record.amount,
     category: normalizeCategory(record.category),
     description: record.description,

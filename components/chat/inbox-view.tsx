@@ -66,7 +66,7 @@ import type {
   UnpaidPayPlanChatItem,
 } from "@/types/chat";
 import type { ReceiptDraft } from "@/types/receipt";
-import type { ParsedTransaction, TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, ParsedTransaction } from "@/types/transaction";
 
 interface ReceiptEditContext {
   userMessageId: string;
@@ -75,7 +75,7 @@ interface ReceiptEditContext {
 }
 
 interface ReceiptConfirmInput {
-  type: TransactionType;
+  type: FlowTransactionType;
   amount: string;
   category: string;
   description: string;
@@ -625,7 +625,7 @@ export function InboxView({
     assistantMessageId: string;
     transactionId: string;
     category: string;
-    type: TransactionType;
+    type: FlowTransactionType;
   }) {
     beginInFlight();
 

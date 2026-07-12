@@ -14,9 +14,11 @@ import type { CategoryIconAccent } from "@/config/category-icon-style";
 import { getCategoryDisplayStyle } from "@/lib/finance/category-display-style";
 import { cn } from "@/lib/utils";
 
+import type { TransactionType } from "@/types/transaction";
+
 interface JournalCategoryIconProps {
   category: string;
-  type: "income" | "expense";
+  type: TransactionType;
   className?: string;
   iconOverride?: CategoryIconId;
   accentOverride?: CategoryIconAccent;

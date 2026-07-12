@@ -22,7 +22,7 @@ import { resolveUserCategoryCatalog } from "@/lib/finance/resolve-user-categorie
 import { saveUserCategoryOverride } from "@/lib/finance/user-category-override";
 import { parseJournalEntryFormData } from "@/lib/validations/journal-entry";
 import type { JournalEntry } from "@/types/journal";
-import type { ParsedTransaction, TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, ParsedTransaction } from "@/types/transaction";
 
 interface JournalActionSuccess {
   ok: true;
@@ -111,7 +111,7 @@ export type UpdateTransactionCategoryResult =
 export async function updateTransactionCategoryAction(input: {
   transactionId: string;
   category: string;
-  type?: TransactionType;
+  type?: FlowTransactionType;
   assistantMessageId?: string;
 }): Promise<UpdateTransactionCategoryResult> {
   const userId = await requireUserId();

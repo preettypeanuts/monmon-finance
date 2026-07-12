@@ -13,13 +13,13 @@ import { resolveExplicitCategoryForType } from "@/lib/chat/category-mentions";
 import { detectTransactionType } from "@/lib/finance/categories";
 import { parseRelativeDate } from "@/lib/finance/parse-relative-date";
 import { resolveTransactionCategoryAsync } from "@/lib/finance/resolve-transaction-category";
-import type { ParsedTransaction, TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, ParsedTransaction } from "@/types/transaction";
 
-const VALID_TYPES: TransactionType[] = ["income", "expense"];
+const VALID_TYPES: FlowTransactionType[] = ["income", "expense"];
 
 interface GeminiTransactionPayload {
   success?: boolean;
-  type?: TransactionType;
+  type?: FlowTransactionType;
   amount?: number;
   category?: string;
   description?: string;

@@ -1,5 +1,7 @@
+import { isFlowTransactionType } from "@/lib/db/transaction-flow-filter";
+
 interface DailySummarySignatureTransaction {
-  type: "income" | "expense";
+  type: string;
   amount: number;
 }
 
@@ -8,8 +10,15 @@ export function buildDailySummarySignature(
 ): string {
   let totalExpense = 0;
   let totalIncome = 0;
+  let counted = 0;
 
   for (const transaction of transactions) {
+    if (!isFlowTransactionType(transaction.type)) {
+      continue;
+    }
+
+    counted += 1;
+
     if (transaction.type === "income") {
       totalIncome += transaction.amount;
       continue;
@@ -18,5 +27,5 @@ export function buildDailySummarySignature(
     totalExpense += transaction.amount;
   }
 
-  return `${transactions.length}:${totalExpense}:${totalIncome}`;
+  return `${counted}:${totalExpense}:${totalIncome}`;
 }

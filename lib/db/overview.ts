@@ -25,6 +25,7 @@ import {
   getMonthTransactionAggregates,
   getTodayTransactionRows,
 } from "@/lib/db/transactions";
+import { isFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import { buildOverviewAlerts } from "@/lib/finance/build-overview-alerts";
 import {
   buildFallbackPlansInsight,
@@ -355,12 +356,18 @@ export async function getOverviewPageData(
 
   const aiBriefJournalTransactions = (
     filtersActive ? (aiBriefTransactionRows ?? []) : todayTransactionRows
-  ).map((transaction) => ({
-    type: transaction.type,
-    amount: transaction.amount,
-    category: transaction.category,
-    description: transaction.description,
-  }));
+  ).flatMap((transaction) =>
+    isFlowTransactionType(transaction.type)
+      ? [
+          {
+            type: transaction.type,
+            amount: transaction.amount,
+            category: transaction.category,
+            description: transaction.description,
+          },
+        ]
+      : [],
+  );
 
   const { upcomingPayPlanTotal, upcomingPayPlanCount } =
     sumUpcomingPayPlanThisMonth(upcomingImpact, now);

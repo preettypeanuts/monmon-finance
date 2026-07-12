@@ -33,6 +33,7 @@ import {
   toMonthKey,
 } from "@/lib/planner/calendar";
 import { prisma } from "@/lib/db/prisma";
+import { flowTransactionTypesWhere, toFlowTransactionRows } from "@/lib/db/transaction-flow-filter";
 import { scopedByUser } from "@/lib/db/user-scope";
 import type { JournalDaySummary, JournalFilters } from "@/types/journal";
 import { cache } from "react";
@@ -42,23 +43,26 @@ async function getMonthTransactions(
   start: Date,
   end: Date,
 ) {
-  return prisma.transaction.findMany({
-    where: scopedByUser(userId, {
-      occurredAt: {
-        gte: start,
-        lte: end,
+  return toFlowTransactionRows(
+    await prisma.transaction.findMany({
+      where: scopedByUser(userId, {
+        occurredAt: {
+          gte: start,
+          lte: end,
+        },
+        ...flowTransactionTypesWhere(),
+      }),
+      select: {
+        type: true,
+        amount: true,
+        category: true,
+        description: true,
+      },
+      orderBy: {
+        occurredAt: "asc",
       },
     }),
-    select: {
-      type: true,
-      amount: true,
-      category: true,
-      description: true,
-    },
-    orderBy: {
-      occurredAt: "asc",
-    },
-  });
+  );
 }
 
 async function getCumulativeBalance(userId: string, date: Date): Promise<number> {

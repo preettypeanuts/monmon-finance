@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
 import { SEPARATED_PILL } from "@/config/shape";
 
+import type { TransactionType } from "@/types/transaction";
+
 interface JournalTypeBadgeProps {
-  type: "income" | "expense";
+  type: TransactionType;
 }
 
 export function JournalTypeBadge({ type }: JournalTypeBadgeProps) {

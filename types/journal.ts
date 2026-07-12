@@ -1,8 +1,8 @@
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, TransactionType } from "@/types/transaction";
 
 export interface JournalFilters {
   q: string;
-  type: TransactionType | "all";
+  type: FlowTransactionType | "all";
   category: string;
   page: number;
   dateFrom: string | null;
@@ -20,7 +20,7 @@ export interface JournalEntry {
 }
 
 export interface JournalEntryFormInput {
-  type: TransactionType;
+  type: FlowTransactionType;
   amount: number;
   category: string;
   description: string;

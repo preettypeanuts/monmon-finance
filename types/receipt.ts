@@ -1,7 +1,7 @@
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 export interface ReceiptDraft {
-  type: TransactionType;
+  type: FlowTransactionType;
   amount: number;
   category: string;
   description: string;
@@ -15,7 +15,7 @@ export type ParseReceiptResult =
   | { ok: false; error: string };
 
 export interface ConfirmedReceiptTransaction {
-  type: TransactionType;
+  type: FlowTransactionType;
   amount: number;
   category: string;
   description: string;

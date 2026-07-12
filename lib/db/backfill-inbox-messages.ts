@@ -2,9 +2,14 @@ import { normalizeCategory } from "@/config/categories";
 import type { Transaction } from "@/generated/prisma/client";
 import { buildTransactionReply } from "@/lib/ai/parse-transaction";
 import { prisma } from "@/lib/db/prisma";
+import { isFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import type { ParsedTransaction } from "@/types/transaction";
 
-function toParsedTransaction(record: Transaction): ParsedTransaction {
+function toParsedTransaction(record: Transaction): ParsedTransaction | null {
+  if (!isFlowTransactionType(record.type)) {
+    return null;
+  }
+
   return {
     type: record.type,
     amount: record.amount,
@@ -27,7 +32,12 @@ export async function backfillInboxMessagesFromTransactions(
   }
 
   for (const transaction of orphans) {
-    const reply = buildTransactionReply(toParsedTransaction(transaction));
+    const parsed = toParsedTransaction(transaction);
+    if (!parsed) {
+      continue;
+    }
+
+    const reply = buildTransactionReply(parsed);
     const assistantAt = transaction.createdAt;
     const userAt = new Date(transaction.createdAt.getTime() - 1_000);
 

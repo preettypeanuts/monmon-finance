@@ -44,7 +44,8 @@ import {
 import { useUserCategoryCatalog } from "@/components/providers/user-category-catalog-provider";
 import type { CategoryIconId } from "@/config/category-icons";
 import type { ResolvedCategory } from "@/types/user-category";
-import type { TransactionType } from "@/types/transaction";
+import { assertFlowTransactionType } from "@/lib/db/transaction-flow-filter";
+import type { FlowTransactionType } from "@/types/transaction";
 import { cn } from "@/lib/utils";
 
 export type CategoryFormMode =
@@ -70,7 +71,7 @@ export function CategoryFormDialog({
   const [accent, setAccent] = useState<CategoryIconAccent>(
     DEFAULT_CATEGORY_ICON_ACCENT,
   );
-  const [type, setType] = useState<TransactionType>("expense");
+  const [type, setType] = useState<FlowTransactionType>("expense");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -90,7 +91,7 @@ export function CategoryFormDialog({
     setLabel(mode.entry.label);
     setIcon(resolveCategoryIconId(mode.entry.icon));
     setAccent(mode.entry.accent);
-    setType(mode.entry.type);
+    setType(assertFlowTransactionType(mode.entry.type));
     setError(null);
   }, [mode, open]);
 

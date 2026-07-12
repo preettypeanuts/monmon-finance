@@ -1,5 +1,6 @@
 import { generateDailySummaryInsight } from "@/lib/ai/generate-daily-summary-insight";
 import { prisma } from "@/lib/db/prisma";
+import { flowTransactionTypesWhere, toFlowTransactionRows } from "@/lib/db/transaction-flow-filter";
 import { scopedByUser } from "@/lib/db/user-scope";
 import { buildFallbackDailySummaryCondition } from "@/lib/finance/build-daily-summary-insight";
 import {
@@ -25,23 +26,26 @@ import type { DailySummarySnapshot } from "@/types/summary";
 async function getTransactionsForDay(userId: string, date: Date) {
   const { start, end } = getDayRange(date);
 
-  return prisma.transaction.findMany({
-    where: scopedByUser(userId, {
-      occurredAt: {
-        gte: start,
-        lte: end,
+  return toFlowTransactionRows(
+    await prisma.transaction.findMany({
+      where: scopedByUser(userId, {
+        occurredAt: {
+          gte: start,
+          lte: end,
+        },
+        ...flowTransactionTypesWhere(),
+      }),
+      select: {
+        type: true,
+        amount: true,
+        category: true,
+        description: true,
+      },
+      orderBy: {
+        occurredAt: "asc",
       },
     }),
-    select: {
-      type: true,
-      amount: true,
-      category: true,
-      description: true,
-    },
-    orderBy: {
-      occurredAt: "asc",
-    },
-  });
+  );
 }
 
 async function getCumulativeBalance(

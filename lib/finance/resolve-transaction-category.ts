@@ -11,12 +11,12 @@ import {
   refineMisclassifiedCategory,
 } from "@/lib/finance/infer-transaction-category";
 import { findUserCategoryOverride } from "@/lib/finance/user-category-override";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 async function applyCategoryPipeline(
   userId: string | undefined,
   rawCategory: string | undefined,
-  type: TransactionType,
+  type: FlowTransactionType,
   description: string,
 ): Promise<TransactionCategoryId> {
   if (userId) {
@@ -54,7 +54,7 @@ async function applyCategoryPipeline(
 
 export async function resolveTransactionCategory(
   rawCategory: string | undefined,
-  type: TransactionType,
+  type: FlowTransactionType,
   description: string,
   userId?: string,
 ): Promise<TransactionCategoryId> {
@@ -69,7 +69,7 @@ export async function resolveTransactionCategory(
 
 export async function resolveTransactionCategoryAsync(
   rawCategory: string | undefined,
-  type: TransactionType,
+  type: FlowTransactionType,
   description: string,
   userId?: string,
 ): Promise<TransactionCategoryId> {

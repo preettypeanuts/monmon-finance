@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { assertFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import { normalizeCategory } from "@/config/categories";
 import { buildInboxMultipleTransactionReplyForParsed } from "@/lib/ai/build-inbox-transaction-reply";
 import { parseMultipleTransactions } from "@/lib/ai/parse-multiple-transactions";
@@ -253,7 +254,7 @@ export async function retryInboxMessageAction(
     const savedTransactions: ParsedTransaction[] = savedRows.map(
       (row, index) => ({
         id: row.id,
-        type: row.type,
+        type: assertFlowTransactionType(row.type),
         amount: row.amount,
         category: normalizeCategory(row.category),
         description: row.description,

@@ -13,6 +13,7 @@ import {
   submitInboxChatFailure,
   submitInboxChatTransaction,
 } from "@/lib/db/inbox-submit";
+import { assertFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import { updateJournalTransaction } from "@/lib/db/journal";
 import { isReceiptMimeType } from "@/lib/receipt/image-file";
 import {
@@ -186,7 +187,7 @@ export async function updateInboxMessageFromReceipt(input: {
 
     const transaction: ParsedTransaction = {
       id: entry.id,
-      type: entry.type,
+      type: assertFlowTransactionType(entry.type),
       amount: entry.amount,
       category: normalizeCategory(entry.category),
       description: entry.description,

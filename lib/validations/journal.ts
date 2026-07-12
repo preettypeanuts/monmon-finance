@@ -2,9 +2,9 @@ import { JOURNAL_PAGE_SIZE } from "@/config/journal";
 import { isTransactionCategory } from "@/config/categories";
 import { isValidJournalDateInput } from "@/lib/journal/journal-date-range";
 import type { JournalFilters } from "@/types/journal";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
-const VALID_TYPES = new Set<TransactionType>(["income", "expense"]);
+const VALID_TYPES = new Set<FlowTransactionType>(["income", "expense"]);
 
 function readParam(
   searchParams: Record<string, string | string[] | undefined>,
@@ -37,8 +37,8 @@ export function parseJournalSearchParams(
   const dateTo = readDateParam(searchParams, "to");
 
   const type =
-    typeRaw && VALID_TYPES.has(typeRaw as TransactionType)
-      ? (typeRaw as TransactionType)
+    typeRaw && VALID_TYPES.has(typeRaw as FlowTransactionType)
+      ? (typeRaw as FlowTransactionType)
       : "all";
 
   const category =

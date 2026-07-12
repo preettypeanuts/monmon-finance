@@ -14,7 +14,7 @@ import {
   GEMINI_WANG_APP_CONTEXT,
 } from "@/config/gemini-locale";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 const SPECIFIC_CATEGORY_IDS = TRANSACTION_CATEGORIES.map(
   (category) => category.id,
@@ -24,7 +24,7 @@ const SYSTEM_INSTRUCTION = buildGeminiCategoryClassifierSystemInstruction(
   buildGeminiCategoryInstruction(),
 );
 
-function buildPrompt(description: string, type: TransactionType): string {
+function buildPrompt(description: string, type: FlowTransactionType): string {
   return [
     GEMINI_WANG_APP_CONTEXT,
     "",
@@ -37,7 +37,7 @@ function buildPrompt(description: string, type: TransactionType): string {
 
 export async function classifyTransactionCategoryWithGemini(
   description: string,
-  type: TransactionType,
+  type: FlowTransactionType,
 ): Promise<TransactionCategoryId | null> {
   const ai = getGeminiClient();
 

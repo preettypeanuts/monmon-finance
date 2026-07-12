@@ -1,6 +1,6 @@
 import { extractCategoryKeyword } from "@/lib/finance/extract-category-keyword";
 import { prisma } from "@/lib/db/prisma";
-import type { ParsedTransaction, TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, ParsedTransaction } from "@/types/transaction";
 
 const LOOKBACK_MONTHS = 6;
 const MIN_HISTORICAL_MATCHES = 2;
@@ -14,7 +14,7 @@ export interface RecurringSuggestion {
   keyword: string;
   averageAmount: number;
   category: string;
-  flowType: TransactionType;
+  flowType: FlowTransactionType;
   suggestedRepeat: "monthly";
   matchCount: number;
 }
@@ -118,7 +118,7 @@ async function hasMatchingActivePlannedItem(
   userId: string,
   keyword: string,
   category: string,
-  flowType: TransactionType,
+  flowType: FlowTransactionType,
 ): Promise<boolean> {
   const now = new Date();
   const items = await prisma.plannedItem.findMany({

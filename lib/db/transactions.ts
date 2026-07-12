@@ -3,11 +3,12 @@ import { revalidateAfterTransactionMutation } from "@/lib/cache/revalidate-user-
 import { userDataTags } from "@/lib/cache/user-data-tags";
 import { invalidateAiInsightCacheOnTransactionMutation } from "@/lib/db/ai-insight-cache";
 import { prisma } from "@/lib/db/prisma";
+import { flowTransactionTypesWhere } from "@/lib/db/transaction-flow-filter";
 import { scopedByUser } from "@/lib/db/user-scope";
 import { buildTodaySummary } from "@/lib/finance/build-summary";
 import { getDayRange, parseDayKey, toDayKey } from "@/lib/finance/day-range";
 import type { TodaySummary } from "@/types/summary";
-import type { ParsedTransaction } from "@/types/transaction";
+import type { ParsedTransaction, TransactionType } from "@/types/transaction";
 
 interface CreateTransactionInput {
   userId: string;
@@ -112,6 +113,7 @@ async function queryTodaySummary(
         gte: start,
         lte: end,
       },
+      ...flowTransactionTypesWhere(),
     }),
     select: {
       type: true,
@@ -138,7 +140,7 @@ export async function getTodaySummary(userId: string): Promise<TodaySummary> {
 
 export interface TodayTransactionRow {
   id: string;
-  type: "income" | "expense";
+  type: TransactionType;
   amount: number;
   category: string;
   description: string;
@@ -191,7 +193,7 @@ export async function getTodayTransactionRows(
 }
 
 export interface MonthTransactionAggregateRow {
-  type: "income" | "expense";
+  type: TransactionType;
   amount: number;
   category: string;
 }
@@ -208,6 +210,7 @@ async function queryMonthTransactionAggregates(
         gte: new Date(startIso),
         lte: new Date(endIso),
       },
+      ...flowTransactionTypesWhere(),
     }),
     select: {
       type: true,

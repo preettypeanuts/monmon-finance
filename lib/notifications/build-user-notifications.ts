@@ -4,6 +4,7 @@ import {
 } from "@/config/notifications";
 import { generateJournalCondition } from "@/lib/ai/generate-journal-condition";
 import { getAvailableBalance } from "@/lib/db/balance";
+import { flowTransactionTypesWhere, toFlowTransactionRows } from "@/lib/db/transaction-flow-filter";
 import { listBudgetsForMonth } from "@/lib/db/budgets";
 import {
   ensureDailySummaryForDay,
@@ -135,17 +136,20 @@ export async function buildUserNotificationDrafts(
     listPlans(userId),
     listSavingsGoals(userId),
     getPlansUpcomingImpact(userId, referenceDate, 14),
-    prisma.transaction.findMany({
-      where: scopedByUser(userId, {
-        occurredAt: { gte: digestStart, lte: digestEnd },
+    toFlowTransactionRows(
+      await prisma.transaction.findMany({
+        where: scopedByUser(userId, {
+          occurredAt: { gte: digestStart, lte: digestEnd },
+          ...flowTransactionTypesWhere(),
+        }),
+        select: {
+          type: true,
+          amount: true,
+          category: true,
+          description: true,
+        },
       }),
-      select: {
-        type: true,
-        amount: true,
-        category: true,
-        description: true,
-      },
-    }),
+    ),
     isCron
       ? getYesterdaySummaryContentForCron(userId, yesterday)
       : getYesterdayDailySummary(userId),

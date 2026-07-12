@@ -52,7 +52,7 @@ import {
 } from "@/lib/inbox/inbox-edit-hint-storage";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types/chat";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -64,7 +64,7 @@ interface MessageListProps {
     assistantMessageId: string;
     transactionId: string;
     category: string;
-    type: TransactionType;
+    type: FlowTransactionType;
   }) => Promise<void>;
   actionsDisabled?: boolean;
   fixedMobileTopBar?: boolean;

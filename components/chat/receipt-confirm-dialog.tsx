@@ -49,7 +49,7 @@ import { formatIdr } from "@/lib/finance/format-currency";
 import { cn } from "@/lib/utils";
 import { toDateInputValue } from "@/lib/validations/planned-item";
 import type { ReceiptDraft } from "@/types/receipt";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 interface ReceiptConfirmDialogProps {
   open: boolean;
@@ -59,7 +59,7 @@ interface ReceiptConfirmDialogProps {
   mode?: "create" | "edit";
   onOpenChange: (open: boolean) => void;
   onConfirm: (input: {
-    type: TransactionType;
+    type: FlowTransactionType;
     amount: string;
     category: string;
     description: string;
@@ -78,7 +78,7 @@ export function ReceiptConfirmDialog({
   onConfirm,
 }: ReceiptConfirmDialogProps) {
   const [isPending, startTransition] = useTransition();
-  const [type, setType] = useState<TransactionType>("expense");
+  const [type, setType] = useState<FlowTransactionType>("expense");
   const [amountDraft, setAmountDraft] = useState("");
   const [category, setCategory] = useState<string>("food");
   const { catalog, getMentionOptions } = useUserCategoryCatalog();
@@ -108,7 +108,7 @@ export function ReceiptConfirmDialog({
 
   const previewAmount = Number.parseInt(amountDraft, 10) || 0;
 
-  function handleTypeChange(nextType: TransactionType) {
+  function handleTypeChange(nextType: FlowTransactionType) {
     setType(nextType);
     setCategory((current) =>
       resolveCategoryForTransaction(current, nextType, catalog),

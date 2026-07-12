@@ -10,6 +10,7 @@ import {
   serializePlannedItem,
 } from "@/lib/cache/serialize-planned-items";
 import { userDataTags } from "@/lib/cache/user-data-tags";
+import { assertFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import { prisma } from "@/lib/db/prisma";
 import { scopedId } from "@/lib/db/user-scope";
 import { parseDateOnlyInput } from "@/lib/finance/day-range";
@@ -20,6 +21,7 @@ import type {
   PlannedItemRecord,
   PlannedRepeatInterval,
 } from "@/types/planner";
+import type { TransactionType } from "@/types/transaction";
 
 const PLANNED_ITEM_SELECT = {
   id: true,
@@ -42,7 +44,7 @@ function mapPlannedItem(record: {
   kind: PlannedItemKind;
   repeat: PlannedRepeatInterval;
   amount: number;
-  flowType: "income" | "expense";
+  flowType: TransactionType;
   category: string;
   startAt: Date;
   endAt: Date | null;
@@ -56,7 +58,7 @@ function mapPlannedItem(record: {
     kind: record.kind,
     repeat: record.repeat,
     amount: record.amount,
-    flowType: record.flowType,
+    flowType: assertFlowTransactionType(record.flowType),
     category: record.category,
     startAt: record.startAt,
     endAt: record.endAt,

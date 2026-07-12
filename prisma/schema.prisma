@@ -33,6 +33,7 @@ model User {
   categoryOverrides              UserCategoryOverride[]
   userCategories                 UserCategory[]
   recurringSuggestionDismissals  RecurringSuggestionDismissal[]
+  wallets                        Wallet[]
 
   @@unique([email])
   @@map("user")
@@ -94,6 +95,16 @@ model Verification {
 enum TransactionType {
   income
   expense
+  transfer
+
+  @@schema("monmon_whethertie")
+}
+
+enum WalletType {
+  cash
+  bank
+  ewallet
+  other
 
   @@schema("monmon_whethertie")
 }
@@ -113,6 +124,24 @@ enum InboxMessageKind {
   @@schema("monmon_whethertie")
 }
 
+model Wallet {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  type           WalletType
+  icon           String?
+  colorHex       String?
+  initialBalance Int          @default(0)
+  isDefault      Boolean      @default(false)
+  isArchived     Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  transactions   Transaction[]
+
+  @@index([userId])
+  @@schema("monmon_whethertie")
+}
+
 model Transaction {
   id             String          @id @default(cuid())
   userId         String
@@ -126,11 +155,14 @@ model Transaction {
   createdAt      DateTime        @default(now())
   inboxMessageId String?
   inboxMessage   InboxMessage?   @relation(fields: [inboxMessageId], references: [id], onDelete: SetNull)
+  walletId       String?
+  wallet         Wallet?         @relation(fields: [walletId], references: [id], onDelete: SetNull)
 
   @@index([userId, occurredAt])
   @@index([userId, type])
   @@index([userId, type, occurredAt])
   @@index([inboxMessageId])
+  @@index([walletId])
   @@schema("monmon_whethertie")
 }
 

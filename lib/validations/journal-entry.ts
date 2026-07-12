@@ -14,9 +14,9 @@ import { parseDateOnlyInput } from "@/lib/finance/day-range";
 import { isValidDateInput } from "@/lib/validations/planned-item";
 import type { ResolvedCategory } from "@/types/user-category";
 import type { JournalEntryFormInput } from "@/types/journal";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
-const VALID_TYPES = new Set<TransactionType>(["income", "expense"]);
+const VALID_TYPES = new Set<FlowTransactionType>(["income", "expense"]);
 
 function readString(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -37,11 +37,11 @@ export function parseJournalEntryFormData(
 ): { ok: true; data: JournalEntryFormInput } | { ok: false; error: string } {
   const typeRaw = readString(formData, "type");
 
-  if (!VALID_TYPES.has(typeRaw as TransactionType)) {
+  if (!VALID_TYPES.has(typeRaw as FlowTransactionType)) {
     return { ok: false, error: "Jenis transaksi tidak valid." };
   }
 
-  const type = typeRaw as TransactionType;
+  const type = typeRaw as FlowTransactionType;
   const amountRaw = readString(formData, "amount");
   const amount =
     parseAmount(amountRaw) ??

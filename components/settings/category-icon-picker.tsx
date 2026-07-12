@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 import type { CategoryIconId } from "@/config/category-icons";
 import { CATEGORY_ICON_OPTIONS } from "@/config/category-icons";
 import type { CategoryIconAccent } from "@/config/category-icon-style";
+import type { FlowTransactionType } from "@/types/transaction";
 
 interface CategoryIconPickerProps {
   value: CategoryIconId;
   onChange: (value: CategoryIconId) => void;
-  type: "income" | "expense";
+  type: FlowTransactionType;
   accent: CategoryIconAccent;
   className?: string;
 }

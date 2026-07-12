@@ -7,7 +7,7 @@ import { CHAT_BUBBLE_STYLES } from "@/config/chat-bubbles";
 import { SEPARATED_SURFACE } from "@/config/shape";
 import { isUncertainTransactionType } from "@/lib/chat/low-confidence-transaction";
 import { cn } from "@/lib/utils";
-import type { ParsedTransaction, TransactionType } from "@/types/transaction";
+import type { FlowTransactionType, ParsedTransaction } from "@/types/transaction";
 
 const QUICK_CORRECT_SHELL = cn(
   SEPARATED_SURFACE,
@@ -35,7 +35,7 @@ interface TransactionQuickCorrectProps {
   disabled?: boolean;
   onCorrect: (input: {
     category: string;
-    type: TransactionType;
+    type: FlowTransactionType;
   }) => void;
 }
 
@@ -45,11 +45,11 @@ export function TransactionQuickCorrect({
   disabled = false,
   onCorrect,
 }: TransactionQuickCorrectProps) {
-  const [pendingType, setPendingType] = useState<TransactionType>(transaction.type);
+  const [pendingType, setPendingType] = useState<FlowTransactionType>(transaction.type);
   const showTypeToggle = isUncertainTransactionType(userInput);
   const categories = getQuickCorrectCategories(pendingType, transaction.category);
 
-  function handleTypeSelect(type: TransactionType) {
+  function handleTypeSelect(type: FlowTransactionType) {
     setPendingType(type);
   }
 

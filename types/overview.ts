@@ -34,11 +34,13 @@ export interface OverviewMonthlySnapshot {
   isCustomPeriod?: boolean;
 }
 
+import type { FlowTransactionType, TransactionType } from "@/types/transaction";
+
 export interface OverviewActivityItem {
   id: string;
   title: string;
   amount: number;
-  type: "income" | "expense";
+  type: TransactionType;
   timeLabel: string;
   categoryLabel: string;
 }
@@ -78,7 +80,7 @@ export interface OverviewPageData {
 export interface OverviewAiBriefInputs {
   userId: string;
   journalTransactions: {
-    type: "income" | "expense";
+    type: FlowTransactionType;
     amount: number;
     category: string;
     description: string;

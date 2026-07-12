@@ -21,13 +21,13 @@ import {
 import { TransactionParseError } from "@/lib/ai/transaction-parse-error";
 import { resolveTransactionCategoryAsync } from "@/lib/finance/resolve-transaction-category";
 import type { ReceiptDraft } from "@/types/receipt";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
-const VALID_TYPES: TransactionType[] = ["income", "expense"];
+const VALID_TYPES: FlowTransactionType[] = ["income", "expense"];
 
 interface GeminiReceiptPayload {
   success?: boolean;
-  type?: TransactionType;
+  type?: FlowTransactionType;
   amount?: number;
   category?: string;
   description?: string;

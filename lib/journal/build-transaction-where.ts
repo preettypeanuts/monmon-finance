@@ -2,7 +2,7 @@ import { TRANSACTION_CATEGORIES } from "@/config/categories";
 import type { Prisma } from "@/generated/prisma/client";
 import { resolveJournalDateRangeBounds } from "@/lib/journal/journal-date-range";
 import type { JournalFilters } from "@/types/journal";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 export function buildJournalTransactionWhere(
   userId: string,
@@ -107,6 +107,6 @@ export function hasJournalTransactionFilters(filters: JournalFilters): boolean {
 
 export function isJournalTypeFilter(
   value: JournalFilters["type"],
-): value is TransactionType {
+): value is FlowTransactionType {
   return value === "income" || value === "expense";
 }

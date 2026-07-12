@@ -8,7 +8,7 @@ import {
   CATEGORY_MENTION_OPTIONS,
   type CategoryMentionOption,
 } from "@/config/category-mentions";
-import type { TransactionType } from "@/types/transaction";
+import type { FlowTransactionType } from "@/types/transaction";
 
 export type { CategoryMentionOption };
 
@@ -74,7 +74,7 @@ function matchesCategoryMentionQuery(
 }
 
 export function getCategoryMentionOptionsForType(
-  type: TransactionType,
+  type: FlowTransactionType,
 ): CategoryMentionOption[] {
   return CATEGORY_MENTION_OPTIONS.filter((option) =>
     type === "income"
@@ -100,7 +100,7 @@ export function filterCategoryMentionOptions(
 
 export function filterCategoryMentionOptionsForType(
   query: string,
-  type: TransactionType,
+  type: FlowTransactionType,
 ): CategoryMentionOption[] {
   return filterCategoryMentionOptions(
     query,
@@ -184,7 +184,7 @@ export function extractExplicitCategoryFromText(
 
 export function resolveExplicitCategoryForType(
   text: string,
-  type: TransactionType,
+  type: FlowTransactionType,
   options: CategoryMentionOption[] = CATEGORY_MENTION_OPTIONS,
 ): {
   category: string | null;

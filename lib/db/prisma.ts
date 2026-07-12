@@ -11,7 +11,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /** Bump when Prisma schema changes to invalidate dev hot-reload cache. */
-const PRISMA_CLIENT_VERSION = 14;
+const PRISMA_CLIENT_VERSION = 15;
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 const POOL_MAX = resolveDatabasePoolMax(IS_DEV);

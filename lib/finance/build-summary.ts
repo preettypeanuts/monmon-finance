@@ -1,8 +1,10 @@
+import { isFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import { getCategoryLabel } from "@/config/categories";
 import type { CategorySummary, TodaySummary } from "@/types/summary";
+import type { FlowTransactionType } from "@/types/transaction";
 
 interface TransactionRecord {
-  type: "income" | "expense";
+  type: FlowTransactionType | string;
   amount: number;
   category: string;
 }
@@ -15,6 +17,10 @@ export function buildTodaySummary(
   const categoryMap = new Map<string, CategorySummary>();
 
   for (const transaction of transactions) {
+    if (!isFlowTransactionType(transaction.type)) {
+      continue;
+    }
+
     if (transaction.type === "income") {
       totalIncome += transaction.amount;
       continue;

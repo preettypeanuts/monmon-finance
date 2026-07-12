@@ -17,6 +17,7 @@ import { ensurePendingDailySummaries } from "@/lib/db/daily-summary";
 import { ensurePendingWeeklySummary } from "@/lib/db/weekly-summary";
 import { prisma } from "@/lib/db/prisma";
 import { scopedByUser, scopedId } from "@/lib/db/user-scope";
+import { isFlowTransactionType } from "@/lib/db/transaction-flow-filter";
 import type { ChatMessage, MessageRole } from "@/types/chat";
 import type { ParsedTransaction } from "@/types/transaction";
 
@@ -36,7 +37,11 @@ const inboxMessageInclude = {
   },
 } satisfies Prisma.InboxMessageInclude;
 
-function mapTransaction(record: Transaction): ParsedTransaction {
+function mapTransaction(record: Transaction): ParsedTransaction | null {
+  if (!isFlowTransactionType(record.type)) {
+    return null;
+  }
+
   return {
     id: record.id,
     type: record.type,
@@ -83,7 +88,9 @@ function mapInboxMessage(record: InboxMessageWithTransactions): ChatMessage {
     createdAt: record.createdAt.toISOString(),
   };
 
-  const transactions = record.transactions.map(mapTransaction);
+  const transactions = record.transactions
+    .map(mapTransaction)
+    .filter((transaction): transaction is ParsedTransaction => transaction !== null);
 
   if (transactions.length > 0) {
     return {
