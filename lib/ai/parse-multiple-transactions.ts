@@ -5,6 +5,7 @@ import {
 } from "@/lib/ai/parse-transaction";
 import { parseTransactionWithGemini } from "@/lib/ai/parse-transaction-gemini";
 import { TransactionParseError } from "@/lib/ai/transaction-parse-error";
+import { stripWalletMentionTokens } from "@/lib/chat/wallet-mentions";
 import type { ParsedTransaction } from "@/types/transaction";
 
 /** Split inbox chat into candidate transaction segments (comma / newline / "dan"). */
@@ -39,7 +40,7 @@ export async function parseMultipleTransactions(
   text: string,
   userId?: string,
 ): Promise<ParsedTransaction[]> {
-  const trimmed = text.trim();
+  const trimmed = stripWalletMentionTokens(text.trim());
   if (!trimmed) {
     throw new TransactionParseError(
       "Nominal tidak ditemukan. Coba format seperti: makan warteg 15K",

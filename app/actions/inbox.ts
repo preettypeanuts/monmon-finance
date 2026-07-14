@@ -151,10 +151,11 @@ export async function submitInboxMessage(
   }
 
   try {
-    const [transactions, walletResolution] = await Promise.all([
-      parseMultipleTransactions(trimmed, userId),
-      resolveInboxWallet(userId, trimmed),
-    ]);
+    const walletResolution = await resolveInboxWallet(userId, trimmed);
+    const transactions = await parseMultipleTransactions(
+      walletResolution.cleanedText,
+      userId,
+    );
     const content = await buildInboxMultipleTransactionReplyForParsed(
       userId,
       transactions,
@@ -256,10 +257,11 @@ export async function retryInboxMessageAction(
   };
 
   try {
-    const [transactions, walletResolution] = await Promise.all([
-      parseMultipleTransactions(trimmed, userId),
-      resolveInboxWallet(userId, trimmed),
-    ]);
+    const walletResolution = await resolveInboxWallet(userId, trimmed);
+    const transactions = await parseMultipleTransactions(
+      walletResolution.cleanedText,
+      userId,
+    );
 
     const savedRows = await createMultipleTransactions({
       userId,

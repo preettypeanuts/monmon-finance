@@ -6,6 +6,10 @@ import {
   CHAT_SLASH_MENU,
   CHAT_SLASH_MENU_ITEM,
   CHAT_SLASH_MENU_ITEM_ACTIVE,
+  CHAT_PICKER_MENU_BODY,
+  CHAT_PICKER_MENU_DESC,
+  CHAT_PICKER_MENU_HEADER,
+  CHAT_PICKER_MENU_TITLE,
 } from "@/config/chat-layout";
 import { getCategoryLabel } from "@/config/categories";
 import { formatIdr } from "@/lib/finance/format-currency";
@@ -38,11 +42,11 @@ function SlashMenuSection({
 }) {
   return (
     <div>
-      <div className="border-b border-black/6 px-3 py-2 dark:border-white/8">
-        <p className="text-xs font-semibold text-foreground/90">{title}</p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">{description}</p>
+      <div className={CHAT_PICKER_MENU_HEADER}>
+        <p className={CHAT_PICKER_MENU_TITLE}>{title}</p>
+        <p className={CHAT_PICKER_MENU_DESC}>{description}</p>
       </div>
-      {children}
+      <div className={CHAT_PICKER_MENU_BODY}>{children}</div>
     </div>
   );
 }

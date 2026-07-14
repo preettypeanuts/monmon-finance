@@ -1,9 +1,6 @@
+import { InboxChatInputSkeleton } from "@/components/inbox/inbox-chat-input-skeleton";
 import { InboxChatSkeleton } from "@/components/inbox/inbox-chat-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CHAT_INPUT_DOCK_INSET_X,
-  INBOX_MESSAGE_BOTTOM_INSET,
-} from "@/config/chat-input-mobile";
 import {
   INBOX_CHAT_COLUMN,
   INBOX_CHAT_VIEW_ROOT,
@@ -11,17 +8,40 @@ import {
   INBOX_PAGE_ROW,
   INBOX_SUMMARY_ASIDE,
 } from "@/config/inbox-desktop";
+import { INBOX_CHAT_INPUT_DOCK } from "@/config/inbox-mobile";
 import {
-  INBOX_MESSAGE_CONTENT_INSET,
-  INBOX_MOBILE_PAGE,
   INBOX_MOBILE_TOP_BAR_ACTIONS,
   INBOX_MOBILE_TOP_BAR_ROW,
   INBOX_MOBILE_TOP_BAR_TITLE,
 } from "@/config/inbox-mobile";
 import { GLASS_SURFACE } from "@/config/glass";
 import { GRID_GAP, SHELL_PADDING, STACK_GAP } from "@/config/spacing";
-import { SEPARATED_SHELL } from "@/config/shape";
+import { SEPARATED_SHELL, SEPARATED_SURFACE } from "@/config/shape";
 import { cn } from "@/lib/utils";
+
+function SummaryTileSkeleton({ compact = false }: { compact?: boolean }) {
+  return (
+    <Skeleton
+      className={cn(
+        "w-full",
+        SEPARATED_SURFACE,
+        compact
+          ? "col-span-2 min-h-10"
+          : "aspect-5/4 min-h-22",
+      )}
+    />
+  );
+}
+
+function DailySummaryStatsSkeleton() {
+  return (
+    <div className="space-y-1.5">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <Skeleton key={index} className="h-9 w-full rounded-2xl" />
+      ))}
+    </div>
+  );
+}
 
 function InboxSummaryAsideSkeleton() {
   return (
@@ -41,21 +61,37 @@ function InboxSummaryAsideSkeleton() {
             STACK_GAP,
           )}
         >
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-14" />
-            <div className="flex items-center justify-between gap-2">
-              <Skeleton className="h-6 w-28" />
-              <Skeleton className="h-4 w-24" />
+          <div>
+            <Skeleton className="h-3 w-12" />
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-1">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="size-6 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-28 shrink-0" />
             </div>
           </div>
 
-          <div className={cn("grid grid-cols-2", GRID_GAP)}>
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-20 w-full rounded-2xl" />
-            ))}
-          </div>
+          <section className={cn("grid grid-cols-2", GRID_GAP)}>
+            <SummaryTileSkeleton />
+            <SummaryTileSkeleton />
+            <SummaryTileSkeleton compact />
+          </section>
 
           <Skeleton className="h-24 w-full rounded-2xl" />
+
+          <section>
+            <Skeleton className="mb-3 h-4 w-24" />
+            <div className={cn("grid grid-cols-2", GRID_GAP)}>
+              <SummaryTileSkeleton />
+              <SummaryTileSkeleton />
+            </div>
+          </section>
+
+          <section className="space-y-2.5">
+            <Skeleton className="h-3 w-20" />
+            <DailySummaryStatsSkeleton />
+          </section>
         </div>
       </div>
     </aside>
@@ -70,7 +106,7 @@ export function InboxPageSkeleton() {
       className={INBOX_PAGE_ROW}
     >
       <section className={INBOX_CHAT_COLUMN}>
-        <div className={cn(INBOX_MOBILE_PAGE, INBOX_CHAT_VIEW_ROOT)}>
+        <div className={INBOX_CHAT_VIEW_ROOT}>
           <div className={cn("relative shrink-0 md:hidden", INBOX_MOBILE_TOP_BAR_ROW)}>
             <Skeleton className="size-9 rounded-full" />
             <Skeleton className={cn("mx-auto h-5 w-16", INBOX_MOBILE_TOP_BAR_TITLE)} />
@@ -80,28 +116,10 @@ export function InboxPageSkeleton() {
             </div>
           </div>
 
-          <div
-            className={cn(
-              "flex min-h-0 flex-1 flex-col overflow-hidden",
-              INBOX_MESSAGE_BOTTOM_INSET,
-            )}
-          >
-            <InboxChatSkeleton />
-          </div>
+          <InboxChatSkeleton className="min-h-0 flex-1" />
 
-          <div
-            className={cn(
-              "shrink-0 px-3 pb-3 md:px-3",
-              CHAT_INPUT_DOCK_INSET_X,
-              INBOX_DESKTOP_INPUT_DOCK_PB,
-            )}
-          >
-            <Skeleton
-              className={cn(
-                "h-10 w-full rounded-2xl md:min-h-9",
-                INBOX_MESSAGE_CONTENT_INSET,
-              )}
-            />
+          <div className={cn(INBOX_CHAT_INPUT_DOCK, INBOX_DESKTOP_INPUT_DOCK_PB)}>
+            <InboxChatInputSkeleton />
           </div>
         </div>
       </section>

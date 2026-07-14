@@ -78,7 +78,7 @@ export type OverviewIconVariant = keyof typeof OVERVIEW_ICON_VARIANTS;
 
 /** Status badge with solid icon bg for legibility. */
 export const OVERVIEW_STATUS_BADGE =
-  "inline-flex items-center gap-1.5 rounded-full bg-[#F2F2F7] px-2.5 py-1 text-[10px] font-semibold text-foreground/85 ring-1 ring-black/10 dark:bg-[#3A3A3C] dark:ring-white/14";
+  "inline-flex items-center gap-1.5 rounded-full bg-[#F2F2F7] px-2.5 py-1 text-[10px] font-semibold text-foreground/85 border-1 border-black/10 dark:bg-[#3A3A3C] dark:border-white/14";
 
 export const OVERVIEW_STATUS_BADGE_ICON = [
   "flex size-4 shrink-0 items-center justify-center rounded-md bg-linear-to-b",

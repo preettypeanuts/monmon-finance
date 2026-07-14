@@ -4,6 +4,10 @@ import {
   CHAT_SLASH_MENU,
   CHAT_SLASH_MENU_ITEM,
   CHAT_SLASH_MENU_ITEM_ACTIVE,
+  CHAT_PICKER_MENU_BODY,
+  CHAT_PICKER_MENU_DESC,
+  CHAT_PICKER_MENU_HEADER,
+  CHAT_PICKER_MENU_TITLE,
 } from "@/config/chat-layout";
 import { cn } from "@/lib/utils";
 
@@ -22,19 +26,20 @@ export function ChatCategoryMentionMenu({
 }: ChatCategoryMentionMenuProps) {
   return (
     <div className={CHAT_SLASH_MENU} role="listbox" aria-label="Pilih kategori">
-      <div className="border-b border-black/6 px-3 py-2 dark:border-white/8">
-        <p className="text-xs font-semibold text-foreground/90">Kategori</p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">
+      <div className={CHAT_PICKER_MENU_HEADER}>
+        <p className={CHAT_PICKER_MENU_TITLE}>Kategori</p>
+        <p className={CHAT_PICKER_MENU_DESC}>
           Pilih kategori eksplisit untuk transaksi ini.
         </p>
       </div>
 
       {options.length === 0 ? (
-        <p className="px-3 py-4 text-center text-xs text-muted-foreground">
+        <p className="px-3.5 py-4 text-center text-xs text-muted-foreground">
           Kategori tidak ditemukan.
         </p>
       ) : (
-        options.map((option, index) => (
+        <div className={CHAT_PICKER_MENU_BODY}>
+          {options.map((option, index) => (
           <button
             key={option.id}
             type="button"
@@ -66,7 +71,8 @@ export function ChatCategoryMentionMenu({
               </span>
             </span>
           </button>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

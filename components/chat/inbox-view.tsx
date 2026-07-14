@@ -908,6 +908,7 @@ export function InboxView({
         unpaidPayPlanItems={unpaidPayPlanItems}
         activePlanItems={activePlanItems}
         activeSavingsItems={activeSavingsItems}
+        walletOptions={walletOptions}
         disabled={isParsingReceipt}
         draftText={draftText}
         onDraftTextApplied={handleDraftTextApplied}

@@ -1,8 +1,9 @@
 /**
- * Explicit wallet mention detection for chat input, e.g.
- * "bayar pakai gopay 20rb" → wallet named "GoPay".
+ * Wallet selection for chat input:
+ * - Explicit ;mention, e.g. ";bca beli kopi 20rb"
+ * - Natural language, e.g. "bayar pakai gopay 20rb"
  *
- * Two tiers, mirroring how category keywords are matched:
+ * Two tiers for natural language, mirroring category keyword matching:
  * 1. Full wallet name found in text (word-boundary, case-insensitive).
  * 2. A single word of a multi-word wallet name found in text
  *    ("pakai bca" → "BCA Utama"), tokens shorter than 3 chars ignored.

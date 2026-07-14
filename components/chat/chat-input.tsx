@@ -5,6 +5,7 @@ import { ChatCalculatorSheet } from "@/components/chat/chat-calculator-sheet";
 import { ChatCategoryMentionMenu } from "@/components/chat/chat-category-mention-menu";
 import { ChatInputHintBadges } from "@/components/chat/chat-input-hint-badges";
 import { ChatSlashMenu } from "@/components/chat/chat-slash-menu";
+import { ChatWalletMentionMenu } from "@/components/chat/chat-wallet-mention-menu";
 import { useOptionalInboxSearch } from "@/components/inbox/inbox-search-context";
 import { useUserCategoryCatalog } from "@/components/providers/user-category-catalog-provider";
 import { Button } from "@/components/ui/button";
@@ -16,14 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import type { CategoryMentionOption } from "@/config/category-mentions";
-import {
-  CHAT_INPUT_CONTROL_MIN_HEIGHT,
-  CHAT_INPUT_FIELD,
-  CHAT_INPUT_MENU_BUTTON,
-  CHAT_INPUT_SEND_BUTTON,
-  CHAT_INPUT_TEXTAREA,
-} from "@/config/chat-input-mobile";
-import { GLASS_SURFACE, GLASS_TILE_BASE, GLASS_FILL } from "@/config/glass";
 import { RECEIPT_ACCEPT_ATTRIBUTE } from "@/config/receipt";
 import { CONTROL_GAP } from "@/config/spacing";
 import { UI_LABEL_SEARCH_MESSAGES } from "@/config/ui-labels";
@@ -32,6 +25,13 @@ import {
   filterCategoryMentionOptions,
   insertCategoryMention,
 } from "@/lib/chat/category-mentions";
+import {
+  buildWalletMentionOptions,
+  detectWalletMentionRange,
+  filterWalletMentionOptions,
+  insertWalletMention,
+  type WalletMentionOption,
+} from "@/lib/chat/wallet-mentions";
 import {
   ArrowUpIcon,
   CalculatorIcon,
@@ -50,8 +50,9 @@ import type {
   UnpaidPayPlanChatItem,
 } from "@/types/chat";
 
-/** Min height shared by menu btn & input — keep in sync with config/chat-input-mobile.ts */
-const CONTROL_MIN_HEIGHT = CHAT_INPUT_CONTROL_MIN_HEIGHT;
+/** Frosted layer — separate from overflow clipping so Safari keeps backdrop-filter. */
+const CHAT_INPUT_GLASS_LAYER =
+  "pointer-events-none absolute inset-0 glass-backdrop bg-[var(--glass-fill)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]";
 
 interface ChatInputProps {
   onSubmit: (text: string) => Promise<void>;
@@ -62,6 +63,7 @@ interface ChatInputProps {
   unpaidPayPlanItems?: UnpaidPayPlanChatItem[];
   activePlanItems?: ActivePlanChatItem[];
   activeSavingsItems?: ActiveSavingsChatItem[];
+  walletOptions?: Array<{ id: string; name: string }>;
   disabled?: boolean;
   draftText?: string | null;
   onDraftTextApplied?: () => void;
@@ -77,6 +79,7 @@ export function ChatInput({
   unpaidPayPlanItems = [],
   activePlanItems = [],
   activeSavingsItems = [],
+  walletOptions = [],
   disabled = false,
   draftText = null,
   onDraftTextApplied,
@@ -99,13 +102,23 @@ export function ChatInput({
   );
   const isSlashOpen = slashMatch !== null && hasSlashActions;
   const slashQuery = slashMatch?.[1]?.trim() ?? "";
-  const mentionRange = useMemo(() => {
+  const walletMentionRange = useMemo(() => {
     if (isSlashOpen) {
       return null;
     }
 
-    return detectCategoryMentionRange(value, cursor);
+    return detectWalletMentionRange(value, cursor);
   }, [cursor, isSlashOpen, value]);
+  const isWalletMentionOpen =
+    walletMentionRange !== null && walletOptions.length > 0;
+  const walletMentionQuery = walletMentionRange?.query ?? "";
+  const mentionRange = useMemo(() => {
+    if (isSlashOpen || isWalletMentionOpen) {
+      return null;
+    }
+
+    return detectCategoryMentionRange(value, cursor);
+  }, [cursor, isSlashOpen, isWalletMentionOpen, value]);
   const isMentionOpen = mentionRange !== null;
   const mentionQuery = mentionRange?.query ?? "";
   const filteredPayPlanItems = useMemo(
@@ -134,12 +147,16 @@ export function ChatInput({
     ],
     [filteredPayPlanItems, filteredPlanItems, filteredSavingsItems],
   );
+  const walletMentionOptions = useMemo(() => {
+    const options = buildWalletMentionOptions(walletOptions);
+    return filterWalletMentionOptions(walletMentionQuery, options);
+  }, [walletMentionQuery, walletOptions]);
   const { getMentionOptions } = useUserCategoryCatalog();
   const mentionOptions = useMemo(() => {
     const options = getMentionOptions("expense").concat(getMentionOptions("income"));
     return filterCategoryMentionOptions(mentionQuery, options);
   }, [getMentionOptions, mentionQuery]);
-  const isPickerOpen = isSlashOpen || isMentionOpen;
+  const isPickerOpen = isSlashOpen || isWalletMentionOpen || isMentionOpen;
 
   useEffect(() => {
     onSlashMenuOpenChange?.(isSlashOpen);
@@ -252,6 +269,31 @@ export function ChatInput({
     }
   }
 
+  function handleSelectWalletMention(option: WalletMentionOption) {
+    if (!walletMentionRange) {
+      return;
+    }
+
+    const { nextText, nextCursor } = insertWalletMention(
+      value,
+      walletMentionRange,
+      option.token,
+    );
+
+    setValue(nextText);
+    setCursor(nextCursor);
+
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(nextCursor, nextCursor);
+    });
+  }
+
   function handleSelectCategoryMention(option: CategoryMentionOption) {
     if (!mentionRange) {
       return;
@@ -304,11 +346,31 @@ export function ChatInput({
     }
   }
 
+  function getActivePickerLength(): number {
+    if (isSlashOpen) {
+      return slashEntries.length;
+    }
+
+    if (isWalletMentionOpen) {
+      return walletMentionOptions.length;
+    }
+
+    return mentionOptions.length;
+  }
+
   function handlePickerEnter() {
     if (isSlashOpen) {
       const selected = slashEntries[highlightedIndex];
       if (selected) {
         void handleSelectSlashEntry(selected);
+      }
+      return;
+    }
+
+    if (isWalletMentionOpen) {
+      const selected = walletMentionOptions[highlightedIndex];
+      if (selected) {
+        handleSelectWalletMention(selected);
       }
       return;
     }
@@ -323,7 +385,7 @@ export function ChatInput({
 
   function handlePickerArrowDown(event: React.KeyboardEvent) {
     event.preventDefault();
-    const length = isSlashOpen ? slashEntries.length : mentionOptions.length;
+    const length = getActivePickerLength();
     setHighlightedIndex((current) =>
       length === 0 ? 0 : (current + 1) % length,
     );
@@ -331,7 +393,7 @@ export function ChatInput({
 
   function handlePickerArrowUp(event: React.KeyboardEvent) {
     event.preventDefault();
-    const length = isSlashOpen ? slashEntries.length : mentionOptions.length;
+    const length = getActivePickerLength();
     setHighlightedIndex((current) =>
       length === 0 ? 0 : (current - 1 + length) % length,
     );
@@ -415,6 +477,15 @@ export function ChatInput({
         />
       ) : null}
 
+      {isWalletMentionOpen ? (
+        <ChatWalletMentionMenu
+          options={walletMentionOptions}
+          highlightedIndex={highlightedIndex}
+          onHighlight={setHighlightedIndex}
+          onSelect={handleSelectWalletMention}
+        />
+      ) : null}
+
       {isMentionOpen ? (
         <ChatCategoryMentionMenu
           options={mentionOptions}
@@ -435,10 +506,13 @@ export function ChatInput({
                 size="icon-sm"
                 aria-label="Menu"
                 className={cn(
-                  CHAT_INPUT_MENU_BUTTON,
-                  GLASS_TILE_BASE,
-                  GLASS_FILL,
-                  "rounded-full p-0",
+                  "aspect-square shrink-0 rounded-full p-0",
+                  "max-md:size-10 max-md:min-h-10 max-md:[&_svg]:size-[1.05rem]",
+                  "md:size-9 md:min-h-9 md:min-w-9 md:[&_svg]:size-4",
+                  "glass-backdrop bg-[var(--glass-fill)]",
+                  "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]",
+                  "hover:!bg-[var(--glass-fill)] dark:hover:!bg-[var(--glass-fill)]",
+                  "aria-expanded:!bg-[var(--glass-fill)] aria-expanded:text-foreground",
                 )}
               />
             }
@@ -475,60 +549,69 @@ export function ChatInput({
 
         <div
           className={cn(
-            CONTROL_MIN_HEIGHT,
-            CHAT_INPUT_FIELD,
-            GLASS_TILE_BASE,
-            GLASS_FILL,
-            "flex max-h-28 min-w-0 flex-1 overflow-hidden rounded-[20px] py-0",
-            isMultiline ? "items-end" : "items-center",
+            "relative max-h-28 min-w-0 flex-1 overflow-hidden rounded-[20px]",
+            "max-md:min-h-10 md:min-h-9",
           )}
         >
-          <Textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(event) => {
-              setValue(event.target.value);
-              setCursor(event.target.selectionStart ?? 0);
-              setHighlightedIndex(0);
-              requestAnimationFrame(syncTextareaLayout);
-            }}
-            onSelect={syncCursor}
-            onClick={syncCursor}
-            onKeyUp={syncCursor}
-            onKeyDown={handleKeyDown}
-            placeholder="Catat transaksi..."
-            disabled={isInputDisabled}
-            rows={1}
-            className={cn(
-              CONTROL_MIN_HEIGHT,
-              CHAT_INPUT_TEXTAREA,
-              "max-h-24 py-0  max-md:py-[8px]! flex-1 resize-none overflow-y-auto rounded-lg border-0 bg-transparent placeholder:text-gray-500/60 dark:placeholder:text-gray-200/60 px-0 shadow-none focus-visible:border-0 focus-visible:ring-0 no-scrollbar",
-            )}
+          <span
+            className={cn(CHAT_INPUT_GLASS_LAYER, "rounded-[20px]")}
+            aria-hidden
           />
-
-          {hasText && !isPickerOpen ? (
-            <Button
-              type="button"
-              onClick={() => void handleSubmit()}
+          <div
+            className={cn(
+              "relative flex max-h-28 w-full py-0",
+              "max-md:min-h-10 max-md:pl-4 max-md:pr-1.5 md:min-h-9 md:pl-3 md:pr-1",
+              isMultiline ? "items-end" : "items-center",
+            )}
+          >
+            <Textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(event) => {
+                setValue(event.target.value);
+                setCursor(event.target.selectionStart ?? 0);
+                setHighlightedIndex(0);
+                requestAnimationFrame(syncTextareaLayout);
+              }}
+              onSelect={syncCursor}
+              onClick={syncCursor}
+              onKeyUp={syncCursor}
+              onKeyDown={handleKeyDown}
+              placeholder="Catat transaksi..."
               disabled={isInputDisabled}
-              aria-label="Kirim pesan"
+              rows={1}
               className={cn(
-                CHAT_INPUT_SEND_BUTTON,
-                isMultiline
-                  ? "mb-[6px] self-end"
-                  : "self-center",
-                "-mr-px shrink-0 rounded-full h-[29px] max-h-[29px] w-9! max-w-9! md:hidden",
+                "max-h-24 flex-1 resize-none overflow-y-auto rounded-lg border-0 bg-transparent px-0 py-0 shadow-none",
+                "max-md:min-h-10 max-md:py-[8px]! max-md:text-base max-md:leading-6",
+                "md:min-h-9 md:text-sm md:leading-9",
+                "placeholder:text-gray-500/60 dark:placeholder:text-gray-200/60",
+                "focus-visible:border-0 focus-visible:ring-0 no-scrollbar",
               )}
-            >
-              <ArrowUpIcon aria-hidden="true"  weight={1} />
-            </Button>
-          ) : !isPickerOpen ? (
-            <ChatInputHintBadges
-              disabled={isInputDisabled}
-              showSlash={hasSlashActions}
-              onInsert={handleInsertHint}
             />
-          ) : null}
+
+            {hasText && !isPickerOpen ? (
+              <Button
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={isInputDisabled}
+                aria-label="Kirim pesan"
+                className={cn(
+                  "max-md:size-8 max-md:[&_svg]:size-2.5 md:size-7",
+                  isMultiline ? "mb-[6px] self-end" : "self-center",
+                  "-mr-px h-[29px] max-h-[29px] w-9! max-w-9! shrink-0 rounded-full md:hidden",
+                )}
+              >
+                <ArrowUpIcon aria-hidden="true" weight={1} />
+              </Button>
+            ) : !isPickerOpen ? (
+              <ChatInputHintBadges
+                disabled={isInputDisabled}
+                showSlash={hasSlashActions}
+                showWallet={walletOptions.length > 0}
+                onInsert={handleInsertHint}
+              />
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

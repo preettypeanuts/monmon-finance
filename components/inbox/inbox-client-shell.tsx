@@ -3,14 +3,17 @@
 import { useCallback, useState } from "react";
 
 import { InboxMobileLayout } from "@/components/inbox/inbox-mobile-layout";
+import { InboxChatInputSkeleton } from "@/components/inbox/inbox-chat-input-skeleton";
 import { InboxChatSkeleton } from "@/components/inbox/inbox-chat-skeleton";
 import { InboxView } from "@/components/chat/inbox-view";
 import { TodaySummaryPanel } from "@/components/finance/today-summary-panel";
 import {
   INBOX_CHAT_COLUMN,
+  INBOX_CHAT_VIEW_ROOT,
   INBOX_PAGE_ROW,
   INBOX_SUMMARY_ASIDE,
 } from "@/config/inbox-desktop";
+import { INBOX_CHAT_INPUT_DOCK } from "@/config/inbox-mobile";
 import type { InboxBootstrapPayload } from "@/lib/inbox/inbox-bootstrap-cache";
 import { usePersistentTabActive } from "@/components/shared/persistent-tab-active-context";
 import { useInboxBootstrap } from "@/hooks/use-inbox-bootstrap";
@@ -62,7 +65,12 @@ export function InboxClientShell({
           summary={summary}
         >
           {!ready && messages.length === 0 ? (
-            <InboxChatSkeleton />
+            <section aria-hidden className={INBOX_CHAT_VIEW_ROOT}>
+              <InboxChatSkeleton className="min-h-0 flex-1" />
+              <div className={INBOX_CHAT_INPUT_DOCK}>
+                <InboxChatInputSkeleton />
+              </div>
+            </section>
           ) : (
             <InboxView
               activePlanItems={slash.activePlanItems}
