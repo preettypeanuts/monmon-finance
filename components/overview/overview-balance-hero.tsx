@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LegacyWalletSyncBanner } from "@/components/wallets/legacy-wallet-sync-banner";
 import { OverviewIconShell } from "@/components/overview/overview-icon-shell";
 import { BalanceVisibilityToggle } from "@/components/shared/balance-visibility-toggle";
 import {
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils";
 import type {
   OverviewDayDeltas,
   OverviewFilterContext,
+  OverviewLegacyWalletSync,
   OverviewWalletChip,
 } from "@/types/overview";
 
@@ -40,6 +42,7 @@ interface OverviewBalanceHeroProps {
   todayExpense: number;
   dayDeltas: OverviewDayDeltas;
   walletChips?: OverviewWalletChip[];
+  legacyWalletSync?: OverviewLegacyWalletSync | null;
   filterContext?: OverviewFilterContext;
   className?: string;
 }
@@ -79,6 +82,7 @@ export function OverviewBalanceHero({
   todayExpense,
   dayDeltas,
   walletChips,
+  legacyWalletSync,
   filterContext,
   className,
 }: OverviewBalanceHeroProps) {
@@ -106,6 +110,17 @@ export function OverviewBalanceHero({
         </div>
         <BalanceVisibilityToggle />
       </div>
+
+      {legacyWalletSync ? (
+        <LegacyWalletSyncBanner
+          className="mt-3"
+          variant="overview"
+          count={legacyWalletSync.unassignedCount}
+          defaultWalletName={legacyWalletSync.defaultWalletName}
+          accountBalance={legacyWalletSync.accountBalance}
+          defaultWalletBalance={legacyWalletSync.defaultWalletBalance}
+        />
+      ) : null}
 
       <div className={OVERVIEW_BALANCE_METRICS}>
         <div className={cn(OVERVIEW_BALANCE_METRIC, "min-w-0")}>

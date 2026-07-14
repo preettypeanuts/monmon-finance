@@ -42,6 +42,7 @@ export function OverviewView({
         todayExpense={data.todaySummary.totalExpense}
         dayDeltas={data.dayDeltas}
         walletChips={data.walletChips}
+        legacyWalletSync={data.legacyWalletSync}
         filterContext={data.filterContext}
         className={OVERVIEW_SPAN_FULL}
       />

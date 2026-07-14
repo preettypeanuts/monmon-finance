@@ -87,3 +87,13 @@ export const WALLETS_LEGACY_BANNER_DESC =
   "Ada {count} transaksi tanpa wallet. Tautkan ke {wallet} agar saldo per wallet akurat.";
 export const WALLETS_LEGACY_BANNER_ACTION = "Tautkan ke default";
 export const WALLETS_LEGACY_BANNER_ACTIONING = "Menautkan...";
+
+export const LEGACY_WALLET_SYNC_WALLETS_TITLE = WALLETS_LEGACY_BANNER_TITLE;
+export const LEGACY_WALLET_SYNC_WALLETS_DESC = WALLETS_LEGACY_BANNER_DESC;
+export const LEGACY_WALLET_SYNC_OVERVIEW_TITLE =
+  "Saldo akun belum masuk wallet utama";
+export const LEGACY_WALLET_SYNC_OVERVIEW_DESC =
+  "Saldo kamu {balance}, tapi {wallet} masih {walletBalance}. Tautkan {count} transaksi lama supaya langsung sinkron — tanpa transfer manual.";
+export const LEGACY_WALLET_SYNC_ACTION = "Masukkan ke {wallet}";
+export const LEGACY_WALLET_SYNC_ACTIONING = WALLETS_LEGACY_BANNER_ACTIONING;
+export const LEGACY_WALLET_SYNC_DISMISS = "Nanti";

@@ -52,6 +52,13 @@ export interface OverviewWalletChip {
   balance: number;
 }
 
+export interface OverviewLegacyWalletSync {
+  unassignedCount: number;
+  defaultWalletName: string;
+  defaultWalletBalance: number;
+  accountBalance: number;
+}
+
 export interface OverviewDayDeltas {
   incomeDelta: number;
   expenseDelta: number;
@@ -81,6 +88,7 @@ export interface OverviewPageData {
   todaySummary: TodaySummary;
   todayActivity: OverviewActivityItem[];
   walletChips: OverviewWalletChip[];
+  legacyWalletSync?: OverviewLegacyWalletSync | null;
   filterContext?: OverviewFilterContext;
 }
 

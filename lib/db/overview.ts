@@ -28,6 +28,11 @@ import {
   getTodayTransactionRows,
 } from "@/lib/db/transactions";
 import { getWalletBalances } from "@/lib/db/wallet-balance";
+import {
+  countUnassignedFlowTransactions,
+  DEFAULT_WALLET_NAME,
+  getDefaultWalletId,
+} from "@/lib/db/wallets";
 import { buildOverviewAlerts } from "@/lib/finance/build-overview-alerts";
 import {
   buildFallbackPlansInsight,
@@ -239,6 +244,8 @@ export async function getOverviewPageData(
     aiBriefTransactionRows,
     plannedItemsForIncome,
     walletBalances,
+    unassignedWalletCount,
+    defaultWalletId,
   ] = await Promise.all([
     getAvailableBalance(userId, now),
     getAvailableBalance(userId, yesterday),
@@ -288,6 +295,8 @@ export async function getOverviewPageData(
       : Promise.resolve(null),
     getPlannedItemsForExpansion(userId),
     getWalletBalances(userId),
+    countUnassignedFlowTransactions(userId),
+    getDefaultWalletId(userId),
   ]);
 
   const activityRows = filtersActive
@@ -422,6 +431,22 @@ export async function getOverviewPageData(
 
   const savingsOverview = buildSavingsOverview(savingsGoals, availableBalance);
 
+  const defaultWallet =
+    walletBalances.find((wallet) => wallet.id === defaultWalletId) ??
+    walletBalances.find((wallet) => wallet.isDefault) ??
+    walletBalances[0] ??
+    null;
+
+  const legacyWalletSync =
+    !dateRangeActive && unassignedWalletCount > 0 && defaultWallet
+      ? {
+          unassignedCount: unassignedWalletCount,
+          defaultWalletName: defaultWallet.name || DEFAULT_WALLET_NAME,
+          defaultWalletBalance: defaultWallet.balance,
+          accountBalance: availableBalance,
+        }
+      : null;
+
   return {
     data: {
       greeting: formatOverviewGreeting(now, userName),
@@ -451,6 +476,7 @@ export async function getOverviewPageData(
         name: wallet.name,
         balance: wallet.balance,
       })),
+      legacyWalletSync,
     },
     aiBriefInputs: {
       userId,
