@@ -30,7 +30,7 @@ export interface FormOptionPickerOption {
 
 interface FormOptionPickerProps {
   value: string;
-  options: FormOptionPickerOption[];
+  options: readonly FormOptionPickerOption[];
   onChange: (value: string) => void;
   title: string;
   backLabel?: string;
@@ -44,7 +44,7 @@ interface FormOptionPickerProps {
 
 function resolveOptionLabel(
   value: string,
-  options: FormOptionPickerOption[],
+  options: readonly FormOptionPickerOption[],
   placeholder: string,
 ): string {
   if (!value) {
