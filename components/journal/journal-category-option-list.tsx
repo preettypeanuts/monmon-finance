@@ -1,6 +1,9 @@
 "use client";
 
+import { Fragment } from "react";
+
 import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
+import { DrawerClose } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import type { CategoryMentionOption } from "@/config/category-mentions";
 import { CheckIcon } from "@/lib/icons";
@@ -19,6 +22,8 @@ interface JournalCategoryOptionListProps {
   type: TransactionType;
   className?: string;
   listClassName?: string;
+  /** Wrap options in DrawerClose — for nested drawer pickers. */
+  closeOnSelect?: boolean;
 }
 
 export function JournalCategoryOptionList({
@@ -30,6 +35,7 @@ export function JournalCategoryOptionList({
   type,
   className,
   listClassName,
+  closeOnSelect = false,
 }: JournalCategoryOptionListProps) {
   return (
     <div className={cn("flex min-h-0 flex-col", className)}>
@@ -58,9 +64,8 @@ export function JournalCategoryOptionList({
           options.map((option) => {
             const isSelected = option.id === selectedId;
 
-            return (
+            const optionButton = (
               <button
-                key={option.id}
                 type="button"
                 role="option"
                 aria-selected={isSelected}
@@ -90,6 +95,12 @@ export function JournalCategoryOptionList({
                 ) : null}
               </button>
             );
+
+            if (closeOnSelect) {
+              return <DrawerClose key={option.id} render={optionButton} />;
+            }
+
+            return <Fragment key={option.id}>{optionButton}</Fragment>;
           })
         )}
       </div>

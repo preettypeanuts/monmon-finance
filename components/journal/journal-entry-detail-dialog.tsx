@@ -8,17 +8,16 @@ import {
   saveJournalEntryAction,
   updateTransactionWalletAction,
 } from "@/app/actions/journal";
-import { patchInboxBootstrapOnTransactionDeleted } from "@/lib/inbox/patch-inbox-on-transaction-deleted";
 import { JournalAdjustmentIcon } from "@/components/journal/journal-adjustment-icon";
 import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
-import { JournalTransferIcon } from "@/components/journal/journal-transfer-icon";
-import { JournalTypeBadge } from "@/components/journal/journal-type-badge";
-import { JournalWalletBadge } from "@/components/journal/journal-wallet-badge";
-import type { JournalWalletOption } from "@/components/journal/journal-filters-drawer";
 import {
   JournalEntryFormFields,
   resolveCategoryForEntry,
 } from "@/components/journal/journal-entry-form-fields";
+import { JournalTransferIcon } from "@/components/journal/journal-transfer-icon";
+import { JournalTypeBadge } from "@/components/journal/journal-type-badge";
+import { JournalWalletBadge } from "@/components/journal/journal-wallet-badge";
+import { JournalWalletPicker } from "@/components/journal/journal-wallet-picker";
 import { useUserCategoryCatalog } from "@/components/providers/user-category-catalog-provider";
 import { FormDialogField } from "@/components/shared/form-dialog-field";
 import {
@@ -30,32 +29,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   FORM_DIALOG_BODY_SCROLL,
-  FORM_FIELD_SELECT,
   FORM_GROUP,
   FORM_PREVIEW_COMPACT,
   FORM_PREVIEW_COMPACT_AMOUNT,
 } from "@/config/form-dialog";
-import {
-  PLANNER_SELECT_CONTENT,
-  PLANNER_SELECT_ITEM,
-  PLANNER_SELECT_TRIGGER,
-} from "@/config/planner-manage";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { UI_LABEL_WALLET } from "@/config/ui-labels";
-import { formatDateTime } from "@/lib/finance/format-datetime";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { formatIdr } from "@/lib/finance/format-currency";
+import { formatDateTime } from "@/lib/finance/format-datetime";
 import { PencilSimpleIcon, TrashIcon } from "@/lib/icons";
+import { patchInboxBootstrapOnTransactionDeleted } from "@/lib/inbox/patch-inbox-on-transaction-deleted";
 import { cn } from "@/lib/utils";
 import { toDateInputValue } from "@/lib/validations/planned-item";
-import type { JournalEntry } from "@/types/journal";
+import type { JournalEntry, JournalWalletOption } from "@/types/journal";
 import type { TransactionType } from "@/types/transaction";
 
 type DialogMode = "view" | "edit";
@@ -74,6 +62,7 @@ export function JournalEntryDetailDialog({
   onOpenChange,
 }: JournalEntryDetailDialogProps) {
   const router = useRouter();
+  const isMobile = useIsMobileViewport();
   const { getLabel } = useUserCategoryCatalog();
   const [isPending, startTransition] = useTransition();
   const [mode, setMode] = useState<DialogMode>("view");
@@ -143,7 +132,7 @@ export function JournalEntryDetailDialog({
     onOpenChange(nextOpen);
   }
 
-  function handleWalletChange(nextWalletId: string | null) {
+  function handleWalletChange(nextWalletId: string) {
     if (!nextWalletId || nextWalletId === walletId) {
       return;
     }
@@ -225,7 +214,9 @@ export function JournalEntryDetailDialog({
             <JournalEntryFormFields
               amountDefault={String(Math.abs(currentEntry.amount))}
               category={category}
+              categoryPickerBackLabel="Edit transaksi"
               descriptionDefault={currentEntry.description}
+              nestedInDrawer={isMobile}
               occurredAtText={occurredAtText}
               onCategoryChange={setCategory}
               onOccurredAtTextChange={setOccurredAtText}
@@ -319,27 +310,19 @@ export function JournalEntryDetailDialog({
 
             {canChangeWallet ? (
               <div className={FORM_GROUP}>
-                <FormDialogField label={UI_LABEL_WALLET} htmlFor="journal-wallet">
-                  <Select value={walletId} onValueChange={handleWalletChange}>
-                    <SelectTrigger
-                      id="journal-wallet"
-                      className={cn(FORM_FIELD_SELECT, PLANNER_SELECT_TRIGGER)}
-                      disabled={isPending}
-                    >
-                      <SelectValue placeholder="Pilih wallet" />
-                    </SelectTrigger>
-                    <SelectContent className={PLANNER_SELECT_CONTENT}>
-                      {pickerOptions.map((option) => (
-                        <SelectItem
-                          key={option.id}
-                          value={option.id}
-                          className={PLANNER_SELECT_ITEM}
-                        >
-                          {option.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <FormDialogField
+                  label={UI_LABEL_WALLET}
+                  htmlFor="journal-wallet"
+                >
+                  <JournalWalletPicker
+                    backLabel={dialogTitle}
+                    disabled={isPending}
+                    id="journal-wallet"
+                    nestedInDrawer={isMobile}
+                    onChange={handleWalletChange}
+                    options={pickerOptions}
+                    value={walletId}
+                  />
                 </FormDialogField>
               </div>
             ) : null}

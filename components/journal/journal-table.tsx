@@ -28,7 +28,7 @@ import {
 } from "@/config/journal-table";
 import { groupJournalEntriesByDay } from "@/lib/journal/group-journal-entries";
 import { cn } from "@/lib/utils";
-import type { JournalWalletOption } from "@/components/journal/journal-filters-drawer";
+import type { JournalWalletOption } from "@/types/journal";
 import type { JournalEntry } from "@/types/journal";
 
 interface JournalTableProps {

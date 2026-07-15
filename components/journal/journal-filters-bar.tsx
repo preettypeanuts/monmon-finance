@@ -4,10 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { JournalFilterFields } from "@/components/journal/journal-filter-fields";
-import {
-  JournalFiltersDrawer,
-  type JournalWalletOption,
-} from "@/components/journal/journal-filters-drawer";
+import { JournalFiltersDrawer } from "@/components/journal/journal-filters-drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GLASS_SURFACE } from "@/config/glass";
@@ -31,7 +28,7 @@ import { FunnelIcon } from "@/lib/icons";
 import { isJournalDateRangeActive } from "@/lib/journal/journal-date-range";
 import { cn } from "@/lib/utils";
 import { buildJournalSearchParams } from "@/lib/validations/journal";
-import type { JournalFilters } from "@/types/journal";
+import type { JournalFilters, JournalWalletOption } from "@/types/journal";
 
 interface JournalFiltersBarProps {
   filters: JournalFilters;

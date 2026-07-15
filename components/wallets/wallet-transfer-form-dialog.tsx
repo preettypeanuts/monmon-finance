@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
 import { createWalletTransferAction } from "@/app/actions/wallets";
-import { InsufficientWalletBalancePanel } from "@/components/wallets/insufficient-wallet-balance-panel";
+import { JournalWalletPicker } from "@/components/journal/journal-wallet-picker";
 import { FormDialogField } from "@/components/shared/form-dialog-field";
 import {
   ResponsiveDialog,
@@ -15,17 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { InsufficientWalletBalancePanel } from "@/components/wallets/insufficient-wallet-balance-panel";
 import {
   FORM_DIALOG_BODY_SCROLL,
   FORM_FIELD_INPUT,
-  FORM_FIELD_SELECT,
   FORM_GROUP,
 } from "@/config/form-dialog";
 import { SEPARATED_CONTROL } from "@/config/shape";
@@ -42,6 +35,7 @@ import {
   WALLET_TRANSFER_TITLE,
   WALLET_TRANSFER_TO,
 } from "@/config/wallet-labels";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import {
   buildInsufficientWalletBalanceMessage,
@@ -63,6 +57,7 @@ export function WalletTransferFormDialog({
   wallets,
 }: WalletTransferFormDialogProps) {
   const router = useRouter();
+  const isMobile = useIsMobileViewport();
   const { formatAmount } = useProtectedCurrency();
   const [isPending, startTransition] = useTransition();
   const [fromWalletId, setFromWalletId] = useState("");
@@ -86,6 +81,11 @@ export function WalletTransferFormDialog({
     setConfirmInsufficient(false);
     setPendingFormData(null);
   }, [open, wallets]);
+
+  const walletPickerOptions = useMemo(
+    () => wallets.map((wallet) => ({ id: wallet.id, name: wallet.name })),
+    [wallets],
+  );
 
   const fromWallet = useMemo(
     () => wallets.find((wallet) => wallet.id === fromWalletId),
@@ -166,7 +166,11 @@ export function WalletTransferFormDialog({
   }
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title={WALLET_TRANSFER_TITLE}>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={WALLET_TRANSFER_TITLE}
+    >
       <ResponsiveDialogHeader>
         <DialogTitle className="text-lg font-semibold tracking-tight">
           {WALLET_TRANSFER_TITLE}
@@ -187,7 +191,9 @@ export function WalletTransferFormDialog({
             onProceed={handleProceedDespiteInsufficient}
             isPending={isPending}
             proceedLabel={
-              isPending ? WALLET_TRANSFER_SAVING : WALLET_INSUFFICIENT_PROCEED_TRANSFER
+              isPending
+                ? WALLET_TRANSFER_SAVING
+                : WALLET_INSUFFICIENT_PROCEED_TRANSFER
             }
           />
         </ResponsiveDialogBody>
@@ -202,47 +208,23 @@ export function WalletTransferFormDialog({
 
             <div className={FORM_GROUP}>
               <FormDialogField label={WALLET_TRANSFER_FROM}>
-                <Select
+                <JournalWalletPicker
+                  backLabel={WALLET_TRANSFER_TITLE}
+                  nestedInDrawer={isMobile}
+                  onChange={setFromWalletId}
+                  options={walletPickerOptions}
                   value={fromWalletId}
-                  onValueChange={(value) => {
-                    if (value) {
-                      setFromWalletId(value);
-                    }
-                  }}
-                >
-                  <SelectTrigger className={FORM_FIELD_SELECT}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </FormDialogField>
 
               <FormDialogField label={WALLET_TRANSFER_TO}>
-                <Select
+                <JournalWalletPicker
+                  backLabel={WALLET_TRANSFER_TITLE}
+                  nestedInDrawer={isMobile}
+                  onChange={setToWalletId}
+                  options={walletPickerOptions}
                   value={toWalletId}
-                  onValueChange={(value) => {
-                    if (value) {
-                      setToWalletId(value);
-                    }
-                  }}
-                >
-                  <SelectTrigger className={FORM_FIELD_SELECT}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </FormDialogField>
 
               <FormDialogField

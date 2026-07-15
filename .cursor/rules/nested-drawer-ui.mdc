@@ -1,0 +1,51 @@
+---
+description: Use nested shadcn Drawer for mobile sheets that open pickers, menus, or sub-flows inside a drawer.
+globs: components/**/*.tsx
+alwaysApply: true
+---
+
+# Nested Drawer (Mobile)
+
+On mobile (`max-md`), any drawer/sheet that opens **another** picker, menu, dropdown, or sub-screen must use **nested `@/components/ui/drawer`**, not inline panel swaps or overlapping dialogs.
+
+## When to use
+
+- Settings sub-panels (Appearance, Categories, …)
+- Forms opened from inside a drawer (e.g. category edit with icon/color pickers)
+- Any `Select` / `Popover` / secondary flow inside a bottom sheet
+
+## Pattern
+
+Nest `<Drawer>` inside the parent `<DrawerContent>`. Same `swipeDirection` as parent (usually `"down"` on mobile).
+
+```tsx
+<Drawer showSwipeHandle swipeDirection="down">
+  <DrawerContent>{/* parent */}</DrawerContent>
+  <Drawer showSwipeHandle swipeDirection="down">
+    <DrawerTrigger render={<RowButton />} />
+    <DrawerContent className={NESTED_DRAWER_SURFACE}>
+      <DrawerTitle className="sr-only">Sub panel</DrawerTitle>
+      <DrawerClose render={<BackButton />} />
+      {children}
+    </DrawerContent>
+  </Drawer>
+</Drawer>
+```
+
+## Helpers
+
+- Generic shell: `@/components/shared/nested-drawer`
+- Settings sub-panels: `@/components/settings/settings-nested-drawer`
+- Forms inside a drawer: `@/components/shared/form-nested-drawer`
+- Generic option lists: `@/components/shared/form-option-picker`
+- Wallet lists: `@/components/journal/journal-wallet-picker`
+
+## Do not
+
+- Swap parent drawer body with `useState("panel")` on mobile — use nested drawer instead
+- Close parent drawer and open a separate root drawer for a sub-flow (breaks native stack)
+- Use `ResponsiveDialog` / root `Drawer` for sub-steps when already inside a drawer — nest another drawer
+
+## Desktop
+
+Desktop may keep inline navigation inside `Sheet` (settings) or `Dialog`. Nested drawer rule applies to **mobile only**.

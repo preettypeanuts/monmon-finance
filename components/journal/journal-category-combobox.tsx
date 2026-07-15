@@ -5,6 +5,11 @@ import { useMemo, useState } from "react";
 import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
 import { JournalCategoryOptionList } from "@/components/journal/journal-category-option-list";
 import { useUserCategoryCatalog } from "@/components/providers/user-category-catalog-provider";
+import { SettingsNestedDrawerBack } from "@/components/settings/settings-nested-drawer-back";
+import {
+  NestedDrawer,
+  PICKER_NESTED_DRAWER_SURFACE,
+} from "@/components/shared/nested-drawer";
 import {
   Drawer,
   DrawerContent,
@@ -20,11 +25,19 @@ import {
 import { FORM_FIELD_SELECT } from "@/config/form-dialog";
 import { MOBILE_BOTTOM_DRAWER_POPUP } from "@/config/mobile-layout";
 import { PLANNER_SELECT_TRIGGER } from "@/config/planner-manage";
+import {
+  SETTINGS_IOS_SUB_HEADER,
+  SETTINGS_IOS_SUB_TITLE,
+} from "@/config/settings-ios";
+import { UI_LABEL_CATEGORY } from "@/config/ui-labels";
 import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { filterCategoryMentionOptions } from "@/lib/chat/category-mentions";
 import { CaretDownIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type { TransactionType } from "@/types/transaction";
+
+const CATEGORY_PICKER_TITLE = "Pilih kategori";
+const CATEGORY_PICKER_DESC = "Cari atau pilih kategori transaksi.";
 
 interface JournalCategoryComboboxProps {
   id?: string;
@@ -32,6 +45,9 @@ interface JournalCategoryComboboxProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  /** Mobile: stack picker inside a parent drawer (journal/planner forms). */
+  nestedInDrawer?: boolean;
+  backLabel?: string;
 }
 
 function JournalCategoryTrigger({
@@ -73,7 +89,7 @@ function JournalCategoryTrigger({
           <span className="truncate">{selectedLabel}</span>
         </span>
       ) : (
-        <span className="text-muted-foreground">Pilih kategori</span>
+        <span className="text-muted-foreground">{CATEGORY_PICKER_TITLE}</span>
       )}
       <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" />
     </button>
@@ -86,8 +102,11 @@ export function JournalCategoryCombobox({
   value,
   onChange,
   className,
+  nestedInDrawer = false,
+  backLabel = UI_LABEL_CATEGORY,
 }: JournalCategoryComboboxProps) {
   const isMobile = useIsMobileViewport();
+  const useNestedDrawer = isMobile && nestedInDrawer;
   const { getMentionOptions } = useUserCategoryCatalog();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -119,30 +138,61 @@ export function JournalCategoryCombobox({
 
   const optionList = (
     <JournalCategoryOptionList
+      closeOnSelect={useNestedDrawer}
       options={filteredOptions}
       selectedId={value}
       search={search}
       onSearchChange={setSearch}
       onSelect={(option) => handleSelect(option.id)}
       type={type}
-      listClassName={isMobile ? "max-h-[min(52dvh,28rem)]" : "max-h-72"}
+      listClassName={
+        useNestedDrawer
+          ? "max-h-[min(48dvh,24rem)]"
+          : isMobile
+            ? "max-h-[min(52dvh,28rem)]"
+            : "max-h-72"
+      }
     />
   );
+
+  const trigger = (
+    <JournalCategoryTrigger
+      id={id}
+      className={className}
+      open={open}
+      selectedLabel={selectedOption?.label}
+      selectedCategoryId={selectedOption?.id}
+      selectedIcon={undefined}
+      transactionType={type}
+      onClick={useNestedDrawer ? undefined : () => setOpen(true)}
+    />
+  );
+
+  if (useNestedDrawer) {
+    return (
+      <NestedDrawer
+        className={PICKER_NESTED_DRAWER_SURFACE}
+        open={open}
+        onOpenChange={handleOpenChange}
+        title={CATEGORY_PICKER_TITLE}
+        trigger={trigger}
+      >
+        <header className={SETTINGS_IOS_SUB_HEADER}>
+          <div className="absolute left-3">
+            <SettingsNestedDrawerBack label={backLabel} />
+          </div>
+          <h2 className={SETTINGS_IOS_SUB_TITLE}>{CATEGORY_PICKER_TITLE}</h2>
+        </header>
+        {optionList}
+      </NestedDrawer>
+    );
+  }
 
   if (isMobile) {
     return (
       <>
-        <JournalCategoryTrigger
-          id={id}
-          className={className}
-          open={open}
-          selectedLabel={selectedOption?.label}
-          selectedCategoryId={selectedOption?.id}
-          selectedIcon={undefined}
-          transactionType={type}
-          onClick={() => setOpen(true)}
-        />
-        <Drawer open={open} onOpenChange={handleOpenChange} showSwipeHandle>
+        {trigger}
+        <Drawer onOpenChange={handleOpenChange} open={open} showSwipeHandle>
           <DrawerContent
             className={cn(
               MOBILE_BOTTOM_DRAWER_POPUP,
@@ -150,10 +200,8 @@ export function JournalCategoryCombobox({
             )}
           >
             <DrawerHeader className="border-b border-black/6 pb-3 text-left dark:border-white/8">
-              <DrawerTitle>Pilih kategori</DrawerTitle>
-              <DrawerDescription>
-                Cari atau pilih kategori transaksi.
-              </DrawerDescription>
+              <DrawerTitle>{CATEGORY_PICKER_TITLE}</DrawerTitle>
+              <DrawerDescription>{CATEGORY_PICKER_DESC}</DrawerDescription>
             </DrawerHeader>
             {optionList}
           </DrawerContent>
@@ -181,7 +229,7 @@ export function JournalCategoryCombobox({
             <span className="truncate">{selectedOption.label}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground">Pilih kategori</span>
+          <span className="text-muted-foreground">{CATEGORY_PICKER_TITLE}</span>
         )}
         <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" />
       </PopoverTrigger>

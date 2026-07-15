@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { JournalFilterCategoryList } from "@/components/journal/journal-filter-category-list";
+import { JournalFilterWalletPicker } from "@/components/journal/journal-wallet-picker";
 import { FormDateRangePicker } from "@/components/shared/form-date-range-picker";
 import {
   ResponsiveDialog,
@@ -12,13 +13,6 @@ import {
 } from "@/components/shared/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   FORM_DIALOG_BODY_SCROLL,
   FORM_FIELD_LABEL,
@@ -30,7 +24,6 @@ import {
 import { JOURNAL_TYPE_OPTIONS } from "@/config/journal";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import {
-  UI_LABEL_ALL_WALLETS,
   UI_LABEL_APPLY,
   UI_LABEL_CATEGORY,
   UI_LABEL_DATE_RANGE,
@@ -40,17 +33,15 @@ import {
   UI_LABEL_TYPE,
   UI_LABEL_WALLET,
 } from "@/config/ui-labels";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import {
   getJournalDateRangePresets,
   isValidJournalDateInput,
 } from "@/lib/journal/journal-date-range";
 import { cn } from "@/lib/utils";
-import type { JournalFilters } from "@/types/journal";
+import type { JournalFilters, JournalWalletOption } from "@/types/journal";
 
-export interface JournalWalletOption {
-  id: string;
-  name: string;
-}
+export type { JournalWalletOption } from "@/types/journal";
 
 interface JournalFiltersDrawerProps {
   open: boolean;
@@ -85,6 +76,7 @@ export function JournalFiltersDrawer({
   onApply,
   onReset,
 }: JournalFiltersDrawerProps) {
+  const isMobile = useIsMobileViewport();
   const [draftFrom, setDraftFrom] = useState(dateFrom ?? "");
   const [draftTo, setDraftTo] = useState(dateTo ?? "");
   const [draftType, setDraftType] = useState(type);
@@ -226,26 +218,12 @@ export function JournalFiltersDrawer({
         {showWalletFilter ? (
           <section className="flex flex-col gap-2">
             <span className={FORM_FIELD_LABEL}>{UI_LABEL_WALLET}</span>
-            <Select
+            <JournalFilterWalletPicker
+              nestedInDrawer={isMobile}
+              options={walletOptions ?? []}
               value={draftWalletId}
-              onValueChange={(value) => {
-                if (value) {
-                  setDraftWalletId(value);
-                }
-              }}
-            >
-              <SelectTrigger className={cn(SEPARATED_CONTROL, "h-10 w-full")}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{UI_LABEL_ALL_WALLETS}</SelectItem>
-                {walletOptions?.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={setDraftWalletId}
+            />
           </section>
         ) : null}
 

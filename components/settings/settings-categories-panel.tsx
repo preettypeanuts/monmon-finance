@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-
+import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
+import { useUserCategoryCatalog } from "@/components/providers/user-category-catalog-provider";
 import {
   CategoryFormDialog,
   type CategoryFormMode,
@@ -9,9 +10,11 @@ import {
 import { SettingsIosRow } from "@/components/settings/settings-ios-row";
 import { SettingsIosSection } from "@/components/settings/settings-ios-section";
 import { SettingsSubHeader } from "@/components/settings/settings-sub-header";
-import { JournalCategoryIcon } from "@/components/journal/journal-category-icon";
-import { useUserCategoryCatalog } from "@/components/providers/user-category-catalog-provider";
 import { Button } from "@/components/ui/button";
+import {
+  SETTINGS_IOS_ICON_ACCENT,
+  SETTINGS_IOS_SUB_SCROLL,
+} from "@/config/settings-ios";
 import {
   SETTINGS_CATEGORIES,
   SETTINGS_CATEGORIES_ADD,
@@ -21,14 +24,17 @@ import {
   SETTINGS_CATEGORIES_FOOTER,
   SETTINGS_CATEGORIES_RESET,
 } from "@/config/settings-labels";
-import { SETTINGS_IOS_ICON_ACCENT, SETTINGS_IOS_SUB_SCROLL } from "@/config/settings-ios";
 import { PlusIcon } from "@/lib/icons";
 
 interface SettingsCategoriesPanelProps {
-  onBack: () => void;
+  onBack?: () => void;
+  nested?: boolean;
 }
 
-export function SettingsCategoriesPanel({ onBack }: SettingsCategoriesPanelProps) {
+export function SettingsCategoriesPanel({
+  onBack,
+  nested = false,
+}: SettingsCategoriesPanelProps) {
   const { catalog, deleteCategory, resetCategory } = useUserCategoryCatalog();
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<CategoryFormMode | null>(null);
@@ -80,7 +86,9 @@ export function SettingsCategoriesPanel({ onBack }: SettingsCategoriesPanelProps
 
   return (
     <>
-      <SettingsSubHeader title={SETTINGS_CATEGORIES} onBack={onBack} />
+      {!nested && onBack ? (
+        <SettingsSubHeader title={SETTINGS_CATEGORIES} onBack={onBack} />
+      ) : null}
       <section className={SETTINGS_IOS_SUB_SCROLL}>
         <SettingsIosSection footer={SETTINGS_CATEGORIES_FOOTER}>
           <SettingsIosRow
@@ -170,6 +178,7 @@ export function SettingsCategoriesPanel({ onBack }: SettingsCategoriesPanelProps
       </section>
 
       <CategoryFormDialog
+        nestedInDrawer={nested}
         open={formOpen}
         mode={formMode}
         onOpenChange={setFormOpen}

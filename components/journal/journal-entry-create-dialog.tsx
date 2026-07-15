@@ -8,7 +8,6 @@ import {
   getDefaultCategoryForType,
   JournalEntryFormFields,
 } from "@/components/journal/journal-entry-form-fields";
-import { InsufficientWalletBalancePanel } from "@/components/wallets/insufficient-wallet-balance-panel";
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
@@ -16,13 +15,9 @@ import {
   ResponsiveDialogHeader,
 } from "@/components/shared/responsive-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  FORM_DIALOG_BODY_SCROLL,
-} from "@/config/form-dialog";
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { InsufficientWalletBalancePanel } from "@/components/wallets/insufficient-wallet-balance-panel";
+import { FORM_DIALOG_BODY_SCROLL } from "@/config/form-dialog";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import {
   UI_LABEL_ADD_TRANSACTION,
@@ -31,6 +26,7 @@ import {
   UI_LABEL_SAVE,
 } from "@/config/ui-labels";
 import { WALLET_INSUFFICIENT_PROCEED_RECORD } from "@/config/wallet-labels";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { useProtectedCurrency } from "@/hooks/use-protected-currency";
 import {
   buildInsufficientWalletBalanceMessage,
@@ -54,6 +50,7 @@ export function JournalEntryCreateDialog({
   defaultWallet = null,
 }: JournalEntryCreateDialogProps) {
   const router = useRouter();
+  const isMobile = useIsMobileViewport();
   const { formatAmount } = useProtectedCurrency();
   const [isPending, startTransition] = useTransition();
   const [type, setType] = useState<TransactionType>("expense");
@@ -193,7 +190,9 @@ export function JournalEntryCreateDialog({
               key={formKey}
               amountDefault=""
               category={category}
+              categoryPickerBackLabel={UI_LABEL_ADD_TRANSACTION}
               descriptionDefault=""
+              nestedInDrawer={isMobile}
               occurredAtText={occurredAtText}
               onCategoryChange={setCategory}
               onOccurredAtTextChange={setOccurredAtText}

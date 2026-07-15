@@ -11,6 +11,11 @@ export interface JournalFilters {
   dateTo: string | null;
 }
 
+export interface JournalWalletOption {
+  id: string;
+  name: string;
+}
+
 export interface JournalEntry {
   id: string;
   type: TransactionType;

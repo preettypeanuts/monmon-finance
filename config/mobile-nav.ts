@@ -8,13 +8,13 @@ import {
   PLANS_ROUTE,
   WALLETS_ROUTE,
 } from "@/config/navigation";
-import { NOTIFICATIONS_PAGE_TITLE } from "@/config/ui-labels";
 import { SIDEBAR_APP_ICON_GRADIENTS } from "@/config/sidebar";
 import { GRID_GAP } from "@/config/spacing";
+import { NOTIFICATIONS_PAGE_TITLE } from "@/config/ui-labels";
 import type { Icon } from "@/lib/icons";
 import {
-  ChartBarIcon,
   BellIcon,
+  ChartBarIcon,
   MobileNavInboxIcon,
   MobileNavJournalIcon,
   MobileNavOverviewIcon,
@@ -133,6 +133,8 @@ export interface MobileDrawerMenuItem {
 }
 
 /** Quick links in menu drawer — not on bottom pill. */
+export const MOBILE_DRAWER_MENU_LABEL = "Menu";
+
 export const mobileDrawerMenuItems: MobileDrawerMenuItem[] = [
   {
     id: "notifications",

@@ -60,6 +60,8 @@ interface JournalEntryFormFieldsProps {
   onTypeChange: (type: TransactionType) => void;
   onCategoryChange: (category: string) => void;
   onOccurredAtTextChange: (value: string) => void;
+  nestedInDrawer?: boolean;
+  categoryPickerBackLabel?: string;
 }
 
 export function JournalEntryFormFields({
@@ -73,6 +75,8 @@ export function JournalEntryFormFields({
   onTypeChange,
   onCategoryChange,
   onOccurredAtTextChange,
+  nestedInDrawer = false,
+  categoryPickerBackLabel,
 }: JournalEntryFormFieldsProps) {
   function handleTypeChange(nextType: TransactionType) {
     onTypeChange(nextType);
@@ -100,13 +104,19 @@ export function JournalEntryFormFields({
             />
           </FormDialogField>
 
-          <FormDialogField label={UI_LABEL_DATE} htmlFor="journal-date" gridItem>
+          <FormDialogField
+            label={UI_LABEL_DATE}
+            htmlFor="journal-date"
+            gridItem
+          >
             <FormDatePicker
+              backLabel={categoryPickerBackLabel}
+              className={FORM_FIELD_DATE}
               id="journal-date"
               name="occurredAt"
-              value={occurredAtText}
+              nestedInDrawer={nestedInDrawer}
               onChange={onOccurredAtTextChange}
-              className={FORM_FIELD_DATE}
+              value={occurredAtText}
             />
           </FormDialogField>
         </div>
@@ -126,7 +136,9 @@ export function JournalEntryFormFields({
 
         <FormDialogField label={UI_LABEL_CATEGORY} htmlFor="journal-category">
           <JournalCategoryCombobox
+            backLabel={categoryPickerBackLabel}
             id="journal-category"
+            nestedInDrawer={nestedInDrawer}
             type={type}
             value={category}
             onChange={onCategoryChange}
@@ -136,7 +148,10 @@ export function JournalEntryFormFields({
 
       {showRawInput ? (
         <div className={FORM_GROUP}>
-          <FormDialogField label={UI_LABEL_INBOX_MESSAGE} htmlFor="journal-raw-input">
+          <FormDialogField
+            label={UI_LABEL_INBOX_MESSAGE}
+            htmlFor="journal-raw-input"
+          >
             <Textarea
               id="journal-raw-input"
               name="rawInput"

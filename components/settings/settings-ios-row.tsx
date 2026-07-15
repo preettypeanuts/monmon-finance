@@ -1,3 +1,5 @@
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+
 import { CaretRightIcon } from "@/lib/icons";
 import {
   SETTINGS_IOS_ROW,
@@ -7,50 +9,63 @@ import {
 } from "@/config/settings-ios";
 import { cn } from "@/lib/utils";
 
-interface SettingsIosRowProps {
-  icon: React.ReactNode;
+interface SettingsIosRowProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  icon: ReactNode;
   iconClassName: string;
   label: string;
   value?: string;
   showChevron?: boolean;
-  control?: React.ReactNode;
-  onClick?: () => void;
+  control?: ReactNode;
 }
 
-export function SettingsIosRow({
-  icon,
-  iconClassName,
-  label,
-  value,
-  showChevron = true,
-  control,
-  onClick,
-}: SettingsIosRowProps) {
-  const content = (
-    <>
-      <span className={cn(SETTINGS_IOS_ROW_ICON, iconClassName)}>{icon}</span>
-      <span className={SETTINGS_IOS_ROW_LABEL}>{label}</span>
-      {control ?? (
-        <>
-          {value ? <span className={SETTINGS_IOS_ROW_VALUE}>{value}</span> : null}
-          {showChevron ? (
-            <CaretRightIcon
-              aria-hidden
-              className="size-4 shrink-0 text-muted-foreground/70"
-            />
-          ) : null}
-        </>
-      )}
-    </>
-  );
+export const SettingsIosRow = forwardRef<HTMLButtonElement, SettingsIosRowProps>(
+  function SettingsIosRow(
+    {
+      icon,
+      iconClassName,
+      label,
+      value,
+      showChevron = true,
+      control,
+      className,
+      type = "button",
+      onClick,
+      ...props
+    },
+    ref,
+  ) {
+    const content = (
+      <>
+        <span className={cn(SETTINGS_IOS_ROW_ICON, iconClassName)}>{icon}</span>
+        <span className={SETTINGS_IOS_ROW_LABEL}>{label}</span>
+        {control ?? (
+          <>
+            {value ? <span className={SETTINGS_IOS_ROW_VALUE}>{value}</span> : null}
+            {showChevron ? (
+              <CaretRightIcon
+                aria-hidden
+                className="size-4 shrink-0 text-muted-foreground/70"
+              />
+            ) : null}
+          </>
+        )}
+      </>
+    );
 
-  if (!onClick) {
-    return <div className={SETTINGS_IOS_ROW}>{content}</div>;
-  }
+    if (control && onClick === undefined) {
+      return <div className={cn(SETTINGS_IOS_ROW, className)}>{content}</div>;
+    }
 
-  return (
-    <button type="button" onClick={onClick} className={SETTINGS_IOS_ROW}>
-      {content}
-    </button>
-  );
-}
+    return (
+      <button
+        ref={ref}
+        type={type}
+        onClick={onClick}
+        className={cn(SETTINGS_IOS_ROW, className)}
+        {...props}
+      >
+        {content}
+      </button>
+    );
+  },
+);

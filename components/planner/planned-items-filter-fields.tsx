@@ -2,15 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import { FormOptionPicker } from "@/components/shared/form-option-picker";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   PAYPLAN_FILTER_LABEL_END,
   PAYPLAN_FILTER_LABEL_FLOW,
@@ -20,6 +14,7 @@ import {
   PAYPLAN_LABEL_FILTER_SCHEDULE,
   PAYPLAN_LABEL_FILTER_SCHEDULE_DESC,
   UI_LABEL_APPLY,
+  UI_LABEL_FILTER,
   UI_LABEL_RESET,
 } from "@/config/payplan-labels";
 import {
@@ -29,11 +24,6 @@ import {
   PLANNED_ITEMS_PAYMENT_OPTIONS,
   PLANNED_ITEMS_REPEAT_OPTIONS,
 } from "@/config/planner-manage-filters";
-import {
-  PLANNER_SELECT_CONTENT,
-  PLANNER_SELECT_ITEM,
-  PLANNER_SELECT_TRIGGER,
-} from "@/config/planner-manage";
 import { SEPARATED_CONTROL } from "@/config/shape";
 import { CONTROL_GAP } from "@/config/spacing";
 import { cn } from "@/lib/utils";
@@ -48,6 +38,7 @@ interface PlannedItemsFilterFieldsProps {
   onReset: () => void;
   layout?: "stack" | "inline";
   className?: string;
+  nestedInDrawer?: boolean;
 }
 
 export function PlannedItemsFilterFields({
@@ -57,8 +48,10 @@ export function PlannedItemsFilterFields({
   onReset,
   layout = "stack",
   className,
+  nestedInDrawer = false,
 }: PlannedItemsFilterFieldsProps) {
   const isStack = layout === "stack";
+  const pickerClassName = isStack ? "h-10" : undefined;
 
   return (
     <form
@@ -70,138 +63,108 @@ export function PlannedItemsFilterFields({
     >
       {isStack ? (
         <div>
-          <p className="text-sm font-semibold">{PAYPLAN_LABEL_FILTER_SCHEDULE}</p>
+          <p className="text-sm font-semibold">
+            {PAYPLAN_LABEL_FILTER_SCHEDULE}
+          </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {PAYPLAN_LABEL_FILTER_SCHEDULE_DESC}
           </p>
         </div>
       ) : null}
 
-      <div className={cn("grid gap-3", !isStack ? "sm:grid-cols-2" : "sm:grid-cols-2")}>
+      <div
+        className={cn(
+          "grid gap-3",
+          !isStack ? "sm:grid-cols-2" : "sm:grid-cols-2",
+        )}
+      >
         <div className="grid gap-1.5">
-          <Label htmlFor="planned-filter-kind">{PAYPLAN_FILTER_LABEL_KIND}</Label>
-          <Select
-            value={draft.kind}
-            onValueChange={(value) =>
+          <Label htmlFor="planned-filter-kind">
+            {PAYPLAN_FILTER_LABEL_KIND}
+          </Label>
+          <FormOptionPicker
+            backLabel={UI_LABEL_FILTER}
+            className={pickerClassName}
+            id="planned-filter-kind"
+            nestedInDrawer={nestedInDrawer}
+            onChange={(value) =>
               onDraftChange({
                 ...draft,
-                kind: (value ?? "all") as PlannedItemsFilters["kind"],
+                kind: value as PlannedItemsFilters["kind"],
               })
             }
-          >
-            <SelectTrigger
-              id="planned-filter-kind"
-              className={cn(SEPARATED_CONTROL, PLANNER_SELECT_TRIGGER, isStack && "h-10")}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={PLANNER_SELECT_CONTENT}>
-              {PLANNED_ITEMS_KIND_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={PLANNER_SELECT_ITEM}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={PLANNED_ITEMS_KIND_OPTIONS}
+            title={PAYPLAN_FILTER_LABEL_KIND}
+            value={draft.kind}
+          />
         </div>
 
         <div className="grid gap-1.5">
-          <Label htmlFor="planned-filter-repeat">{PAYPLAN_FILTER_LABEL_REPEAT}</Label>
-          <Select
-            value={draft.repeat}
-            onValueChange={(value) =>
+          <Label htmlFor="planned-filter-repeat">
+            {PAYPLAN_FILTER_LABEL_REPEAT}
+          </Label>
+          <FormOptionPicker
+            backLabel={UI_LABEL_FILTER}
+            className={pickerClassName}
+            id="planned-filter-repeat"
+            nestedInDrawer={nestedInDrawer}
+            onChange={(value) =>
               onDraftChange({
                 ...draft,
-                repeat: (value ?? "all") as PlannedItemsFilters["repeat"],
+                repeat: value as PlannedItemsFilters["repeat"],
               })
             }
-          >
-            <SelectTrigger
-              id="planned-filter-repeat"
-              className={cn(SEPARATED_CONTROL, PLANNER_SELECT_TRIGGER, isStack && "h-10")}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={PLANNER_SELECT_CONTENT}>
-              {PLANNED_ITEMS_REPEAT_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={PLANNER_SELECT_ITEM}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={PLANNED_ITEMS_REPEAT_OPTIONS}
+            title={PAYPLAN_FILTER_LABEL_REPEAT}
+            value={draft.repeat}
+          />
         </div>
       </div>
 
-      <div className={cn("grid gap-3", !isStack ? "sm:grid-cols-2" : "sm:grid-cols-2")}>
+      <div
+        className={cn(
+          "grid gap-3",
+          !isStack ? "sm:grid-cols-2" : "sm:grid-cols-2",
+        )}
+      >
         <div className="grid gap-1.5">
-          <Label htmlFor="planned-filter-flow">{PAYPLAN_FILTER_LABEL_FLOW}</Label>
-          <Select
-            value={draft.flowType}
-            onValueChange={(value) =>
+          <Label htmlFor="planned-filter-flow">
+            {PAYPLAN_FILTER_LABEL_FLOW}
+          </Label>
+          <FormOptionPicker
+            backLabel={UI_LABEL_FILTER}
+            className={pickerClassName}
+            id="planned-filter-flow"
+            nestedInDrawer={nestedInDrawer}
+            onChange={(value) =>
               onDraftChange({
                 ...draft,
-                flowType: (value ?? "all") as PlannedItemsFilters["flowType"],
+                flowType: value as PlannedItemsFilters["flowType"],
               })
             }
-          >
-            <SelectTrigger
-              id="planned-filter-flow"
-              className={cn(SEPARATED_CONTROL, PLANNER_SELECT_TRIGGER, isStack && "h-10")}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={PLANNER_SELECT_CONTENT}>
-              {PLANNED_ITEMS_FLOW_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={PLANNER_SELECT_ITEM}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={PLANNED_ITEMS_FLOW_OPTIONS}
+            title={PAYPLAN_FILTER_LABEL_FLOW}
+            value={draft.flowType}
+          />
         </div>
 
         <div className="grid gap-1.5">
           <Label htmlFor="planned-filter-end">{PAYPLAN_FILTER_LABEL_END}</Label>
-          <Select
-            value={draft.endMode}
-            onValueChange={(value) =>
+          <FormOptionPicker
+            backLabel={UI_LABEL_FILTER}
+            className={pickerClassName}
+            id="planned-filter-end"
+            nestedInDrawer={nestedInDrawer}
+            onChange={(value) =>
               onDraftChange({
                 ...draft,
-                endMode: (value ?? "all") as PlannedItemsFilters["endMode"],
+                endMode: value as PlannedItemsFilters["endMode"],
               })
             }
-          >
-            <SelectTrigger
-              id="planned-filter-end"
-              className={cn(SEPARATED_CONTROL, PLANNER_SELECT_TRIGGER, isStack && "h-10")}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={PLANNER_SELECT_CONTENT}>
-              {PLANNED_ITEMS_END_MODE_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={PLANNER_SELECT_ITEM}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={PLANNED_ITEMS_END_MODE_OPTIONS}
+            title={PAYPLAN_FILTER_LABEL_END}
+            value={draft.endMode}
+          />
         </div>
       </div>
 
@@ -209,42 +172,25 @@ export function PlannedItemsFilterFields({
         <Label htmlFor="planned-filter-payment">
           {PAYPLAN_FILTER_LABEL_PAYMENT_STATUS}
         </Label>
-        <Select
-          value={draft.paymentStatus}
-          onValueChange={(value) =>
+        <FormOptionPicker
+          backLabel={UI_LABEL_FILTER}
+          className={pickerClassName}
+          id="planned-filter-payment"
+          nestedInDrawer={nestedInDrawer}
+          onChange={(value) =>
             onDraftChange({
               ...draft,
-              paymentStatus: (value ??
-                "all") as PlannedItemsFilters["paymentStatus"],
+              paymentStatus: value as PlannedItemsFilters["paymentStatus"],
             })
           }
-        >
-          <SelectTrigger
-            id="planned-filter-payment"
-            className={cn(SEPARATED_CONTROL, PLANNER_SELECT_TRIGGER, isStack && "h-10")}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className={PLANNER_SELECT_CONTENT}>
-            {PLANNED_ITEMS_PAYMENT_OPTIONS.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                className={PLANNER_SELECT_ITEM}
-              >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          options={PLANNED_ITEMS_PAYMENT_OPTIONS}
+          title={PAYPLAN_FILTER_LABEL_PAYMENT_STATUS}
+          value={draft.paymentStatus}
+        />
       </div>
 
       <div
-        className={cn(
-          "flex w-full",
-          !isStack && "justify-end",
-          CONTROL_GAP,
-        )}
+        className={cn("flex w-full", !isStack && "justify-end", CONTROL_GAP)}
       >
         <Button
           type="button"

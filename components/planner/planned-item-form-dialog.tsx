@@ -7,6 +7,7 @@ import { PlannedItemPriorPaymentFields } from "@/components/planner/planned-item
 import { AmountTextInput } from "@/components/shared/amount-text-input";
 import { FormDatePicker } from "@/components/shared/form-date-picker";
 import { FormDialogField } from "@/components/shared/form-dialog-field";
+import { FormOptionPicker } from "@/components/shared/form-option-picker";
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
@@ -16,14 +17,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  FORM_DIALOG_BODY_SCROLL,
+  FORM_FIELD_GRID_ROW,
+  FORM_FIELD_INPUT,
+  FORM_GROUP,
+  FORM_NOTE,
+  FORM_PREVIEW_COMPACT,
+  FORM_PREVIEW_COMPACT_AMOUNT,
+  FORM_SEGMENT,
+  FORM_SEGMENT_ACTIVE,
+  FORM_SEGMENT_INACTIVE,
+  FORM_SEGMENTED,
+} from "@/config/form-dialog";
 import {
   formatPayPlanPaidFraction,
   PAYPLAN_LABEL_ADD_PAY_PLAN,
@@ -60,21 +67,6 @@ import {
   UI_LABEL_SAVE,
 } from "@/config/payplan-labels";
 import {
-  FORM_DIALOG_BODY_SCROLL,
-  FORM_FIELD_GRID_ROW,
-  FORM_FIELD_INPUT,
-  FORM_FIELD_SELECT,
-  FORM_GROUP,
-  FORM_GROUP_DIVIDER,
-  FORM_NOTE,
-  FORM_PREVIEW_COMPACT,
-  FORM_PREVIEW_COMPACT_AMOUNT,
-  FORM_SEGMENT,
-  FORM_SEGMENT_ACTIVE,
-  FORM_SEGMENT_INACTIVE,
-  FORM_SEGMENTED,
-} from "@/config/form-dialog";
-import {
   getDefaultCategoryForKind,
   getFlowTypeForKind,
   getPlannedKindLabel,
@@ -82,12 +74,8 @@ import {
   PLANNED_ITEM_KINDS,
   PLANNED_REPEAT_INTERVALS,
 } from "@/config/planner-items";
-import {
-  PLANNER_SELECT_CONTENT,
-  PLANNER_SELECT_ITEM,
-  PLANNER_SELECT_TRIGGER,
-} from "@/config/planner-manage";
 import { SEPARATED_CONTROL } from "@/config/shape";
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport";
 import { parseDateOnlyInput } from "@/lib/finance/day-range";
 import { formatIdr } from "@/lib/finance/format-currency";
 import { formatFullPayoffDate } from "@/lib/finance/format-datetime";
@@ -142,6 +130,7 @@ export function PlannedItemFormDialog({
   onOpenChange,
   onSubmit,
 }: PlannedItemFormDialogProps) {
+  const isMobile = useIsMobileViewport();
   const [isPending, startTransition] = useTransition();
   const [kind, setKind] = useState<PlannedItemKind>("bill");
   const [repeat, setRepeat] = useState<PlannedRepeatInterval>("monthly");
@@ -230,12 +219,7 @@ export function PlannedItemFormDialog({
     if (item) {
       setKind(item.kind);
       setRepeat(item.repeat);
-      setCategory(
-        resolveCategoryForEntry(
-          item.flowType,
-          item.category,
-        ),
-      );
+      setCategory(resolveCategoryForEntry(item.flowType, item.category));
       setEndMode(getPlannedItemEndMode(item));
       setAmountDraft(getInitialAmountDraft(item));
       setTotalDraft(getInitialTotalDraft(item));
@@ -344,7 +328,37 @@ export function PlannedItemFormDialog({
   const nameDefaultValue = item?.name ?? "";
   const noteDefaultValue = item?.note ?? "";
 
-  const dialogTitle = item ? PAYPLAN_LABEL_EDIT_PAY_PLAN : PAYPLAN_LABEL_NEW_PAY_PLAN;
+  const dialogTitle = item
+    ? PAYPLAN_LABEL_EDIT_PAY_PLAN
+    : PAYPLAN_LABEL_NEW_PAY_PLAN;
+
+  const kindPickerOptions = useMemo(
+    () =>
+      PLANNED_ITEM_KINDS.map((entry) => ({
+        value: entry.value,
+        label: entry.label,
+      })),
+    [],
+  );
+
+  const repeatPickerOptions = useMemo(
+    () =>
+      PLANNED_REPEAT_INTERVALS.map((entry) => ({
+        value: entry.value,
+        label: entry.label,
+      })),
+    [],
+  );
+
+  function handleKindChange(nextKind: PlannedItemKind) {
+    setKind(nextKind);
+    setCategory(getDefaultCategoryForKind(nextKind));
+    if (nextKind === "installment") {
+      setEndMode("installments");
+      setRepeat("monthly");
+      setEndDateMode("auto");
+    }
+  }
 
   return (
     <ResponsiveDialog
@@ -420,9 +434,14 @@ export function PlannedItemFormDialog({
               />
             </FormDialogField>
 
-            <FormDialogField label={UI_LABEL_CATEGORY} htmlFor="planned-category">
+            <FormDialogField
+              label={UI_LABEL_CATEGORY}
+              htmlFor="planned-category"
+            >
               <JournalCategoryCombobox
+                backLabel={dialogTitle}
                 id="planned-category"
+                nestedInDrawer={isMobile}
                 type={flowType}
                 value={category}
                 onChange={setCategory}
@@ -431,48 +450,22 @@ export function PlannedItemFormDialog({
 
             {!isInstallmentKind ? (
               <div className={FORM_FIELD_GRID_ROW}>
-                <FormDialogField label={PAYPLAN_LABEL_KIND} htmlFor="planned-kind" gridItem>
-                  <Select
+                <FormDialogField
+                  label={PAYPLAN_LABEL_KIND}
+                  htmlFor="planned-kind"
+                  gridItem
+                >
+                  <FormOptionPicker
+                    backLabel={dialogTitle}
+                    id="planned-kind"
+                    nestedInDrawer={isMobile}
+                    onChange={(value) =>
+                      handleKindChange(value as PlannedItemKind)
+                    }
+                    options={kindPickerOptions}
+                    title={PAYPLAN_LABEL_KIND}
                     value={kind}
-                    onValueChange={(value) => {
-                      if (value) {
-                        const nextKind = value as PlannedItemKind;
-                        setKind(nextKind);
-                        setCategory(
-                          getDefaultCategoryForKind(
-                            nextKind,
-                          ),
-                        );
-                        if (nextKind === "installment") {
-                          setEndMode("installments");
-                          setRepeat("monthly");
-                          setEndDateMode("auto");
-                        }
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      id="planned-kind"
-                      className={cn(
-                        PLANNER_SELECT_TRIGGER,
-                        FORM_FIELD_SELECT,
-                        "text-left",
-                      )}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={PLANNER_SELECT_CONTENT}>
-                      {PLANNED_ITEM_KINDS.map((entry) => (
-                        <SelectItem
-                          key={entry.value}
-                          value={entry.value}
-                          className={PLANNER_SELECT_ITEM}
-                        >
-                          {entry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 </FormDialogField>
 
                 <FormDialogField
@@ -480,81 +473,35 @@ export function PlannedItemFormDialog({
                   htmlFor="planned-repeat"
                   gridItem
                 >
-                  <Select
+                  <FormOptionPicker
+                    backLabel={dialogTitle}
+                    id="planned-repeat"
+                    nestedInDrawer={isMobile}
+                    onChange={(value) =>
+                      setRepeat(value as PlannedRepeatInterval)
+                    }
+                    options={repeatPickerOptions}
+                    title={PAYPLAN_LABEL_REPEAT}
                     value={repeat}
-                    onValueChange={(value) => {
-                      if (value) {
-                        setRepeat(value as PlannedRepeatInterval);
-                      }
-                    }}
-                  >
-                    <SelectTrigger
-                      id="planned-repeat"
-                      className={cn(
-                        PLANNER_SELECT_TRIGGER,
-                        FORM_FIELD_SELECT,
-                        "text-left",
-                      )}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={PLANNER_SELECT_CONTENT}>
-                      {PLANNED_REPEAT_INTERVALS.map((entry) => (
-                        <SelectItem
-                          key={entry.value}
-                          value={entry.value}
-                          className={PLANNER_SELECT_ITEM}
-                        >
-                          {entry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 </FormDialogField>
               </div>
             ) : (
-              <FormDialogField label={PAYPLAN_LABEL_KIND} htmlFor="planned-kind-installment">
-                <Select
+              <FormDialogField
+                label={PAYPLAN_LABEL_KIND}
+                htmlFor="planned-kind-installment"
+              >
+                <FormOptionPicker
+                  backLabel={dialogTitle}
+                  id="planned-kind-installment"
+                  nestedInDrawer={isMobile}
+                  onChange={(value) =>
+                    handleKindChange(value as PlannedItemKind)
+                  }
+                  options={kindPickerOptions}
+                  title={PAYPLAN_LABEL_KIND}
                   value={kind}
-                  onValueChange={(value) => {
-                    if (value) {
-                      const nextKind = value as PlannedItemKind;
-                      setKind(nextKind);
-                      setCategory(
-                        getDefaultCategoryForKind(
-                          nextKind,
-                        ),
-                      );
-                      if (nextKind === "installment") {
-                        setEndMode("installments");
-                        setRepeat("monthly");
-                        setEndDateMode("auto");
-                      }
-                    }
-                  }}
-                >
-                  <SelectTrigger
-                    id="planned-kind-installment"
-                    className={cn(
-                      PLANNER_SELECT_TRIGGER,
-                      FORM_FIELD_SELECT,
-                      "text-left",
-                    )}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={PLANNER_SELECT_CONTENT}>
-                    {PLANNED_ITEM_KINDS.map((entry) => (
-                      <SelectItem
-                        key={entry.value}
-                        value={entry.value}
-                        className={PLANNER_SELECT_ITEM}
-                      >
-                        {entry.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </FormDialogField>
             )}
 
@@ -607,18 +554,23 @@ export function PlannedItemFormDialog({
                     gridItem
                   >
                     <FormDatePicker
+                      backLabel={dialogTitle}
                       id="planned-start"
                       name="startAt"
-                      value={startAtText}
+                      nestedInDrawer={isMobile}
                       onChange={(nextValue) => {
                         setEndDateMode("auto");
                         setStartAtText(nextValue);
                       }}
                       required
+                      value={startAtText}
                     />
                   </FormDialogField>
 
-                  <FormDialogField label={PAYPLAN_LABEL_INSTALLMENT_COUNT} gridItem>
+                  <FormDialogField
+                    label={PAYPLAN_LABEL_INSTALLMENT_COUNT}
+                    gridItem
+                  >
                     <p className="flex h-10 items-center text-sm font-semibold tabular-nums">
                       {installmentSchedule
                         ? `${installmentSchedule.installmentCount}x`
@@ -663,11 +615,13 @@ export function PlannedItemFormDialog({
                   gridItem
                 >
                   <FormDatePicker
+                    backLabel={dialogTitle}
                     id="planned-start-other"
                     name="startAt"
-                    value={startAtText}
+                    nestedInDrawer={isMobile}
                     onChange={setStartAtText}
                     required
+                    value={startAtText}
                   />
                 </FormDialogField>
               </div>
@@ -745,11 +699,13 @@ export function PlannedItemFormDialog({
                     htmlFor="planned-end-date"
                   >
                     <FormDatePicker
+                      backLabel={dialogTitle}
                       id="planned-end-date"
                       name="endAt"
-                      value={endAtText}
+                      nestedInDrawer={isMobile}
                       onChange={setEndAtText}
                       required
+                      value={endAtText}
                     />
                   </FormDialogField>
                 )}
@@ -838,11 +794,13 @@ export function PlannedItemFormDialog({
                     htmlFor="planned-end-date-other"
                   >
                     <FormDatePicker
+                      backLabel={dialogTitle}
                       id="planned-end-date-other"
                       name="endAt"
-                      value={endAtText || fallbackStartAt}
+                      nestedInDrawer={isMobile}
                       onChange={setEndAtText}
                       required
+                      value={endAtText || fallbackStartAt}
                     />
                   </FormDialogField>
                 </div>

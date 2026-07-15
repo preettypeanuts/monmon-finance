@@ -24,7 +24,7 @@ import {
 } from "@/lib/planner/calendar";
 import { PlusIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
-import type { JournalWalletOption } from "@/components/journal/journal-filters-drawer";
+import type { JournalWalletOption } from "@/types/journal";
 import type {
   JournalCategoryExpenseBreakdown,
   JournalDaySummary,
