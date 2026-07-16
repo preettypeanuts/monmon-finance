@@ -2,13 +2,17 @@ import type { WalletType } from "@/types/wallet";
 
 export const WALLETS_PAGE_TITLE = "Wallets";
 export const WALLETS_PAGE_DESC =
-  "Track balances per wallet — cash, bank, e-wallet.";
-export const WALLETS_ADD = "Add wallet";
+  "Manage and track your balances across all wallets.";
+export const WALLETS_ADD = "Add Wallet";
+export const WALLET_FAB_MENU = "Wallet actions";
+export const WALLET_FAB_NEW_CARD = "New wallet";
 export const WALLETS_EMPTY =
   "No wallets yet. Add one to start tracking balances per source.";
 export const WALLETS_MANAGE = "Manage";
 export const WALLETS_DEFAULT_BADGE = "Default";
-export const WALLETS_TOTAL_LABEL = "Total across wallets";
+export const WALLETS_TOTAL_LABEL = "Total Across Wallets";
+
+export const WALLETS_CARD_UPDATED_LABEL = "Updated";
 
 export const WALLET_FORM_TITLE_NEW = "Add wallet";
 export const WALLET_FORM_TITLE_EDIT = "Edit wallet";
@@ -17,7 +21,25 @@ export const WALLET_FORM_DESC =
 export const WALLET_FORM_NAME = "Name";
 export const WALLET_FORM_NAME_PLACEHOLDER = "Cash, BCA, GoPay...";
 export const WALLET_FORM_TYPE = "Type";
+export const WALLET_INSTITUTION_PICKER_LABEL = "Pilih institusi";
+export const WALLET_INSTITUTION_SEARCH_PLACEHOLDER = "Cari bank atau e-wallet...";
+export const WALLET_INSTITUTION_POPULAR_BANKS = "Popular Banks";
+export const WALLET_INSTITUTION_POPULAR_EWALLETS = "Popular E-Wallets";
+export const WALLET_INSTITUTION_INTERNATIONAL = "International";
+export const WALLET_INSTITUTION_ALL_BANKS = "Bank Lainnya";
+export const WALLET_INSTITUTION_ALL_EWALLETS = "E-Wallet Lainnya";
 export const WALLET_FORM_INITIAL_BALANCE = "Initial balance (IDR)";
+export const WALLET_FORM_ADMIN_FEE = "Biaya admin bulanan";
+export const WALLET_FORM_ADMIN_FEE_HINT =
+  "Nominal dipotong otomatis tiap bulan dari wallet ini dan tersinkron ke PayPlan.";
+export const WALLET_FORM_ADMIN_FEE_AMOUNT = "Nominal biaya admin (IDR)";
+export const WALLET_FORM_ADMIN_FEE_DAY = "Tanggal potong";
+export const WALLET_FORM_ADMIN_FEE_DAY_PLACEHOLDER = "Pilih tanggal";
+export const WALLET_FORM_ADMIN_FEE_DAY_PICKER_TITLE = "Pilih tanggal potong";
+export const WALLET_FORM_ADMIN_FEE_DAY_PICKER_DESC =
+  "Hari ini dipakai sebagai tanggal potong setiap bulan.";
+export const WALLET_FORM_ADMIN_FEE_DAY_OPTION = (day: number) =>
+  `Tanggal ${day} setiap bulan`;
 export const WALLET_FORM_SAVE = "Save";
 export const WALLET_FORM_SAVING = "Saving...";
 export const WALLET_FORM_ARCHIVE = "Archive wallet";
@@ -33,9 +55,9 @@ export const WALLET_TYPE_LABELS: Record<WalletType, string> = {
 };
 
 export const WALLET_TYPE_ORDER: WalletType[] = [
-  "cash",
-  "bank",
   "ewallet",
+  "bank",
+  "cash",
   "other",
 ];
 
@@ -46,6 +68,11 @@ export const WALLET_TRANSFER = "Transfer";
 export const WALLET_TRANSFER_FROM = "Dari wallet";
 export const WALLET_TRANSFER_TO = "Ke wallet";
 export const WALLET_TRANSFER_AMOUNT = "Nominal (IDR)";
+export const WALLET_TRANSFER_ADMIN_FEE = "Biaya admin transfer";
+export const WALLET_TRANSFER_ADMIN_FEE_HINT =
+  "Opsional. Dipotong dari wallet asal dan diingat untuk pasangan wallet yang sama.";
+export const WALLET_TRANSFER_ADMIN_FEE_CUSTOM = "Lainnya";
+export const WALLET_TRANSFER_ADMIN_FEE_AMOUNT = "Nominal biaya admin (IDR)";
 export const WALLET_TRANSFER_NOTE = "Catatan (opsional)";
 export const WALLET_TRANSFER_NOTE_PLACEHOLDER = "Tarik tunai, top up, dll.";
 export const WALLET_TRANSFER_SAVE = "Transfer";
