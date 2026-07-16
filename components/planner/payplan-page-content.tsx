@@ -49,6 +49,7 @@ type PlannedItemRecordSerialized = {
   installmentCount: number | null;
   paidInstallmentCount: number;
   note: string | null;
+  walletId: string | null;
 };
 
 interface PayplanPagePanelsProps {
